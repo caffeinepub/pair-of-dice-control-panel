@@ -3,63 +3,22 @@
   "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "New tab draft behavior/layout differs from the 'in caffeine' draft; needs to match."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-radio-group-control-ui-so-each-radio-option-button-uses-most-of-the-available-control-space-as-a-clickable-target-not-just-the-text-area-while-preserving-existing-selected-unselected-styling-and-respecting-edit-mode-disabling",
-      "title": "Update the Radio Group control UI so each radio option button uses most of the available control space as a clickable target (not just the text area), while preserving existing selected/unselected styling and respecting Edit mode disabling.",
+      "id": "feature-fix-the-new-tab-draft-experience-so-it-matches-the-in-caffeine-draft-experience-in-layout-styling-and-behavior-i-e-opening-the-app-in-a-new-browser-tab-should-render-the-same-ui-theme-spacing-and-component-behavior-as-when-viewed-inside-caffeine",
+      "title": "Fix the \"New Tab\" draft experience so it matches the \"in Caffeine\" draft experience in layout, styling, and behavior (i.e., opening the app in a new browser tab should render the same UI theme, spacing, and component behavior as when viewed inside Caffeine).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-add-a-per-control-configuration-option-for-radio-group-controls-to-render-options-vertically-or-horizontally-and-apply-it-in-the-radio-group-renderer",
-      "title": "Add a per-control configuration option for Radio Group controls to render options vertically or horizontally, and apply it in the Radio Group renderer.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-expose-the-radio-group-orientation-setting-in-the-control-editing-uis-inspector-panel-for-an-existing-control-and-add-control-modal-when-creating-a-radio-control-use-english-labels-for-the-setting",
-      "title": "Expose the Radio Group orientation setting in the control editing UIs (Inspector panel for an existing control, and Add Control modal when creating a radio control). Use English labels for the setting.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-selecting-a-radio-option-emits-an-event-that-appears-in-the-recent-signals-panel-including-the-control-id-control-type-and-a-value-that-clearly-represents-the-selected-option",
-      "title": "Ensure selecting a radio option emits an event that appears in the Recent Signals panel, including the control ID, control type, and a value that clearly represents the selected option.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Make radio button options have a large clickable area (majority of their space is clickable)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Add configuration option to lay out radio button options vertically or horizontally",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Log radio button selections to the Recent Signal Console when pressed",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Improve radio group controls: larger clickable options, orientation setting, and selection logging",
+  "new_feature_requests": [],
+  "projectName": "Make the New Tab draft match the in-Caffeine draft",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

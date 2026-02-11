@@ -1,109 +1,36 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Improve Radio Group: larger hit targets, orientation setting, and selection logging",
+  "title": "Unify New Tab vs in-Caffeine draft theming and layout rendering",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Make each radio option’s full visual segment clickable (not just label), while preserving existing selected/unselected styling and edit-mode disabling.",
+      "summary": "Ensure the app renders identical theme, spacing, and control-panel behavior when opened in a standalone browser tab versus embedded inside Caffeine by unifying global CSS sources and root layout sizing/scroll handling.",
       "acceptanceCriteria": [
-        "In Runtime mode, clicking anywhere within a radio option’s visual button area selects it (not only clicking the label text).",
-        "Radio option buttons visually expand to fill the radio group’s available space (e.g., full width in vertical layout; evenly sized segments in horizontal layout).",
-        "In Edit mode, radio option buttons remain non-interactive (no selection changes, no events emitted)."
+        "When the app is opened in a new browser tab, the UI matches the in-Caffeine draft (same theme colors, typography, spacing, and component styling).",
+        "No CSS/Tailwind/theme-related regressions occur only in the new-tab view (e.g., missing styles, different background, different layout sizing/scrolling).",
+        "Core interactions continue to work the same in the new-tab view (e.g., edit/runtime mode toggle, adding controls modal, inspector panel in edit mode, recent signals panel, import/export panel)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "path": "frontend/index.css",
           "operation": "modify",
-          "description": "Update the radio control rendering so each option button expands to fill available space (full-width rows for vertical; equal-width segments for horizontal) and the clickable target matches the full visual button area; keep existing selected/unselected classes and ensure disabled behavior in edit mode remains intact. Verify the component's usage instructions before implementing."
+          "description": "Remove divergence between the root-level stylesheet and the app stylesheet by making frontend/index.css delegate to (or exactly mirror) frontend/src/index.css so any host (including Caffeine) loading the root stylesheet gets the same Tailwind theme variables, base styles, and control-panel-specific rules."
         },
         {
           "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "If needed, adjust/introduce minimal global utility classes used by the radio group renderer to ensure option segments reliably fill the available area without altering unrelated controls. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Add a persisted per-radio-control orientation setting (Vertical/Horizontal) and apply it in the radio group renderer.",
-      "acceptanceCriteria": [
-        "Radio Group controls have a configurable orientation setting with exactly two options: Vertical and Horizontal.",
-        "When set to Vertical, radio options render in a column; when set to Horizontal, radio options render in a row.",
-        "The chosen orientation persists after saving the layout to the backend and reloading the app."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/types/controlPanel.ts",
-          "operation": "modify",
-          "description": "Add a radio group orientation field on the radio control configuration type (e.g., a boolean or union) so the UI and serialization can consistently represent Vertical vs Horizontal. Verify the component's usage instructions before implementing."
+          "description": "Harden global base styling so both embedded and standalone contexts compute the same layout: ensure html/body/#root height and overflow expectations are explicitly defined, preserve the intended dark theme variables, and keep control-panel-specific styles (fullscreen region + scrollbars) consistent across hosting contexts."
         },
         {
-          "path": "frontend/src/lib/controlDefaults.ts",
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Add a default orientation value for newly created Radio Group controls, keeping the existing defaults and behavior for other control types unchanged. Verify the component's usage instructions before implementing."
+          "description": "Align document-level defaults between new-tab and embedded rendering by setting consistent root element attributes (e.g., default dark theme class for first paint if needed), and ensure the HTML/body/root container sizing/margins do not cause spacing or scrolling differences between environments."
         },
         {
-          "path": "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Update layout serialization/deserialization so the radio orientation setting is saved and restored using the existing backend layout shape (Control.radioGroupIsVertical) while keeping backward compatibility for previously saved layouts that lack the field. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
-          "operation": "modify",
-          "description": "Read the persisted radio orientation setting from the control config and render options in a column (Vertical) or row (Horizontal), ensuring sizing rules from REQ-1 apply appropriately. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Expose the Radio Group orientation setting in the Inspector panel and Add Control modal with English labels and immediate preview updates.",
-      "acceptanceCriteria": [
-        "Inspector panel shows a Radio Group orientation control when the selected control type is Radio Group.",
-        "Add Control modal shows the same orientation setting when the draft control type is Radio Group.",
-        "Changing the orientation immediately updates the previewed control in the workspace (no page reload required)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/control-panel/InspectorPanel.tsx",
-          "operation": "modify",
-          "description": "When the selected control type is Radio Group, add an orientation setting UI with exactly two English options: 'Vertical' and 'Horizontal'; on change, call updateControl so the workspace preview updates immediately. Use existing shadcn/ui Select to present the options. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
-          "operation": "modify",
-          "description": "When the draft control type is Radio Group, add an orientation setting UI with exactly two English options: 'Vertical' and 'Horizontal' and include it in the created control config. Use existing shadcn/ui Select to present the options. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Ensure radio selections emit events that appear in Recent Signals with controlId, controlType, and a clear value, while using the selected option’s binary code for the event binaryCode.",
-      "acceptanceCriteria": [
-        "In Runtime mode, selecting a radio option causes a new entry to appear in the Recent Signals panel without requiring a manual refresh (polling/invalidation behavior may be used).",
-        "The emitted event’s fields in the Recent Signals panel include: controlId (the radio control ID), controlType ('radio'), and value (the selected option’s label or other clear representation).",
-        "The event uses the selected radio option’s binary code when emitting the signal so the Recent Signals panel displays that binary code for the selection event."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
-          "operation": "modify",
-          "description": "Confirm/adjust radio option selection handling to emit an event with controlId, controlType 'radio', value representing the selected option (e.g., label), and binaryCode set to the selected option’s binary code; ensure emission is suppressed in edit mode. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useSignalEmitter.ts",
-          "operation": "modify",
-          "description": "Ensure emitting a signal reliably triggers Recent Signals to update (keep React Query invalidation on success and preserve current error handling), without adding real-time transport. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useRecentSignals.ts",
-          "operation": "modify",
-          "description": "If needed, tune polling/refetch behavior so newly emitted radio events appear without manual refresh, while continuing to rely on existing React Query polling/invalidation (no websockets). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/control-panel/RecentSignalsPanel.tsx",
-          "operation": "modify",
-          "description": "Ensure the Recent Signals list continues to display event.controlId, event.controlType, event.value, and prominently shows event.binaryCode so radio selection events clearly reflect the selected option’s binary code. Verify the component's usage instructions before implementing."
+          "description": "Verify the root app wrapper applies the same background/text classes and minimum height behavior in all contexts; adjust only the top-level wrapper (not shadcn components under frontend/src/components/ui) to prevent new-tab-only layout/theme drift."
         }
       ]
     }

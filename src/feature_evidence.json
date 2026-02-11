@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-radio-group-control-ui-so-each-radio-option-button-uses-most-of-the-available-control-space-as-a-clickable-target-not-just-the-text-area-while-preserving-existing-selected-unselected-styling-and-respecting-edit-mode-disabling",
-      "featureTitle": "Update the Radio Group control UI so each radio option button uses most of the available control space as a clickable target (not just the text area), while preserving existing selected/unselected styling and respecting Edit mode disabling.",
+      "featureId": "feature-fix-the-new-tab-draft-experience-so-it-matches-the-in-caffeine-draft-experience-in-layout-styling-and-behavior-i-e-opening-the-app-in-a-new-browser-tab-should-render-the-same-ui-theme-spacing-and-component-behavior-as-when-viewed-inside-caffeine",
+      "featureTitle": "Fix the \"New Tab\" draft experience so it matches the \"in Caffeine\" draft experience in layout, styling, and behavior (i.e., opening the app in a new browser tab should render the same UI theme, spacing, and component behavior as when viewed inside Caffeine).",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx"
+        "frontend/index.css",
+        "frontend/index.html"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -16,64 +17,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-per-control-configuration-option-for-radio-group-controls-to-render-options-vertically-or-horizontally-and-apply-it-in-the-radio-group-renderer",
-      "featureTitle": "Add a per-control configuration option for Radio Group controls to render options vertically or horizontally, and apply it in the Radio Group renderer.",
-      "files": [
-        "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
-        "frontend/src/components/control-panel/ControlRenderer.tsx",
-        "frontend/src/lib/controlDefaults.ts",
-        "frontend/src/types/controlPanel.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-expose-the-radio-group-orientation-setting-in-the-control-editing-uis-inspector-panel-for-an-existing-control-and-add-control-modal-when-creating-a-radio-control-use-english-labels-for-the-setting",
-      "featureTitle": "Expose the Radio Group orientation setting in the control editing UIs (Inspector panel for an existing control, and Add Control modal when creating a radio control). Use English labels for the setting.",
-      "files": [
-        "frontend/src/components/control-panel/AddControlModal.tsx",
-        "frontend/src/components/control-panel/InspectorPanel.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-selecting-a-radio-option-emits-an-event-that-appears-in-the-recent-signals-panel-including-the-control-id-control-type-and-a-value-that-clearly-represents-the-selected-option",
-      "featureTitle": "Ensure selecting a radio option emits an event that appears in the Recent Signals panel, including the control ID, control type, and a value that clearly represents the selected option.",
-      "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

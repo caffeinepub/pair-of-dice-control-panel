@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Improve Radio Group controls with larger clickable option targets, configurable orientation, and selection events that appear in Recent Signals.
+**Goal:** Make the “New Tab” draft experience match the “in Caffeine” draft experience in layout, styling, and behavior.
 
 **Planned changes:**
-- Update the Radio Group renderer so each option’s full visual button area is clickable in Runtime mode, while keeping existing selected/unselected styling and maintaining Edit mode non-interactivity.
-- Add a per-radio-control orientation setting (Vertical/Horizontal), persist it via backend layout saving/loading, and render options accordingly (column vs row).
-- Expose the orientation setting in the Inspector for existing Radio Group controls and in the Add Control modal for new Radio Group controls, using English labels and updating the workspace preview immediately.
-- Emit a selection event when a radio option is chosen in Runtime mode so it appears in Recent Signals with controlId, controlType = "radio", and a value representing the selected option, using the option’s binary code for the emitted signal.
+- Identify and fix differences in theme/CSS/Tailwind application between the in-Caffeine view and the standalone new-tab view so both render the same colors, typography, spacing, and component styling.
+- Align new-tab layout sizing/scrolling and overall page structure to prevent view-specific regressions (e.g., missing styles, different background, different layout behavior).
+- Verify and preserve core interactions in the new-tab view (edit/runtime toggle, adding controls modal, inspector panel, recent signals panel, import/export panel) so they behave the same as in-Caffeine.
 
-**User-visible outcome:** Users can click anywhere on a radio option’s button area to select it (in Runtime), choose whether radio options display vertically or horizontally (and have it persist), and see radio selections logged in Recent Signals with the selected option’s binary-coded value.
+**User-visible outcome:** Opening the app in a new browser tab shows the same UI theme, layout, and interactions as when viewed inside Caffeine.

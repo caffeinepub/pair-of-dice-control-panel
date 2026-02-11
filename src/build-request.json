@@ -1,90 +1,34 @@
 {
   "kind": "build_request",
-  "title": "Improve radio group controls: larger clickable options, orientation setting, and selection logging",
+  "title": "Make the New Tab draft match the in-Caffeine draft",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the Radio Group control UI so each radio option button uses most of the available control space as a clickable target (not just the text area), while preserving existing selected/unselected styling and respecting Edit mode disabling.",
+      "text": "Fix the \"New Tab\" draft experience so it matches the \"in Caffeine\" draft experience in layout, styling, and behavior (i.e., opening the app in a new browser tab should render the same UI theme, spacing, and component behavior as when viewed inside Caffeine).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-3"
         ],
         "quotes": [
-          "for the radio buttons make the majority of the space clickable buttons"
+          "fix the new tab draft to be like the in caffeine draft"
         ]
       },
       "acceptanceCriteria": [
-        "In Runtime mode, clicking anywhere within a radio option’s visual button area selects it (not only clicking the label text).",
-        "Radio option buttons visually expand to fill the radio group’s available space (e.g., full width in vertical layout; evenly sized segments in horizontal layout).",
-        "In Edit mode, radio option buttons remain non-interactive (no selection changes, no events emitted)."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Add a per-control configuration option for Radio Group controls to render options vertically or horizontally, and apply it in the Radio Group renderer.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "make the option for the buttons to be vertical or horizontal"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Radio Group controls have a configurable orientation setting with exactly two options: Vertical and Horizontal.",
-        "When set to Vertical, radio options render in a column; when set to Horizontal, radio options render in a row.",
-        "The chosen orientation persists after saving the layout to the backend and reloading the app."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Expose the Radio Group orientation setting in the control editing UIs (Inspector panel for an existing control, and Add Control modal when creating a radio control). Use English labels for the setting.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "make the option for the buttons to be vertical or horizontal"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Inspector panel shows a Radio Group orientation control when the selected control type is Radio Group.",
-        "Add Control modal shows the same orientation setting when the draft control type is Radio Group.",
-        "Changing the orientation immediately updates the previewed control in the workspace (no page reload required)."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Ensure selecting a radio option emits an event that appears in the Recent Signals panel, including the control ID, control type, and a value that clearly represents the selected option.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "also make the buttons log when they've been pushed on the recent signal console"
-        ]
-      },
-      "acceptanceCriteria": [
-        "In Runtime mode, selecting a radio option causes a new entry to appear in the Recent Signals panel without requiring a manual refresh (polling/invalidation behavior may be used).",
-        "The emitted event’s fields in the Recent Signals panel include: controlId (the radio control ID), controlType ('radio'), and value (the selected option’s label or other clear representation).",
-        "The event uses the selected radio option’s binary code when emitting the signal so the Recent Signals panel displays that binary code for the selection event."
+        "When the app is opened in a new browser tab, the UI matches the in-Caffeine draft (same theme colors, typography, spacing, and component styling).",
+        "No CSS/Tailwind/theme-related regressions occur only in the new-tab view (e.g., missing styles, different background, different layout sizing/scrolling).",
+        "Core interactions continue to work the same in the new-tab view (e.g., edit/runtime mode toggle, adding controls modal, inspector panel in edit mode, recent signals panel, import/export panel)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo.",
-    "Do not modify any files under frontend/src/components/ui or any frontend immutablePaths listed in SYSTEM_CONTEXT.",
-    "Use English for any user-facing text."
+    "Do not edit files under frontend/src/components/ui (Shadcn components are read-only).",
+    "Backend must remain a single Motoko actor in backend/main.mo; introduce backend changes only if required to resolve the new-tab vs in-Caffeine mismatch."
   ],
   "nonGoals": [
-    "Do not add new authentication methods beyond Internet Identity.",
-    "Do not add real-time websockets/live streaming; rely on existing React Query invalidation/polling.",
-    "Do not redesign unrelated controls (button/toggle/slider) beyond what is necessary to support the radio group changes."
+    "Adding new product features unrelated to the new-tab draft mismatch.",
+    "Changing the radio-group behavior/orientation/logging functionality beyond what is necessary to make the new-tab draft match the in-Caffeine draft."
   ],
   "imageRequirements": {
     "required": [],

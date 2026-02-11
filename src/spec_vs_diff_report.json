@@ -1,37 +1,43 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T22:25:41.752Z",
-  "summary": "Most requested radio-group changes appear implemented: per-control orientation is added to types/defaults and saved layout, radio selection emits events with option label + binary code, and UI changes are described for full-area clickable options. However, there are a couple of changes not requested (notably a new backend query).",
+  "generatedAt": "2026-02-11T22:32:09.163Z",
+  "summary": "The diff primarily adjusts global theming/styling (dark mode class on the root HTML element, OKLCH CSS variables, body styling, scrollbar styling, and fullscreen workspace-region styling) and wraps the app with a ThemeProvider/Toaster. It also introduces multiple control-panel behavior and data-model changes (notably radio-group orientation support and related UI/defaults) that are not explicitly part of the stated new-tab vs in-Caffeine draft mismatch requirement.",
   "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Added backend query method `getRadioGroupLayout()` returning `Bool` (always `true`).",
-      "reason": "BuildRequest did not request any new backend API for querying radio layout/orientation; orientation is expected to persist via the existing layout save/load.",
+      "description": "Added radio group vertical/horizontal orientation support (new type field, defaults, renderer behavior changes, inspector selector).",
+      "reason": "BuildRequest focuses on making the New Tab draft match the in-Caffeine draft in layout/styling/behavior; it explicitly lists changing radio-group behavior/orientation as a non-goal beyond what is necessary, and the diff introduces a new orientation capability and related UI/model changes without any explicit request.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/src/types/controlPanel.ts",
+        "frontend/src/lib/controlDefaults.ts",
+        "frontend/src/components/control-panel/ControlRenderer.tsx",
+        "frontend/src/components/control-panel/InspectorPanel.tsx",
+        "frontend-file-summaries.txt"
       ]
     },
     {
-      "description": "Create Control button now includes additional gating/tooltips and auto-close behavior based on initialization/runtime mode.",
-      "reason": "BuildRequest scope was limited to radio group UI/orientation/event logging; this is a broader UX change unrelated to radio groups.",
+      "description": "Changed header behavior to render CreateControlButton unconditionally and adjusted fullscreen targeting to apply only to the workspace region via a workspaceRef.",
+      "reason": "These are functional/layout behavior changes not explicitly requested; the requirement is about new-tab vs in-Caffeine visual/behavior parity, and the diff summary indicates additional structural behavior changes beyond explicit theming parity work.",
       "evidence": [
-        "frontend/src/components/control-panel/CreateControlButton.tsx"
+        "frontend/src/screens/ControlPanelScreen.tsx",
+        "frontend-file-summaries.txt",
+        "frontend/index.css"
+      ]
+    },
+    {
+      "description": "Added/changed 'lit' visual feedback styling for controls via a global .control-lit class.",
+      "reason": "Not mentioned in the BuildRequest; could affect component styling/behavior beyond the scope of 'match in-Caffeine' unless it already existed there (not evidenced in the diff summary).",
+      "evidence": [
+        "frontend/index.css"
       ]
     }
   ],
   "confidence": 0.64,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/control-panel/AddControlModal.tsx",
-    "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
-    "frontend/src/components/control-panel/ControlRenderer.tsx",
-    "frontend/src/components/control-panel/CreateControlButton.tsx",
-    "frontend/src/components/control-panel/InspectorPanel.tsx",
-    "frontend/src/lib/controlDefaults.ts",
-    "frontend/src/types/controlPanel.ts",
+    "frontend/index.css",
+    "frontend/index.html",
     "project_state.json"
   ]
 }
