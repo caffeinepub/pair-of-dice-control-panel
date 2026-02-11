@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, RefObject } from 'react';
+import { isFullscreenSupported, isBrowserAvailable } from '@/lib/safeBrowser';
 
 interface UseFullscreenReturn {
   isFullscreen: boolean;
@@ -10,26 +11,26 @@ interface UseFullscreenReturn {
 
 export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFullscreenReturn {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isSupported] = useState(() => {
-    return !!(
-      document.fullscreenEnabled ||
-      (document as any).webkitFullscreenEnabled ||
-      (document as any).mozFullScreenEnabled ||
-      (document as any).msFullscreenEnabled
-    );
-  });
+  const [isSupported] = useState(() => isFullscreenSupported());
 
   // Update state when fullscreen changes (including Escape key or browser UI)
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      const fullscreenElement =
-        document.fullscreenElement ||
-        (document as any).webkitFullscreenElement ||
-        (document as any).mozFullScreenElement ||
-        (document as any).msFullscreenElement;
+    if (!isBrowserAvailable()) return;
 
-      // Check if the fullscreen element is our target element
-      setIsFullscreen(fullscreenElement === elementRef.current);
+    const handleFullscreenChange = () => {
+      try {
+        const fullscreenElement =
+          document.fullscreenElement ||
+          (document as any).webkitFullscreenElement ||
+          (document as any).mozFullScreenElement ||
+          (document as any).msFullscreenElement;
+
+        // Check if the fullscreen element is our target element
+        setIsFullscreen(fullscreenElement === elementRef.current);
+      } catch (error) {
+        // Fullscreen API unavailable
+        setIsFullscreen(false);
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -68,6 +69,10 @@ export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFul
   }, [elementRef, isSupported]);
 
   const exitFullscreen = useCallback(async () => {
+    if (!isBrowserAvailable()) {
+      throw new Error('Browser APIs are not available');
+    }
+
     try {
       if (document.exitFullscreen) {
         await document.exitFullscreen();

@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-runtime-mode-button-interactions-so-a-button-press-can-be-triggered-reliably-via-either-mouse-or-touch-input-e-g-using-pointer-events-and-does-not-require-edit-mode-to-be-off",
-      "featureTitle": "Update runtime-mode button interactions so a button press can be triggered reliably via either mouse or touch input (e.g., using Pointer Events) and does not require edit mode to be off.",
+      "featureId": "feature-restore-the-add-control-button-behavior-to-the-last-known-working-state-so-that-when-the-panel-is-in-edit-mode-and-the-control-layout-is-initialized-and-not-loading-clicking-the-button-reliably-opens-the-add-control-modal-both-in-the-header-and-in-the-import-export-panel-versions-tab",
+      "featureTitle": "Restore the “Add Control” button behavior to the last known working state so that, when the panel is in Edit mode and the control layout is initialized (and not loading), clicking the button reliably opens the Add Control modal (both in the header and in the Import/Export panel “Versions” tab).",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx"
+        "frontend/src/components/control-panel/SharedAddControlButton.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -20,11 +20,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-when-a-runtime-mode-button-is-pushed-log-an-event-that-includes-at-minimum-the-button-s-binary-code-and-the-button-s-name-use-the-control-s-label-as-the-name-ensure-this-information-is-persisted-in-the-backend-event-log-and-returned-by-recent-events-queries",
-      "featureTitle": "When a runtime-mode button is pushed, log an event that includes (at minimum) the button's binary code and the button's name (use the control's label as the name). Ensure this information is persisted in the backend event log and returned by recent-events queries.",
+      "featureId": "feature-revert-repair-the-add-control-button-s-disabled-loading-ux-so-it-matches-the-last-working-version-the-button-is-disabled-when-not-allowed-to-add-controls-shows-a-loading-spinner-while-the-layout-is-loading-and-displays-a-visible-tooltip-explaining-why-it-is-disabled-e-g-runtime-mode-initializing-loading",
+      "featureTitle": "Revert/repair the Add Control button’s disabled/loading UX so it matches the last working version: the button is disabled when not allowed to add controls, shows a loading spinner while the layout is loading, and displays a visible tooltip explaining why it is disabled (e.g., runtime mode, initializing, loading).",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx",
-        "frontend/src/hooks/useSignalEmitter.ts"
+        "frontend/src/components/control-panel/SharedAddControlButton.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -35,24 +34,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-recent-signals-ui-to-display-the-button-name-label-alongside-the-binary-code-for-logged-button-press-events-so-users-can-see-both-in-the-log",
-      "featureTitle": "Update the Recent Signals UI to display the button name (label) alongside the binary code for logged button press events, so users can see both in the log.",
-      "files": [
-        "frontend/src/components/control-panel/RecentSignalsPanel.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
       ],
       "confidence": "high"
     }

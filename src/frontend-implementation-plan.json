@@ -1,58 +1,43 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Runtime pointer-based button presses and enhanced event logging (binary code + button name)",
+  "title": "Restore Add Control modal open/disabled behavior",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Make runtime-mode button presses work reliably with both mouse and touch via Pointer Events, while preserving edit-mode no-signal behavior and preventing stuck pressed state.",
+      "summary": "Fix shared Add Control button so it reliably opens the Add Control modal in Edit mode when layout is initialized and not loading, without the modal auto-closing due to guard-state changes.",
       "acceptanceCriteria": [
-        "In runtime mode, pressing a button with a mouse triggers the press behavior.",
-        "In runtime mode, tapping a button on a touch screen triggers the press behavior.",
-        "The interaction does not get stuck in a pressed state when the pointer leaves/cancels (e.g., pointercancel/leave is handled).",
-        "In edit mode, button presses do not emit signals (existing behavior preserved)."
+        "When Mode is Edit, the layout is initialized, and the layout is not loading, clicking “Add Control” opens the Add Control modal on the first click.",
+        "This behavior is identical for the header button and the Versions-tab button (they both use the shared implementation and behave the same).",
+        "If the modal is opened, it stays open until the user closes it or successfully creates a control (it must not immediately close due to guard logic flapping)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "path": "frontend/src/components/control-panel/SharedAddControlButton.tsx",
           "operation": "modify",
-          "description": "Update the button control interaction handling to use Pointer Events (e.g., onPointerDown/onPointerUp/onPointerCancel/onPointerLeave) so both mouse and touch reliably trigger presses in runtime mode, and ensure pressed UI state is always cleared on leave/cancel to prevent stuck-pressed behavior. Keep existing edit-mode gating so no signals are emitted in edit mode."
+          "description": "Revert/repair modal open-state handling by removing the effect that auto-closes the modal when canAddControl flips false after opening; keep guard logic only for whether the click can open the modal so the modal stays open until user closes it or creation succeeds. Ensure both header and Versions-tab usage continue to share this exact implementation. Use existing shadcn-ui Tooltip/Dialog/Button components already imported (Verify the component's usage instructions before implementing)."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Include button name (control label) along with binary code when emitting runtime-mode button press events from the frontend so recent-events queries can return both fields.",
+      "summary": "Restore Add Control button disabled/loading UX with spinner during layout loading and a visible tooltip explaining disabled reasons, including when the button is disabled.",
       "acceptanceCriteria": [
-        "Backend event records include the button name (label) along with binaryCode for button press events.",
-        "Frontend emits button press events with both binaryCode and button name (label) included.",
-        "Recent events fetched from the backend include the binary code and button name for button press events."
+        "While the layout is loading, the Add Control button shows a spinner and is not clickable.",
+        "When not in Edit mode, the Add Control button is disabled and hovering/focusing it shows a tooltip explaining to switch to Edit mode.",
+        "When initialized state is false (initializing), the Add Control button is disabled and hovering/focusing it shows an initializing tooltip message.",
+        "The disabled-state tooltip is actually visible/triggerable even when the underlying button is disabled (including in the Versions tab)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useSignalEmitter.ts",
+          "path": "frontend/src/components/control-panel/SharedAddControlButton.tsx",
           "operation": "modify",
-          "description": "Update the signal emission mutation to pass controlName (control label) into the backend emitEvent call using the existing backend interface signature, while preserving existing React Query invalidation behavior."
+          "description": "Adjust disabled/loading rendering so the spinner is shown when layout is loading, the button remains non-clickable while loading/disabled, and the tooltip remains triggerable even when the underlying button is disabled by moving the TooltipTrigger target to a focusable wrapper (e.g., wrapper span with appropriate focus/aria-disabled) for both hover and keyboard focus. Use existing shadcn-ui Tooltip components already referenced (Verify the component's usage instructions before implementing)."
         },
         {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "path": "frontend/src/components/control-panel/ImportExportPanel.tsx",
           "operation": "modify",
-          "description": "When emitting runtime-mode events for button presses (and any other control emissions needed for schema compatibility), include the control's label as controlName so emitted events contain both binaryCode and the button name (label)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Display the button name (label) alongside binary code in the Recent Signals UI for logged button press events, and remain resilient to missing/optional fields.",
-      "acceptanceCriteria": [
-        "The Recent Signals list shows the binary code and the button name (label) for button press events.",
-        "The Recent Signals panel continues to render without errors after the backend event shape/API changes."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/control-panel/RecentSignalsPanel.tsx",
-          "operation": "modify",
-          "description": "Update rendering of recent events to show event.controlName (label) alongside event.binaryCode (with a safe fallback when controlName is missing), ensuring the panel continues to render without errors when optional fields are absent."
+          "description": "Confirm the Versions tab continues to use SharedAddControlButton directly (no local overrides) so the restored disabled/loading/tooltip behavior is identical to the header button. If any layout-specific wrapper/styling interferes with tooltip triggering, adjust only composition/styling here without modifying files under frontend/src/components/ui (Verify the component's usage instructions before implementing)."
         }
       ]
     }

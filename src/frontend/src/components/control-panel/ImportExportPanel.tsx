@@ -2,11 +2,13 @@ import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useControlLayout } from '@/hooks/useControlLayout';
 import { exportLayout, importLayout } from '@/lib/layoutSerialization';
 import { downloadJSON } from '@/lib/download';
 import { Download, Upload, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { SharedAddControlButton } from './SharedAddControlButton';
 
 export function ImportExportPanel() {
   const { controls, applyImportedLayout } = useControlLayout();
@@ -52,40 +54,56 @@ export function ImportExportPanel() {
         <CardTitle>Import / Export</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button onClick={handleExport} className="w-full" variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Export Layout
-        </Button>
+        <Tabs defaultValue="actions" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="actions">Actions</TabsTrigger>
+            <TabsTrigger value="versions">Versions</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="actions" className="space-y-4 mt-4">
+            <Button onClick={handleExport} className="w-full" variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export Layout
+            </Button>
 
-        <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            className="hidden"
-            id="import-file"
-          />
-          <Button asChild className="w-full" variant="outline">
-            <label htmlFor="import-file" className="cursor-pointer">
-              <Upload className="h-4 w-4 mr-2" />
-              Import Layout
-            </label>
-          </Button>
-        </div>
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+                id="import-file"
+              />
+              <Button asChild className="w-full" variant="outline">
+                <label htmlFor="import-file" className="cursor-pointer">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Layout
+                </label>
+              </Button>
+            </div>
 
-        {importErrors.length > 0 && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="text-xs space-y-1">
-                {importErrors.map((error, idx) => (
-                  <div key={idx}>{error}</div>
-                ))}
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
+            {importErrors.length > 0 && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="text-xs space-y-1">
+                    {importErrors.map((error, idx) => (
+                      <div key={idx}>{error}</div>
+                    ))}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+          </TabsContent>
+
+          <TabsContent value="versions" className="space-y-4 mt-4">
+            <div className="text-sm text-muted-foreground mb-4">
+              Manage control panel versions and configurations.
+            </div>
+            <SharedAddControlButton variant="outline" className="w-full gap-2" />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

@@ -1,56 +1,24 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T22:52:43.187Z",
-  "summary": "Core requested changes appear implemented: runtime-mode buttons use pointer events with cancel/leave handling; button events now include a controlName/label field end-to-end (frontend emit → backend persistence → recent-events query) and the Recent Signals UI displays the name alongside binaryCode. The diff also includes several unrelated UI/layout enhancements (e.g., slider/radio orientation, layout serialization updates, and screen/header behavior changes) that were not requested.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-11T23:26:15.611Z",
+  "summary": "SharedAddControlButton was updated to gate opening the Add Control modal on (mode===edit && isInitialized && !isLoading), show a loading spinner during layout loading, and provide disabled-state tooltips via a wrapper element so the tooltip can trigger even when the underlying button is disabled. However, the diff summary does not provide evidence that both the header Add Control button and the Import/Export Versions-tab button are actually using this shared component/implementation as required.",
+  "missing_requirements": [
     {
-      "description": "Added backend state migration module and migration wiring, expanding persisted schema beyond the explicitly requested event changes.",
-      "reason": "BuildRequest did not ask for a migration framework/module; only required that backend persist and return button name + binaryCode for events.",
+      "id": "REQ-1",
+      "requirement": "Header and Versions-tab “Add Control” buttons both use the shared implementation and behave identically.",
+      "reason": "Only SharedAddControlButton.tsx changes are shown. The diff summary does not include the header button implementation or confirm that both the header and Versions tab are wired to use SharedAddControlButton (or that both were updated/reverted together).",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Introduced optional controlName on backend Layout/Control schema (not just Event records).",
-      "reason": "REQ-2 only requires event logging to include button name; it does not request altering stored layout/control schema to include controlName.",
-      "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "description": "Added/expanded slider and radio orientation support (sliderIsVertical, radioGroupIsVertical) and related validation/defaults/inspector updates.",
-      "reason": "Explicit non-goals include not changing non-button controls beyond what’s required for the updated event schema; orientation features are unrelated to button press logging.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/types/controlPanel.ts, frontend/src/lib/controlDefaults.ts, frontend/src/lib/layoutSerialization.ts, frontend/src/components/control-panel/InspectorPanel.tsx)"
-      ]
-    },
-    {
-      "description": "Changed ControlPanelScreen header behavior to render CreateControlButton unconditionally and adjusted fullscreen targeting behavior.",
-      "reason": "Not requested by any REQ; unrelated to runtime button pointer interactions and event logging/display requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/screens/ControlPanelScreen.tsx)"
-      ]
-    },
-    {
-      "description": "Added console logging for button presses (name + binary code) in the ControlRenderer.",
-      "reason": "REQ-2 requires persistence in the backend event log and inclusion in recent-events queries/UI; console logging was not requested.",
-      "evidence": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx"
+        "frontend/src/components/control-panel/SharedAddControlButton.tsx",
+        "frontend-file-summaries.txt (mentions ImportExportPanel uses shared button, but no actual diff for header/ImportExportPanel wiring)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "hallucinated_features": [],
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/control-panel/ControlRenderer.tsx",
-    "frontend/src/components/control-panel/RecentSignalsPanel.tsx",
-    "frontend/src/hooks/useSignalEmitter.ts",
+    "frontend/src/components/control-panel/SharedAddControlButton.tsx",
     "project_state.json"
   ]
 }

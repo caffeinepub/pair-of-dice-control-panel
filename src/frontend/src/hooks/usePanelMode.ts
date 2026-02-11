@@ -1,15 +1,16 @@
 import { useState, useCallback, useEffect } from 'react';
+import { safeLocalStorageGet, safeLocalStorageSet } from '@/lib/safeBrowser';
 
 export type PanelMode = 'edit' | 'runtime';
 
 export function usePanelMode() {
   const [mode, setMode] = useState<PanelMode>(() => {
-    const stored = localStorage.getItem('panelMode');
-    return (stored as PanelMode) || 'edit';
+    const stored = safeLocalStorageGet('panelMode', 'edit');
+    return (stored === 'edit' || stored === 'runtime') ? stored : 'edit';
   });
 
   useEffect(() => {
-    localStorage.setItem('panelMode', mode);
+    safeLocalStorageSet('panelMode', mode);
   }, [mode]);
 
   const toggleMode = useCallback(() => {

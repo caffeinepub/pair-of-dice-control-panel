@@ -1,45 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Runtime mode should support mouse and touch input for button presses, and log each press with the button's binary code and name.",
+  "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Request to revert the add-control button to the last known working version (regression suspected)."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-runtime-mode-button-interactions-so-a-button-press-can-be-triggered-reliably-via-either-mouse-or-touch-input-e-g-using-pointer-events-and-does-not-require-edit-mode-to-be-off",
-      "title": "Update runtime-mode button interactions so a button press can be triggered reliably via either mouse or touch input (e.g., using Pointer Events) and does not require edit mode to be off.",
+      "id": "feature-restore-the-add-control-button-behavior-to-the-last-known-working-state-so-that-when-the-panel-is-in-edit-mode-and-the-control-layout-is-initialized-and-not-loading-clicking-the-button-reliably-opens-the-add-control-modal-both-in-the-header-and-in-the-import-export-panel-versions-tab",
+      "title": "Restore the “Add Control” button behavior to the last known working state so that, when the panel is in Edit mode and the control layout is initialized (and not loading), clicking the button reliably opens the Add Control modal (both in the header and in the Import/Export panel “Versions” tab).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-when-a-runtime-mode-button-is-pushed-log-an-event-that-includes-at-minimum-the-button-s-binary-code-and-the-button-s-name-use-the-control-s-label-as-the-name-ensure-this-information-is-persisted-in-the-backend-event-log-and-returned-by-recent-events-queries",
-      "title": "When a runtime-mode button is pushed, log an event that includes (at minimum) the button's binary code and the button's name (use the control's label as the name). Ensure this information is persisted in the backend event log and returned by recent-events queries.",
+      "id": "feature-revert-repair-the-add-control-button-s-disabled-loading-ux-so-it-matches-the-last-working-version-the-button-is-disabled-when-not-allowed-to-add-controls-shows-a-loading-spinner-while-the-layout-is-loading-and-displays-a-visible-tooltip-explaining-why-it-is-disabled-e-g-runtime-mode-initializing-loading",
+      "title": "Revert/repair the Add Control button’s disabled/loading UX so it matches the last working version: the button is disabled when not allowed to add controls, shows a loading spinner while the layout is loading, and displays a visible tooltip explaining why it is disabled (e.g., runtime mode, initializing, loading).",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-update-the-recent-signals-ui-to-display-the-button-name-label-alongside-the-binary-code-for-logged-button-press-events-so-users-can-see-both-in-the-log",
-      "title": "Update the Recent Signals UI to display the button name (label) alongside the binary code for logged button press events, so users can see both in the log.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "In runtime mode, allow buttons to be pressed via mouse or touch input and log the button's binary code and name on press.",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
-  "projectName": "Enable mouse/touch button presses in runtime mode and log button binary code + name",
+  "new_feature_requests": [],
+  "projectName": "Revert Add Control button behavior to last known working state",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

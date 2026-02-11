@@ -9,6 +9,7 @@ import { CreateControlButton } from '@/components/control-panel/CreateControlBut
 import { FullscreenToggleButton } from '@/components/control-panel/FullscreenToggleButton';
 import { ControlLayoutProvider } from '@/components/control-panel/ControlLayoutProvider';
 import { usePanelMode } from '@/hooks/usePanelMode';
+import { safeGetHostname } from '@/lib/safeBrowser';
 import { SiX } from 'react-icons/si';
 
 export function ControlPanelScreen() {
@@ -71,7 +72,7 @@ export function ControlPanelScreen() {
               © {new Date().getFullYear()} Built with ❤️ using{' '}
               <a
                 href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(
-                  window.location.hostname
+                  safeGetHostname()
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
