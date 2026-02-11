@@ -12,6 +12,7 @@ export interface Control {
     id: string;
     controlType: string;
     radioOptions?: Array<string>;
+    radioGroupIsVertical?: boolean;
     binaryCode: string;
 }
 export interface Layout {
@@ -28,6 +29,7 @@ export interface backendInterface {
     emitEvent(controlId: string, controlType: string, value: string, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
+    getRadioGroupLayout(): Promise<boolean>;
     getRecentEvents(): Promise<Array<Event>>;
     saveLayout(layout: Layout): Promise<void>;
 }

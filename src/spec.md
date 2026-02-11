@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Ensure newly created controls immediately appear in the Control Panel workspace and all control-panel UI stays in sync via a shared control layout state.
+**Goal:** Improve Radio Group controls with larger clickable option targets, configurable orientation, and selection events that appear in Recent Signals.
 
 **Planned changes:**
-- Introduce a shared, single source of truth for control layout and selection state (e.g., a React Context provider) used across Workspace, AddControlModal/CreateControlButton, InspectorPanel, DragController, ControlRenderer, and Import/Export.
-- Update control creation so “Add Control” -> “Create” appends the new control into the shared state, causing an immediate render in the workspace and automatic selection in the Inspector.
-- Ensure drag/move and Inspector edits both read/write the same shared state so position and property updates reflect immediately across the workspace and Inspector.
-- Add minimal defensive checks and user feedback in AddControlModal so creation cannot silently “succeed” if shared state is missing/uninitialized (show an English error message and do not close the modal on failure).
+- Update the Radio Group renderer so each option’s full visual button area is clickable in Runtime mode, while keeping existing selected/unselected styling and maintaining Edit mode non-interactivity.
+- Add a per-radio-control orientation setting (Vertical/Horizontal), persist it via backend layout saving/loading, and render options accordingly (column vs row).
+- Expose the orientation setting in the Inspector for existing Radio Group controls and in the Add Control modal for new Radio Group controls, using English labels and updating the workspace preview immediately.
+- Emit a selection event when a radio option is chosen in Runtime mode so it appears in Recent Signals with controlId, controlType = "radio", and a value representing the selected option, using the option’s binary code for the emitted signal.
 
-**User-visible outcome:** In Edit mode, creating a control makes it appear instantly in the workspace as a usable control and be selected in the Inspector; moving or editing it stays synchronized everywhere, and failures show a clear error instead of silently doing nothing.
+**User-visible outcome:** Users can click anywhere on a radio option’s button area to select it (in Runtime), choose whether radio options display vertically or horizontally (and have it persist), and see radio selections logged in Recent Signals with the selected option’s binary-coded value.

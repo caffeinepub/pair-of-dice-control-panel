@@ -94,6 +94,7 @@ export interface Control {
     id: string;
     controlType: string;
     radioOptions?: Array<string>;
+    radioGroupIsVertical?: boolean;
     binaryCode: string;
 }
 export interface Layout {
@@ -110,6 +111,7 @@ export interface backendInterface {
     emitEvent(controlId: string, controlType: string, value: string, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
+    getRadioGroupLayout(): Promise<boolean>;
     getRecentEvents(): Promise<Array<Event>>;
     saveLayout(layout: Layout): Promise<void>;
 }
@@ -158,6 +160,20 @@ export class Backend implements backendInterface {
             return from_candid_Layout_n1(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getRadioGroupLayout(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getRadioGroupLayout();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getRadioGroupLayout();
+            return result;
+        }
+    }
     async getRecentEvents(): Promise<Array<Event>> {
         if (this.processError) {
             try {
@@ -175,14 +191,14 @@ export class Backend implements backendInterface {
     async saveLayout(arg0: Layout): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveLayout(to_candid_Layout_n7(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveLayout(to_candid_Layout_n8(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveLayout(to_candid_Layout_n7(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveLayout(to_candid_Layout_n8(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -194,6 +210,9 @@ function from_candid_Layout_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint
     return from_candid_record_n2(_uploadFile, _downloadFile, value);
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [Array<string>]): Array<string> | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_record_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -209,58 +228,64 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
     id: string;
     controlType: string;
     radioOptions: [] | [Array<string>];
+    radioGroupIsVertical: [] | [boolean];
     binaryCode: string;
 }): {
     id: string;
     controlType: string;
     radioOptions?: Array<string>;
+    radioGroupIsVertical?: boolean;
     binaryCode: string;
 } {
     return {
         id: value.id,
         controlType: value.controlType,
         radioOptions: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.radioOptions)),
+        radioGroupIsVertical: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.radioGroupIsVertical)),
         binaryCode: value.binaryCode
     };
 }
 function from_candid_vec_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Control>): Array<Control> {
     return value.map((x)=>from_candid_Control_n4(_uploadFile, _downloadFile, x));
 }
-function to_candid_Control_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Control): _Control {
-    return to_candid_record_n11(_uploadFile, _downloadFile, value);
+function to_candid_Control_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Control): _Control {
+    return to_candid_record_n12(_uploadFile, _downloadFile, value);
 }
-function to_candid_Layout_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Layout): _Layout {
-    return to_candid_record_n8(_uploadFile, _downloadFile, value);
+function to_candid_Layout_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Layout): _Layout {
+    return to_candid_record_n9(_uploadFile, _downloadFile, value);
 }
-function to_candid_record_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
     controlType: string;
     radioOptions?: Array<string>;
+    radioGroupIsVertical?: boolean;
     binaryCode: string;
 }): {
     id: string;
     controlType: string;
     radioOptions: [] | [Array<string>];
+    radioGroupIsVertical: [] | [boolean];
     binaryCode: string;
 } {
     return {
         id: value.id,
         controlType: value.controlType,
         radioOptions: value.radioOptions ? candid_some(value.radioOptions) : candid_none(),
+        radioGroupIsVertical: value.radioGroupIsVertical ? candid_some(value.radioGroupIsVertical) : candid_none(),
         binaryCode: value.binaryCode
     };
 }
-function to_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     controls: Array<Control>;
 }): {
     controls: Array<_Control>;
 } {
     return {
-        controls: to_candid_vec_n9(_uploadFile, _downloadFile, value.controls)
+        controls: to_candid_vec_n10(_uploadFile, _downloadFile, value.controls)
     };
 }
-function to_candid_vec_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<Control>): Array<_Control> {
-    return value.map((x)=>to_candid_Control_n10(_uploadFile, _downloadFile, x));
+function to_candid_vec_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<Control>): Array<_Control> {
+    return value.map((x)=>to_candid_Control_n11(_uploadFile, _downloadFile, x));
 }
 export interface CreateActorOptions {
     agent?: Agent;

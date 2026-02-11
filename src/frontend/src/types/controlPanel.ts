@@ -23,6 +23,7 @@ export interface ControlConfig {
   sliderMax?: number;
   radioOptions?: RadioOption[];
   radioSelected?: string;
+  radioGroupIsVertical?: boolean;
 }
 
 export interface LayoutConfig {

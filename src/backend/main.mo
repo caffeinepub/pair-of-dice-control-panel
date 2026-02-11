@@ -1,12 +1,14 @@
 import List "mo:core/List";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import Array "mo:core/Array";
 import Order "mo:core/Order";
 import Map "mo:core/Map";
+import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   type Event = {
     timestamp : Time.Time;
@@ -21,6 +23,7 @@ actor {
     controlType : Text;
     binaryCode : Text;
     radioOptions : ?[Text];
+    radioGroupIsVertical : ?Bool;
   };
 
   type Layout = {
@@ -59,6 +62,10 @@ actor {
     currentLayout := layout;
   };
 
+  public query ({ caller }) func getRadioGroupLayout() : async Bool {
+    true;
+  };
+
   public shared ({ caller }) func emitEvent(controlId : Text, controlType : Text, value : Text, binaryCode : Text) : async () {
     let event : Event = {
       timestamp = Time.now();
@@ -86,3 +93,4 @@ actor {
     filteredEvents.toArray();
   };
 };
+

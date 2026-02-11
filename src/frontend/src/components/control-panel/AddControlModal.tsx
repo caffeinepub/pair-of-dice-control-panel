@@ -1,338 +1,230 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Card } from '@/components/ui/card';
-import { Plus, Trash2 } from 'lucide-react';
-import type { ControlType, RadioOption } from '@/types/controlPanel';
-import { getControlDefaults } from '@/lib/controlDefaults';
+import { useControlLayout } from '@/hooks/useControlLayout';
 import { validateBinaryCode, generateDefaultBinaryCode } from '@/lib/binaryCode';
+import { getControlDefaults } from '@/lib/controlDefaults';
+import type { ControlType, RadioOption } from '@/types/controlPanel';
+import { toast } from 'sonner';
+import { Plus, Trash2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 interface AddControlModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateControl: (config: ControlDraft) => boolean;
-  validateId: (id: string) => string | null;
 }
 
-export interface ControlDraft {
-  id: string;
-  label: string;
-  controlType: ControlType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-  binaryCode: string;
-  sliderMin?: number;
-  sliderMax?: number;
-  radioOptions?: RadioOption[];
-}
+export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
+  const { createControlWithConfig, validateId } = useControlLayout();
 
-export function AddControlModal({ open, onOpenChange, onCreateControl, validateId }: AddControlModalProps) {
-  const [draft, setDraft] = useState<ControlDraft>(getInitialDraft());
-  const [idError, setIdError] = useState<string | null>(null);
-  const [binaryError, setBinaryError] = useState<string | null>(null);
+  const [controlType, setControlType] = useState<ControlType>('button');
+  const [id, setId] = useState('');
+  const [label, setLabel] = useState('');
+  const [binaryCode, setBinaryCode] = useState('');
+  const [sliderMin, setSliderMin] = useState(0);
+  const [sliderMax, setSliderMax] = useState(100);
+  const [radioOptions, setRadioOptions] = useState<RadioOption[]>([
+    { key: 'option_1', label: 'Option 1', binaryCode: '0001' },
+    { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
+  ]);
+  const [radioGroupIsVertical, setRadioGroupIsVertical] = useState(true);
 
-  // Reset draft when modal opens
-  useEffect(() => {
-    if (open) {
-      setDraft(getInitialDraft());
-      setIdError(null);
-      setBinaryError(null);
-    }
-  }, [open]);
-
-  function getInitialDraft(): ControlDraft {
+  const resetForm = () => {
     const newId = `control_${Date.now()}`;
-    const defaults = getControlDefaults('button');
-    return {
-      id: newId,
-      label: defaults.label,
-      controlType: 'button',
-      x: defaults.x,
-      y: defaults.y,
-      width: defaults.width,
-      height: defaults.height,
-      color: defaults.color,
-      binaryCode: generateDefaultBinaryCode(newId),
-    };
-  }
-
-  const handleIdChange = (newId: string) => {
-    setDraft((prev) => ({ ...prev, id: newId }));
-    const error = validateId(newId);
-    setIdError(error);
+    setId(newId);
+    setLabel('New Control');
+    setBinaryCode(generateDefaultBinaryCode(newId));
+    setControlType('button');
+    setSliderMin(0);
+    setSliderMax(100);
+    setRadioOptions([
+      { key: 'option_1', label: 'Option 1', binaryCode: '0001' },
+      { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
+    ]);
+    setRadioGroupIsVertical(true);
   };
 
-  const handleBinaryCodeChange = (code: string) => {
-    setDraft((prev) => ({ ...prev, binaryCode: code }));
-    const error = validateBinaryCode(code);
-    setBinaryError(error);
-  };
-
-  const handleTypeChange = (newType: ControlType) => {
-    const defaults = getControlDefaults(newType);
-    setDraft((prev) => ({
-      ...prev,
-      controlType: newType,
-      width: defaults.width,
-      height: defaults.height,
-      sliderMin: 'sliderMin' in defaults ? defaults.sliderMin : undefined,
-      sliderMax: 'sliderMax' in defaults ? defaults.sliderMax : undefined,
-      radioOptions: 'radioOptions' in defaults ? defaults.radioOptions : undefined,
-    }));
-  };
-
-  const handleAddRadioOption = () => {
-    const newKey = `option_${Date.now()}`;
-    const newOption: RadioOption = {
-      key: newKey,
-      label: 'New Option',
-      binaryCode: generateDefaultBinaryCode(newKey),
-    };
-    setDraft((prev) => ({
-      ...prev,
-      radioOptions: [...(prev.radioOptions || []), newOption],
-    }));
-  };
-
-  const handleUpdateRadioOption = (key: string, updates: Partial<RadioOption>) => {
-    setDraft((prev) => ({
-      ...prev,
-      radioOptions: prev.radioOptions?.map((opt) => (opt.key === key ? { ...opt, ...updates } : opt)),
-    }));
-  };
-
-  const handleDeleteRadioOption = (key: string) => {
-    setDraft((prev) => ({
-      ...prev,
-      radioOptions: prev.radioOptions?.filter((opt) => opt.key !== key),
-    }));
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      resetForm();
+    }
+    onOpenChange(newOpen);
   };
 
   const handleCreate = () => {
-    const idValidation = validateId(draft.id);
-    const binaryValidation = validateBinaryCode(draft.binaryCode);
-
-    if (idValidation) {
-      setIdError(idValidation);
+    const idError = validateId(id);
+    if (idError) {
+      toast.error(idError);
       return;
     }
 
-    if (binaryValidation) {
-      setBinaryError(binaryValidation);
+    const binaryError = validateBinaryCode(binaryCode);
+    if (binaryError) {
+      toast.error(binaryError);
       return;
     }
 
-    // Validate radio options if radio type
-    if (draft.controlType === 'radio' && draft.radioOptions) {
-      for (const option of draft.radioOptions) {
-        const optionBinaryError = validateBinaryCode(option.binaryCode);
-        if (optionBinaryError) {
-          setBinaryError(`Radio option "${option.label}": ${optionBinaryError}`);
+    if (controlType === 'radio') {
+      for (const option of radioOptions) {
+        const optionError = validateBinaryCode(option.binaryCode);
+        if (optionError) {
+          toast.error(`Radio option "${option.label}": ${optionError}`);
           return;
         }
       }
     }
 
-    const success = onCreateControl(draft);
+    const defaults = getControlDefaults(controlType);
+    const config: any = {
+      id,
+      label,
+      controlType,
+      x: defaults.x,
+      y: defaults.y,
+      width: defaults.width,
+      height: defaults.height,
+      color: defaults.color,
+      binaryCode,
+    };
+
+    if (controlType === 'slider') {
+      config.sliderMin = sliderMin;
+      config.sliderMax = sliderMax;
+    }
+
+    if (controlType === 'radio') {
+      config.radioOptions = radioOptions;
+      config.radioGroupIsVertical = radioGroupIsVertical;
+    }
+
+    const success = createControlWithConfig(config);
     if (success) {
       onOpenChange(false);
     }
   };
 
+  const handleAddRadioOption = () => {
+    const newKey = `option_${Date.now()}`;
+    setRadioOptions([
+      ...radioOptions,
+      {
+        key: newKey,
+        label: 'New Option',
+        binaryCode: generateDefaultBinaryCode(newKey),
+      },
+    ]);
+  };
+
+  const handleUpdateRadioOption = (key: string, updates: Partial<RadioOption>) => {
+    setRadioOptions(radioOptions.map((opt) => (opt.key === key ? { ...opt, ...updates } : opt)));
+  };
+
+  const handleDeleteRadioOption = (key: string) => {
+    setRadioOptions(radioOptions.filter((opt) => opt.key !== key));
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Control</DialogTitle>
-          <DialogDescription>Configure the properties for your new control.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Basic Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Basic</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="modal-id">ID</Label>
-                <Input
-                  id="modal-id"
-                  value={draft.id}
-                  onChange={(e) => handleIdChange(e.target.value)}
-                  className={idError ? 'border-destructive' : ''}
-                />
-                {idError && <p className="text-xs text-destructive">{idError}</p>}
-              </div>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="new-id">ID</Label>
+            <Input id="new-id" value={id} onChange={(e) => setId(e.target.value)} />
+          </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="new-label">Label</Label>
+            <Input id="new-label" value={label} onChange={(e) => setLabel(e.target.value)} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="new-type">Control Type</Label>
+            <Select value={controlType} onValueChange={(value) => setControlType(value as ControlType)}>
+              <SelectTrigger id="new-type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="button">Button</SelectItem>
+                <SelectItem value="toggle">Toggle</SelectItem>
+                <SelectItem value="slider">Slider</SelectItem>
+                <SelectItem value="radio">Radio Group</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="new-binaryCode">Binary Code</Label>
+            <Input
+              id="new-binaryCode"
+              value={binaryCode}
+              onChange={(e) => setBinaryCode(e.target.value)}
+              placeholder="e.g., 10101010"
+            />
+          </div>
+
+          {controlType === 'slider' && (
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="modal-label">Label</Label>
+                <Label htmlFor="new-sliderMin">Min</Label>
                 <Input
-                  id="modal-label"
-                  value={draft.label}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, label: e.target.value }))}
+                  id="new-sliderMin"
+                  type="number"
+                  value={sliderMin}
+                  onChange={(e) => setSliderMin(Number(e.target.value))}
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="modal-type">Control Type</Label>
-                <Select value={draft.controlType} onValueChange={handleTypeChange}>
-                  <SelectTrigger id="modal-type">
+                <Label htmlFor="new-sliderMax">Max</Label>
+                <Input
+                  id="new-sliderMax"
+                  type="number"
+                  value={sliderMax}
+                  onChange={(e) => setSliderMax(Number(e.target.value))}
+                />
+              </div>
+            </div>
+          )}
+
+          {controlType === 'radio' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="new-radioOrientation">Orientation</Label>
+                <Select
+                  value={radioGroupIsVertical ? 'vertical' : 'horizontal'}
+                  onValueChange={(value) => setRadioGroupIsVertical(value === 'vertical')}
+                >
+                  <SelectTrigger id="new-radioOrientation">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="button">Button</SelectItem>
-                    <SelectItem value="toggle">Toggle</SelectItem>
-                    <SelectItem value="slider">Slider</SelectItem>
-                    <SelectItem value="radio">Radio Group</SelectItem>
+                    <SelectItem value="vertical">Vertical</SelectItem>
+                    <SelectItem value="horizontal">Horizontal</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Layout Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Layout</h3>
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="modal-x">X Position</Label>
-                <Input
-                  id="modal-x"
-                  type="number"
-                  value={draft.x}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, x: Number(e.target.value) }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="modal-y">Y Position</Label>
-                <Input
-                  id="modal-y"
-                  type="number"
-                  value={draft.y}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, y: Number(e.target.value) }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="modal-width">Width</Label>
-                <Input
-                  id="modal-width"
-                  type="number"
-                  value={draft.width}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, width: Number(e.target.value) }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="modal-height">Height</Label>
-                <Input
-                  id="modal-height"
-                  type="number"
-                  value={draft.height}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, height: Number(e.target.value) }))}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Appearance Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Appearance</h3>
-            <div className="space-y-2">
-              <Label htmlFor="modal-color">Color</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="modal-color"
-                  type="color"
-                  value={draft.color}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, color: e.target.value }))}
-                  className="h-10 w-20"
-                />
-                <Input
-                  value={draft.color}
-                  onChange={(e) => setDraft((prev) => ({ ...prev, color: e.target.value }))}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Signal Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Signal</h3>
-            <div className="space-y-2">
-              <Label htmlFor="modal-binaryCode">Binary Code</Label>
-              <Input
-                id="modal-binaryCode"
-                value={draft.binaryCode}
-                onChange={(e) => handleBinaryCodeChange(e.target.value)}
-                className={binaryError ? 'border-destructive' : ''}
-                placeholder="e.g., 10101010"
-              />
-              {binaryError && <p className="text-xs text-destructive">{binaryError}</p>}
-            </div>
-          </div>
-
-          {/* Type-specific settings */}
-          {draft.controlType === 'slider' && (
-            <>
-              <Separator />
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-foreground">Slider Settings</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="modal-sliderMin">Min</Label>
-                    <Input
-                      id="modal-sliderMin"
-                      type="number"
-                      value={draft.sliderMin ?? 0}
-                      onChange={(e) => setDraft((prev) => ({ ...prev, sliderMin: Number(e.target.value) }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="modal-sliderMax">Max</Label>
-                    <Input
-                      id="modal-sliderMax"
-                      type="number"
-                      value={draft.sliderMax ?? 100}
-                      onChange={(e) => setDraft((prev) => ({ ...prev, sliderMax: Number(e.target.value) }))}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {draft.controlType === 'radio' && (
-            <>
-              <Separator />
-              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">Radio Options</h3>
+                  <Label>Radio Options</Label>
                   <Button size="sm" variant="outline" onClick={handleAddRadioOption}>
                     <Plus className="h-4 w-4 mr-1" />
-                    Add Option
+                    Add
                   </Button>
                 </div>
                 <div className="space-y-3">
-                  {draft.radioOptions?.map((option) => (
+                  {radioOptions.map((option) => (
                     <Card key={option.key} className="p-3">
                       <div className="space-y-2">
                         <Input
@@ -344,7 +236,6 @@ export function AddControlModal({ open, onOpenChange, onCreateControl, validateI
                           placeholder="Binary Code"
                           value={option.binaryCode}
                           onChange={(e) => handleUpdateRadioOption(option.key, { binaryCode: e.target.value })}
-                          className={validateBinaryCode(option.binaryCode) ? 'border-destructive' : ''}
                         />
                         <Button
                           size="sm"
@@ -368,9 +259,7 @@ export function AddControlModal({ open, onOpenChange, onCreateControl, validateI
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} variant="destructive">
-            Create Control
-          </Button>
+          <Button onClick={handleCreate}>Create</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -76,6 +76,39 @@
         border-color: white !important;
     }
 
+    /* Fullscreen workspace region styling */
+    .control-workspace-region:fullscreen {
+        width: 100vw;
+        height: 100vh;
+        background: oklch(var(--background));
+        overflow: auto;
+        padding: 1.5rem;
+    }
+
+    .control-workspace-region:-webkit-full-screen {
+        width: 100vw;
+        height: 100vh;
+        background: oklch(var(--background));
+        overflow: auto;
+        padding: 1.5rem;
+    }
+
+    .control-workspace-region:-moz-full-screen {
+        width: 100vw;
+        height: 100vh;
+        background: oklch(var(--background));
+        overflow: auto;
+        padding: 1.5rem;
+    }
+
+    .control-workspace-region:-ms-fullscreen {
+        width: 100vw;
+        height: 100vh;
+        background: oklch(var(--background));
+        overflow: auto;
+        padding: 1.5rem;
+    }
+
     /* Custom scrollbar for dark theme */
     ::-webkit-scrollbar {
         width: 8px;

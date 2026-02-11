@@ -26,13 +26,24 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
     enabled: !!actor && !isActorFetching,
   });
 
-  // Sync local controls with query data
+  // Sync local controls with query data and mark as initialized
   useEffect(() => {
     if (layoutQuery.data) {
       setLocalControls(layoutQuery.data.controls);
       setIsInitialized(true);
     }
   }, [layoutQuery.data]);
+
+  // Also mark as initialized if query completes with error or if actor becomes available
+  // This ensures we don't stay stuck in uninitialized state
+  useEffect(() => {
+    if (actor && !isActorFetching) {
+      // If query has run (success or error), mark as initialized
+      if (layoutQuery.isFetched || layoutQuery.isError) {
+        setIsInitialized(true);
+      }
+    }
+  }, [actor, isActorFetching, layoutQuery.isFetched, layoutQuery.isError]);
 
   // Save layout mutation
   const saveLayoutMutation = useMutation({
@@ -79,6 +90,7 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
     sliderMin?: number;
     sliderMax?: number;
     radioOptions?: Array<{ key: string; label: string; binaryCode: string }>;
+    radioGroupIsVertical?: boolean;
   }): boolean => {
     if (!isInitialized) {
       toast.error('Control layout not initialized. Please wait and try again.');
@@ -141,7 +153,7 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
     validateId,
     saveLayout,
     applyImportedLayout,
-    isLoading: layoutQuery.isLoading,
+    isLoading: layoutQuery.isLoading || isActorFetching,
     isSaving: saveLayoutMutation.isPending,
     isInitialized,
   };
@@ -163,12 +175,16 @@ function deserializeLayout(backendLayout: Layout): LayoutConfig {
       }));
     }
 
+    // Parse radio group orientation (default to true/vertical if not present for backward compatibility)
+    const radioGroupIsVertical = ctrl.radioGroupIsVertical !== undefined ? ctrl.radioGroupIsVertical : true;
+
     return {
       ...defaults,
       id: ctrl.id,
       controlType: ctrl.controlType as any,
       binaryCode: ctrl.binaryCode,
       radioOptions,
+      radioGroupIsVertical,
     };
   });
 
@@ -181,6 +197,7 @@ function serializeLayout(layout: LayoutConfig): Layout {
     controlType: ctrl.controlType,
     binaryCode: ctrl.binaryCode,
     radioOptions: ctrl.radioOptions?.map((opt) => opt.label),
+    radioGroupIsVertical: ctrl.radioGroupIsVertical,
   }));
 
   return { controls };

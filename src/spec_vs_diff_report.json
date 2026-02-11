@@ -1,40 +1,37 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T21:45:11.523Z",
-  "summary": "Diff introduces a shared control-layout context via a new ControlLayoutProvider and useControlLayout hook, and wires CreateControlButton/AddControlModal to create controls through shared state with an initialization guard + toast feedback. However, the diff summary does not provide direct evidence that all other control-panel components (Workspace, InspectorPanel, DragController, ControlRenderer, ImportExport) were updated to consume/mutate this shared source of truth, which is central to REQ-1 acceptance criteria.",
-  "missing_requirements": [
+  "generatedAt": "2026-02-11T22:25:41.752Z",
+  "summary": "Most requested radio-group changes appear implemented: per-control orientation is added to types/defaults and saved layout, radio selection emits events with option label + binary code, and UI changes are described for full-area clickable options. However, there are a couple of changes not requested (notably a new backend query).",
+  "missing_requirements": [],
+  "hallucinated_features": [
     {
-      "id": "REQ-1",
-      "requirement": "All control-panel components (Workspace, InspectorPanel, DragController, ControlRenderer, Import/Export) must read and mutate the same shared control-layout state, ensuring no desync between workspace rendering, inspector selection/edits, drag updates, and import/export/save.",
-      "reason": "While ControlPanelScreen is wrapped in ControlLayoutProvider and CreateControlButton uses useControlLayout, the provided diff summary does not show changes in Workspace/InspectorPanel/DragController/ControlRenderer/ImportExportPanel to actually use the shared context state. Without those changes being evidenced, the key AC items (workspace renders newly created control, shared selection, drag updates reflected in inspector, inspector edits reflected in workspace, import/export/save using same list) are not verifiably implemented.",
+      "description": "Added backend query method `getRadioGroupLayout()` returning `Bool` (always `true`).",
+      "reason": "BuildRequest did not request any new backend API for querying radio layout/orientation; orientation is expected to persist via the existing layout save/load.",
       "evidence": [
-        "frontend/src/screens/ControlPanelScreen.tsx",
-        "frontend/src/components/control-panel/CreateControlButton.tsx",
-        "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
-        "frontend/src/hooks/useControlLayout.ts"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-2",
-      "requirement": "If control creation fails due to missing/uninitialized shared-state (e.g., provider missing), show an English error and do not silently succeed; modal should remain open or clearly indicate failure.",
-      "reason": "The provider includes an isInitialized guard with an error toast and boolean return, but the diff does not show handling for the “provider missing” case (useControlLayout currently throws). Also, AddControlModal’s actual close/keep-open behavior on a false return is described in a truncated section, so it cannot be confirmed from the included code excerpt.",
+      "description": "Create Control button now includes additional gating/tooltips and auto-close behavior based on initialization/runtime mode.",
+      "reason": "BuildRequest scope was limited to radio group UI/orientation/event logging; this is a broader UX change unrelated to radio groups.",
       "evidence": [
-        "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
-        "frontend/src/hooks/useControlLayout.ts",
-        "frontend/src/components/control-panel/AddControlModal.tsx"
+        "frontend/src/components/control-panel/CreateControlButton.tsx"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.62,
+  "confidence": 0.64,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
     "frontend/src/components/control-panel/AddControlModal.tsx",
     "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
     "frontend/src/components/control-panel/CreateControlButton.tsx",
-    "frontend/src/hooks/useControlLayout.ts",
-    "frontend/src/screens/ControlPanelScreen.tsx",
+    "frontend/src/components/control-panel/InspectorPanel.tsx",
+    "frontend/src/lib/controlDefaults.ts",
+    "frontend/src/types/controlPanel.ts",
     "project_state.json"
   ]
 }

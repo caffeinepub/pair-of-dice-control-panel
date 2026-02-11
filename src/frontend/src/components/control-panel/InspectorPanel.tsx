@@ -248,6 +248,21 @@ export function InspectorPanel() {
           <>
             <Separator />
             <div className="space-y-2">
+              <Label htmlFor="radioOrientation">Orientation</Label>
+              <Select
+                value={selectedControl.radioGroupIsVertical !== false ? 'vertical' : 'horizontal'}
+                onValueChange={(value) => updateControl(selectedControl.id, { radioGroupIsVertical: value === 'vertical' })}
+              >
+                <SelectTrigger id="radioOrientation">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="vertical">Vertical</SelectItem>
+                  <SelectItem value="horizontal">Horizontal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Radio Options</Label>
                 <Button size="sm" variant="outline" onClick={handleAddRadioOption}>

@@ -14,6 +14,7 @@ export interface Control {
   'id' : string,
   'controlType' : string,
   'radioOptions' : [] | [Array<string>],
+  'radioGroupIsVertical' : [] | [boolean],
   'binaryCode' : string,
 }
 export interface Event {
@@ -29,6 +30,7 @@ export interface _SERVICE {
   'emitEvent' : ActorMethod<[string, string, string, string], undefined>,
   'getEventsByControlId' : ActorMethod<[string], Array<Event>>,
   'getLayout' : ActorMethod<[], Layout>,
+  'getRadioGroupLayout' : ActorMethod<[], boolean>,
   'getRecentEvents' : ActorMethod<[], Array<Event>>,
   'saveLayout' : ActorMethod<[Layout], undefined>,
 }

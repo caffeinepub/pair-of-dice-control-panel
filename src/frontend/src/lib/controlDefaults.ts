@@ -41,6 +41,7 @@ export function getControlDefaults(type: ControlType): Omit<ControlConfig, 'id' 
           { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
         ],
         radioSelected: 'option_1',
+        radioGroupIsVertical: true,
         height: 120,
       };
     default:

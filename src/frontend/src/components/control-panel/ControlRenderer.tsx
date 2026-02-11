@@ -45,7 +45,7 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     const option = control.radioOptions?.find((opt) => opt.key === optionKey);
     if (!option) return;
     updateControl(control.id, { radioSelected: optionKey });
-    emit(control.id, control.controlType, option.label, option.binaryCode);
+    emit(control.id, 'radio', option.label, option.binaryCode);
   };
 
   const baseClasses = cn(
@@ -129,24 +129,29 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   }
 
   if (control.controlType === 'radio') {
+    const isVertical = control.radioGroupIsVertical !== false;
+    
     return (
       <div
-        className={cn(baseClasses, 'flex-col gap-1 p-2')}
+        className={cn(baseClasses, 'flex-col gap-2 p-3')}
         style={{ backgroundColor: control.color, borderColor: control.color }}
       >
-        <span className="text-xs text-white mb-1">{control.label}</span>
-        <div className="flex flex-col gap-1 w-full">
+        <span className="text-xs text-white font-semibold">{control.label}</span>
+        <div className={cn(
+          'flex gap-2 w-full flex-1',
+          isVertical ? 'flex-col' : 'flex-row'
+        )}>
           {control.radioOptions?.map((option) => {
             const isSelected = control.radioSelected === option.key;
             return (
               <button
                 key={option.key}
                 className={cn(
-                  'rounded-lg border px-2 py-1 text-sm transition-all',
+                  'rounded-lg border px-3 py-2 text-sm font-medium transition-all flex-1',
                   isSelected && !isEditMode
                     ? 'bg-white text-black border-white'
                     : 'bg-transparent text-white border-white/30',
-                  !isEditMode && 'hover:border-white/60'
+                  !isEditMode && 'hover:border-white/60 hover:bg-white/10'
                 )}
                 onClick={() => handleRadioSelect(option.key)}
                 disabled={isEditMode}
