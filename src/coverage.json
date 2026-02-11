@@ -1,67 +1,55 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-10T23:36:21.486Z",
+  "generatedAt": "2026-02-11T21:45:11.526Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-11",
-        "summary": "Change the \"Add Control\" button behavior so that clicking it opens a popup/modal instead of immediately creating a default control.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/control-panel/CreateControlButton.tsx",
-          "frontend/src/components/control-panel/AddControlModal.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/control-panel/CreateControlButton.tsx",
-          "frontend/src/components/control-panel/AddControlModal.tsx"
-        ]
-      },
-      {
-        "id": "REQ-12",
-        "summary": "In the \"Add Control\" popup/modal, provide clearly separated sections that allow configuring the new control with the same editable properties currently supported in the Inspector (ID, Label, Control Type, Position X/Y, Size Width/Height, Color, Binary Code, and type-specific settings).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/control-panel/AddControlModal.tsx",
-          "frontend/src/lib/controlDefaults.ts",
-          "frontend/src/types/controlPanel.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/control-panel/AddControlModal.tsx"
-        ]
-      },
-      {
-        "id": "REQ-13",
-        "summary": "Implement the modal confirmation flow: when the user confirms creation, create the new control using the configured values, add it to the workspace, and select it for further editing; also fix the current issue where the user is unable to add a control.",
+        "id": "REQ-1",
+        "summary": "Fix control layout state so that creating a control from the “Add Control” modal immediately renders that new control in the Control Panel workspace (instead of only updating state local to the component that triggered creation). Implement a shared control-layout state (e.g., React Context provider) so all control-panel components (Workspace, CreateControlButton/AddControlModal, InspectorPanel, DragController, ControlRenderer, Import/Export) read and mutate the same single source of truth.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/hooks/useControlLayout.ts",
-          "frontend/src/components/control-panel/AddControlModal.tsx",
-          "frontend/src/components/control-panel/CreateControlButton.tsx"
+          "frontend/src/screens/ControlPanelScreen.tsx"
         ],
         "matchedFiles": [
           "frontend/src/hooks/useControlLayout.ts",
+          "frontend/src/screens/ControlPanelScreen.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Ensure the “Create” action in AddControlModal provides user feedback if control creation fails due to shared-state initialization issues (e.g., provider missing) and add minimal defensive checks so the modal cannot silently succeed without the control appearing in the workspace.",
+        "status": "implemented",
+        "plannedFiles": [
           "frontend/src/components/control-panel/AddControlModal.tsx",
-          "frontend/src/components/control-panel/CreateControlButton.tsx"
+          "frontend/src/components/control-panel/CreateControlButton.tsx",
+          "frontend/src/hooks/useControlLayout.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/control-panel/AddControlModal.tsx",
+          "frontend/src/components/control-panel/CreateControlButton.tsx",
+          "frontend/src/hooks/useControlLayout.ts"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/components/control-panel/AddControlModal.tsx",
+    "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
     "frontend/src/components/control-panel/CreateControlButton.tsx",
     "frontend/src/hooks/useControlLayout.ts",
+    "frontend/src/screens/ControlPanelScreen.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

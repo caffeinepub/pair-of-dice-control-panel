@@ -1,8 +1,8 @@
 {
   "frontend/src/App.tsx": "Root application component that wraps the control panel screen with ThemeProvider and Toaster for notifications.",
-  "frontend/src/screens/ControlPanelScreen.tsx": "Main screen layout with header, workspace canvas, inspector panel (edit mode), and right sidebar for signals and import/export.",
+  "frontend/src/screens/ControlPanelScreen.tsx": "Main screen layout wrapped with ControlLayoutProvider to provide shared control state to all child components (Workspace, Inspector, CreateControlButton, etc.).",
   "frontend/src/types/controlPanel.ts": "TypeScript type definitions for control configurations including button, toggle, slider, and radio group types with their specific properties.",
-  "frontend/src/hooks/useControlLayout.ts": "Custom hook managing control layout state, CRUD operations, validation, serialization/deserialization with backend, and import/export functionality; now includes createControlWithConfig method for creating fully configured controls from the modal.",
+  "frontend/src/hooks/useControlLayout.ts": "Exports the ControlLayoutContext and useControlLayout hook for accessing shared control layout state; the context interface defines all control CRUD operations, selection state, and validation methods.",
   "frontend/src/hooks/usePanelMode.ts": "Custom hook managing edit/runtime mode toggle with localStorage persistence.",
   "frontend/src/hooks/useSignalEmitter.ts": "Custom hook for emitting binary signal events to the backend when controls are interacted with.",
   "frontend/src/hooks/useRecentSignals.ts": "Custom hook for fetching recent signal events from the backend with polling support.",
@@ -18,8 +18,9 @@
   "frontend/src/components/control-panel/RecentSignalsPanel.tsx": "Panel displaying recent emitted binary signals with timestamps and metadata, with manual refresh capability.",
   "frontend/src/components/control-panel/ImportExportPanel.tsx": "UI for exporting current layout to JSON and importing layouts with validation error display.",
   "frontend/src/components/control-panel/ModeToggle.tsx": "Button component for toggling between edit and runtime modes with visual indication.",
-  "frontend/src/components/control-panel/CreateControlButton.tsx": "Button component that opens the AddControlModal dialog when clicked, allowing users to configure and create new controls instead of immediately creating a default control.",
+  "frontend/src/components/control-panel/CreateControlButton.tsx": "Button component that opens the AddControlModal and calls the shared createControlWithConfig method from context; now checks isInitialized state and returns success boolean to the modal.",
   "frontend/src/index.css": "Global styles with black/red OKLCH color system for dark theme, custom scrollbar styling, and control-specific utility classes.",
   "frontend/tailwind.config.js": "Tailwind configuration extending theme with custom border radius (xl) and maintaining OKLCH color system mappings.",
-  "frontend/src/components/control-panel/AddControlModal.tsx": "Modal dialog component for configuring new controls with sections for Basic (ID, Label, Type), Layout (X, Y, Width, Height), Appearance (Color), Signal (Binary Code), and type-specific settings (Slider min/max, Radio options list); includes validation and prevents creation on invalid input."
+  "frontend/src/components/control-panel/AddControlModal.tsx": "Modal dialog for configuring new controls; now receives a boolean return from onCreateControl to determine whether to close the modal, ensuring it stays open if creation fails due to uninitialized state.",
+  "frontend/src/components/control-panel/ControlLayoutProvider.tsx": "React Context provider component that manages the single shared control layout state, selection state, backend synchronization, and all CRUD operations; ensures all consuming components see the same state instance for immediate UI updates."
 }

@@ -1,80 +1,53 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add Control modal configuration + reliable control creation",
+  "title": "Shared Control Layout State for Immediate Workspace Rendering",
   "requirements": [
     {
-      "id": "REQ-11",
-      "summary": "Change Add Control button to open a modal instead of immediately creating a default control.",
+      "id": "REQ-1",
+      "summary": "Introduce a single shared control-layout + selection state for the whole Control Panel so newly created controls render immediately and all panels stay in sync.",
       "acceptanceCriteria": [
-        "In Edit mode, clicking the existing header button labeled \"Add Control\" opens a modal dialog.",
-        "No new control is added to the workspace until the user confirms creation from the modal.",
-        "The modal can be dismissed via an explicit Cancel action and by closing the dialog, without creating a control."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/control-panel/CreateControlButton.tsx",
-          "operation": "modify",
-          "description": "Replace the direct createControl call with local state that opens/closes an Add Control modal; keep the existing \"Add Control\" header button look/placement and ensure no control is created until modal confirmation."
-        },
-        {
-          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
-          "operation": "create",
-          "description": "Implement a modal dialog component (compose existing styling/Tailwind; do not edit files under frontend/src/components/ui) that supports open/close, Cancel, and close-button dismissal without creating a control; keep the black-and-red control-surface theme consistent. Use shadcn-ui (selected component) primitives where available by composing them (verify the component's usage instructions before implementing)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "summary": "Provide modal sections to configure new controls with the same editable properties as the Inspector, including type-specific settings for slider and radio group.",
-      "acceptanceCriteria": [
-        "The modal includes sections for: (1) Basic (ID, Label, Control Type), (2) Layout (X, Y, Width, Height), (3) Appearance (Color), (4) Signal (Binary Code), and (5) Type-specific settings.",
-        "If Control Type is Slider, the modal shows Slider Min and Slider Max inputs.",
-        "If Control Type is Radio Group, the modal shows an editable list of radio options (label + binary code per option) and allows adding/removing options.",
-        "User-facing text is in English and matches existing tone (e.g., \"Add Control\", \"Cancel\", \"Create\")."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
-          "operation": "modify",
-          "description": "Add clearly separated UI sections (Basic/Layout/Appearance/Signal/Type-specific) with inputs for ID, Label, Control Type, X/Y, Width/Height, Color, Binary Code, and conditional type-specific fields (Slider min/max; Radio options list with add/remove and per-option label + binary code). Compose shadcn-ui (selected component) inputs/buttons where available (verify the component's usage instructions before implementing)."
-        },
-        {
-          "path": "frontend/src/lib/controlDefaults.ts",
-          "operation": "modify",
-          "description": "Ensure defaults used for initial modal state align with current Inspector-supported fields (including sliderMin/sliderMax and radioOptions shape), so switching Control Type in the modal can safely re-seed relevant type-specific values while preserving user-entered shared fields."
-        },
-        {
-          "path": "frontend/src/types/controlPanel.ts",
-          "operation": "modify",
-          "description": "If needed for the modal (without introducing new control types), refine/extend typing helpers for draft creation configuration (e.g., a draft type or helper types for radio options) while keeping existing runtime types compatible."
-        }
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "summary": "Implement modal confirmation flow to create and select the configured control, add validation for ID, and fix Add Control reliability.",
-      "acceptanceCriteria": [
-        "After clicking \"Create\" (or equivalent) in the modal, a new control appears in the workspace and is immediately selected.",
-        "The newly created control uses the values set in the modal (not hardcoded defaults) for all fields shown in the modal.",
-        "If the chosen ID is invalid (empty or duplicates an existing control), the modal prevents creation and shows a clear validation message.",
-        "Add Control works reliably across repeated attempts (e.g., adding 5 controls in a row results in 5 new controls)."
+        "In Edit mode, clicking “Add Control” -> “Create” adds exactly one new control to the workspace immediately (no refresh needed).",
+        "After creation, the newly created control is visible in the workspace and is selected in the Inspector (selection state is shared across the screen).",
+        "Dragging a control updates its position in the workspace and the Inspector reflects the same updated values (no desync between components).",
+        "Changing a control property in the Inspector immediately updates the rendered control in the workspace (no desync between components).",
+        "Import/export and save operations continue to operate on the same shared control list shown in the workspace."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useControlLayout.ts",
           "operation": "modify",
-          "description": "Add a creation method that accepts a fully configured ControlConfig (from the modal), validates/guards creation (e.g., uniqueness checks via existing validateId), appends to localControls via functional updates, and selects the new control ID; keep existing save/load behavior unchanged and do not change backend APIs."
+          "description": "Refactor the control layout hook into a shared-state solution by introducing a React Context + Provider that owns the single control list, selection state, and mutators (create/update/delete/save/import). Ensure all consumers read/write the same in-memory state instance rather than creating independent hook instances."
         },
+        {
+          "path": "frontend/src/screens/ControlPanelScreen.tsx",
+          "operation": "modify",
+          "description": "Wrap the Control Panel UI with the new ControlLayoutProvider so Workspace, CreateControlButton/AddControlModal, InspectorPanel, DragController, ControlRenderer, and ImportExportPanel all consume the same shared layout + selection state."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Add defensive checks and user-visible error feedback when control creation cannot update shared layout state (e.g., provider missing/uninitialized) so creation never silently 'succeeds'.",
+      "acceptanceCriteria": [
+        "If the control cannot be added due to missing/uninitialized shared layout state, the UI shows an English error toast/message and the modal remains open (or otherwise clearly indicates failure).",
+        "Under normal conditions, the success toast “Control created” corresponds to the control actually appearing in the workspace immediately."
+      ],
+      "file_operations": [
         {
           "path": "frontend/src/components/control-panel/AddControlModal.tsx",
           "operation": "modify",
-          "description": "Wire the modal \"Create\" action to call the new useControlLayout creation method with the configured draft values, close the modal only on successful creation, and show inline validation messaging for invalid/duplicate ID (and binary code validation where applicable) before allowing creation. Compose shadcn-ui (selected component) feedback/controls where available (verify the component's usage instructions before implementing)."
+          "description": "Adjust the Create flow so the modal only closes on confirmed success: make onCreateControl return a success boolean (or promise) and keep the modal open + display an error message/toast when creation fails (e.g., shared state not initialized)."
         },
         {
           "path": "frontend/src/components/control-panel/CreateControlButton.tsx",
           "operation": "modify",
-          "description": "Connect modal open/close state, pass handlers to AddControlModal, and ensure repeated open→configure→create cycles reliably add multiple controls without stale state issues."
+          "description": "Implement guarded creation: detect missing/uninitialized shared control-layout state before attempting creation, show an English error toast when unavailable, and only show the “Control created” success toast when the shared state was updated (so the new control will render immediately in the workspace)."
+        },
+        {
+          "path": "frontend/src/hooks/useControlLayout.ts",
+          "operation": "modify",
+          "description": "Provide minimal defensive behavior for missing/uninitialized provider scenarios (e.g., expose an initialization flag and/or safe no-op/guarded mutators that surface errors), enabling the modal/button to prevent silent success when the shared layout cannot be mutated."
         }
       ]
     }

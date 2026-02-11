@@ -1,76 +1,53 @@
 {
   "kind": "build_request",
-  "title": "Fix Add Control and open a configuration popup for new controls",
-  "priority": "high",
+  "title": "Newly created controls should immediately appear in the workspace as usable controls",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-11",
-      "text": "Change the \"Add Control\" button behavior so that clicking it opens a popup/modal instead of immediately creating a default control.",
+      "id": "REQ-1",
+      "text": "Fix control layout state so that creating a control from the “Add Control” modal immediately renders that new control in the Control Panel workspace (instead of only updating state local to the component that triggered creation). Implement a shared control-layout state (e.g., React Context provider) so all control-panel components (Workspace, CreateControlButton/AddControlModal, InspectorPanel, DragController, ControlRenderer, Import/Export) read and mutate the same single source of truth.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-10"
         ],
         "quotes": [
-          "when the add control is pushed go to a popup with sections to control and change the button as specified above"
+          "when i create a control make it show up on the control panel as a actual existing button"
         ]
       },
       "acceptanceCriteria": [
-        "In Edit mode, clicking the existing header button labeled \"Add Control\" opens a modal dialog.",
-        "No new control is added to the workspace until the user confirms creation from the modal.",
-        "The modal can be dismissed via an explicit Cancel action and by closing the dialog, without creating a control."
+        "In Edit mode, clicking “Add Control” -> “Create” adds exactly one new control to the workspace immediately (no refresh needed).",
+        "After creation, the newly created control is visible in the workspace and is selected in the Inspector (selection state is shared across the screen).",
+        "Dragging a control updates its position in the workspace and the Inspector reflects the same updated values (no desync between components).",
+        "Changing a control property in the Inspector immediately updates the rendered control in the workspace (no desync between components).",
+        "Import/export and save operations continue to operate on the same shared control list shown in the workspace."
       ]
     },
     {
-      "id": "REQ-12",
-      "text": "In the \"Add Control\" popup/modal, provide clearly separated sections that allow configuring the new control with the same editable properties currently supported in the Inspector (ID, Label, Control Type, Position X/Y, Size Width/Height, Color, Binary Code, and type-specific settings).",
+      "id": "REQ-2",
+      "text": "Ensure the “Create” action in AddControlModal provides user feedback if control creation fails due to shared-state initialization issues (e.g., provider missing) and add minimal defensive checks so the modal cannot silently succeed without the control appearing in the workspace.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-10"
         ],
         "quotes": [
-          "go to a popup with sections to control and change the button as specified above"
+          "when i create a control make it show up on the control panel as a actual existing button"
         ]
       },
       "acceptanceCriteria": [
-        "The modal includes sections for: (1) Basic (ID, Label, Control Type), (2) Layout (X, Y, Width, Height), (3) Appearance (Color), (4) Signal (Binary Code), and (5) Type-specific settings.",
-        "If Control Type is Slider, the modal shows Slider Min and Slider Max inputs.",
-        "If Control Type is Radio Group, the modal shows an editable list of radio options (label + binary code per option) and allows adding/removing options.",
-        "User-facing text is in English and matches existing tone (e.g., \"Add Control\", \"Cancel\", \"Create\")."
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "text": "Implement the modal confirmation flow: when the user confirms creation, create the new control using the configured values, add it to the workspace, and select it for further editing; also fix the current issue where the user is unable to add a control.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3",
-          "msg-6"
-        ],
-        "quotes": [
-          "i am unable to add control fix that",
-          "when the add control is pushed go to a popup with sections to control and change the button as specified above"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After clicking \"Create\" (or equivalent) in the modal, a new control appears in the workspace and is immediately selected.",
-        "The newly created control uses the values set in the modal (not hardcoded defaults) for all fields shown in the modal.",
-        "If the chosen ID is invalid (empty or duplicates an existing control), the modal prevents creation and shows a clear validation message.",
-        "Add Control works reliably across repeated attempts (e.g., adding 5 controls in a row results in 5 new controls)."
+        "If the control cannot be added due to missing/uninitialized shared layout state, the UI shows an English error toast/message and the modal remains open (or otherwise clearly indicates failure).",
+        "Under normal conditions, the success toast “Control created” corresponds to the control actually appearing in the workspace immediately."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (Shadcn components are read-only); compose them instead.",
-    "Do not modify the immutable paths listed in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/hooks/useInternetIdentity.ts).",
-    "Keep the existing black-and-red control-surface theme consistent with the current app styling."
+    "Do not edit files in frontend/immutablePaths (e.g., frontend/src/hooks/useActor.ts, frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/main.tsx, frontend/src/components/ui/*).",
+    "Keep the backend single-actor architecture; no new backend services."
   ],
   "nonGoals": [
-    "Do not change backend Motoko canister APIs or storage format for this request.",
-    "Do not add new control types beyond button, toggle, slider, and radio group.",
-    "Do not redesign the existing Inspector; the modal is for initial creation/configuration only."
+    "Changing backend schema/persistence format for layouts (this request is about immediate UI appearance/state sharing).",
+    "Adding new control types or changing existing control rendering/interaction behavior beyond what is necessary to make newly created controls appear immediately."
   ],
   "imageRequirements": {
     "required": [],

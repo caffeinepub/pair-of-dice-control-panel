@@ -21,7 +21,7 @@ import { validateBinaryCode, generateDefaultBinaryCode } from '@/lib/binaryCode'
 interface AddControlModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateControl: (config: ControlDraft) => void;
+  onCreateControl: (config: ControlDraft) => boolean;
   validateId: (id: string) => string | null;
 }
 
@@ -147,8 +147,10 @@ export function AddControlModal({ open, onOpenChange, onCreateControl, validateI
       }
     }
 
-    onCreateControl(draft);
-    onOpenChange(false);
+    const success = onCreateControl(draft);
+    if (success) {
+      onOpenChange(false);
+    }
   };
 
   return (
@@ -276,9 +278,9 @@ export function AddControlModal({ open, onOpenChange, onCreateControl, validateI
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground">Signal</h3>
             <div className="space-y-2">
-              <Label htmlFor="modal-binary">Binary Code</Label>
+              <Label htmlFor="modal-binaryCode">Binary Code</Label>
               <Input
-                id="modal-binary"
+                id="modal-binaryCode"
                 value={draft.binaryCode}
                 onChange={(e) => handleBinaryCodeChange(e.target.value)}
                 className={binaryError ? 'border-destructive' : ''}
@@ -288,7 +290,7 @@ export function AddControlModal({ open, onOpenChange, onCreateControl, validateI
             </div>
           </div>
 
-          {/* Type-specific Settings */}
+          {/* Type-specific settings */}
           {draft.controlType === 'slider' && (
             <>
               <Separator />
@@ -296,18 +298,18 @@ export function AddControlModal({ open, onOpenChange, onCreateControl, validateI
                 <h3 className="text-sm font-semibold text-foreground">Slider Settings</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="modal-slider-min">Slider Min</Label>
+                    <Label htmlFor="modal-sliderMin">Min</Label>
                     <Input
-                      id="modal-slider-min"
+                      id="modal-sliderMin"
                       type="number"
                       value={draft.sliderMin ?? 0}
                       onChange={(e) => setDraft((prev) => ({ ...prev, sliderMin: Number(e.target.value) }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="modal-slider-max">Slider Max</Label>
+                    <Label htmlFor="modal-sliderMax">Max</Label>
                     <Input
-                      id="modal-slider-max"
+                      id="modal-sliderMax"
                       type="number"
                       value={draft.sliderMax ?? 100}
                       onChange={(e) => setDraft((prev) => ({ ...prev, sliderMax: Number(e.target.value) }))}
@@ -366,8 +368,8 @@ export function AddControlModal({ open, onOpenChange, onCreateControl, validateI
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} disabled={!!idError || !!binaryError}>
-            Create
+          <Button onClick={handleCreate} variant="destructive">
+            Create Control
           </Button>
         </DialogFooter>
       </DialogContent>
