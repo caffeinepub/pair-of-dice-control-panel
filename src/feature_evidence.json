@@ -1,0 +1,62 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-change-the-add-control-button-behavior-so-that-clicking-it-opens-a-popup-modal-instead-of-immediately-creating-a-default-control",
+      "featureTitle": "Change the \"Add Control\" button behavior so that clicking it opens a popup/modal instead of immediately creating a default control.",
+      "files": [
+        "frontend/src/components/control-panel/AddControlModal.tsx",
+        "frontend/src/components/control-panel/CreateControlButton.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-in-the-add-control-popup-modal-provide-clearly-separated-sections-that-allow-configuring-the-new-control-with-the-same-editable-properties-currently-supported-in-the-inspector-id-label-control-type-position-x-y-size-width-height-color-binary-code-and-type-specific-settings",
+      "featureTitle": "In the \"Add Control\" popup/modal, provide clearly separated sections that allow configuring the new control with the same editable properties currently supported in the Inspector (ID, Label, Control Type, Position X/Y, Size Width/Height, Color, Binary Code, and type-specific settings).",
+      "files": [
+        "frontend/src/components/control-panel/AddControlModal.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-the-modal-confirmation-flow-when-the-user-confirms-creation-create-the-new-control-using-the-configured-values-add-it-to-the-workspace-and-select-it-for-further-editing-also-fix-the-current-issue-where-the-user-is-unable-to-add-a-control",
+      "featureTitle": "Implement the modal confirmation flow: when the user confirms creation, create the new control using the configured values, add it to the workspace, and select it for further editing; also fix the current issue where the user is unable to add a control.",
+      "files": [
+        "frontend/src/components/control-panel/AddControlModal.tsx",
+        "frontend/src/components/control-panel/CreateControlButton.tsx",
+        "frontend/src/hooks/useControlLayout.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

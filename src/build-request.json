@@ -1,0 +1,89 @@
+{
+  "kind": "build_request",
+  "title": "Fix Add Control and open a configuration popup for new controls",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-11",
+      "text": "Change the \"Add Control\" button behavior so that clicking it opens a popup/modal instead of immediately creating a default control.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "when the add control is pushed go to a popup with sections to control and change the button as specified above"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In Edit mode, clicking the existing header button labeled \"Add Control\" opens a modal dialog.",
+        "No new control is added to the workspace until the user confirms creation from the modal.",
+        "The modal can be dismissed via an explicit Cancel action and by closing the dialog, without creating a control."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "In the \"Add Control\" popup/modal, provide clearly separated sections that allow configuring the new control with the same editable properties currently supported in the Inspector (ID, Label, Control Type, Position X/Y, Size Width/Height, Color, Binary Code, and type-specific settings).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "go to a popup with sections to control and change the button as specified above"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The modal includes sections for: (1) Basic (ID, Label, Control Type), (2) Layout (X, Y, Width, Height), (3) Appearance (Color), (4) Signal (Binary Code), and (5) Type-specific settings.",
+        "If Control Type is Slider, the modal shows Slider Min and Slider Max inputs.",
+        "If Control Type is Radio Group, the modal shows an editable list of radio options (label + binary code per option) and allows adding/removing options.",
+        "User-facing text is in English and matches existing tone (e.g., \"Add Control\", \"Cancel\", \"Create\")."
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Implement the modal confirmation flow: when the user confirms creation, create the new control using the configured values, add it to the workspace, and select it for further editing; also fix the current issue where the user is unable to add a control.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3",
+          "msg-6"
+        ],
+        "quotes": [
+          "i am unable to add control fix that",
+          "when the add control is pushed go to a popup with sections to control and change the button as specified above"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After clicking \"Create\" (or equivalent) in the modal, a new control appears in the workspace and is immediately selected.",
+        "The newly created control uses the values set in the modal (not hardcoded defaults) for all fields shown in the modal.",
+        "If the chosen ID is invalid (empty or duplicates an existing control), the modal prevents creation and shows a clear validation message.",
+        "Add Control works reliably across repeated attempts (e.g., adding 5 controls in a row results in 5 new controls)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit files under frontend/src/components/ui (Shadcn components are read-only); compose them instead.",
+    "Do not modify the immutable paths listed in SYSTEM_CONTEXT (e.g., frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/hooks/useInternetIdentity.ts).",
+    "Keep the existing black-and-red control-surface theme consistent with the current app styling."
+  ],
+  "nonGoals": [
+    "Do not change backend Motoko canister APIs or storage format for this request.",
+    "Do not add new control types beyond button, toggle, slider, and radio group.",
+    "Do not redesign the existing Inspector; the modal is for initial creation/configuration only."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

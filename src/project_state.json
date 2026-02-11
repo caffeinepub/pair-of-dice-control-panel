@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Build a Raspberry Pi 3 control panel app (“Pair of Dice Control panel”) with a black/red theme and a UI for creating and editing on-screen controls (buttons, toggles, sliders, radio groups). Each control sends a corresponding binary code via a Raspberry Pi 4-channel CAN/signal interface to a computer for interpretation.",
+  "architectural_notes": [
+    "Target hardware: Raspberry Pi 3 for the UI/control app.",
+    "Hardware interface requirement: output signals via an RPi 4-channel CAN/signal module to a computer.",
+    "Protocol requirement: control activations map to binary-number codes that the computer interprets.",
+    "UI flow: pressing “Add Control” should open a popup/modal that groups configuration into sections (e.g., control properties vs. button settings) before/while adding the control."
+  ],
+  "known_issues": [
+    "Bug: User is unable to add a control (Add Control action does not successfully create/configure a control)."
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-create-the-app-shell-named-pair-of-dice-control-panel-with-a-consistent-black-and-red-visual-theme-across-all-screens-backgrounds-panels-typography-focus-states-and-a-control-surface-aesthetic-appropriate-for-a-hardware-control-panel",
+      "title": "Create the app shell named “Pair of Dice Control panel” with a consistent black-and-red visual theme across all screens (backgrounds, panels, typography, focus states) and a control-surface aesthetic appropriate for a hardware control panel.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-control-panel-screen-that-renders-a-canvas-workspace-where-user-created-controls-rounded-rectangle-boxes-appear-at-their-configured-position-and-size-and-visually-fill-their-specified-area",
+      "title": "Implement a “Control Panel” screen that renders a canvas/workspace where user-created controls (rounded-rectangle boxes) appear at their configured position and size, and visually fill their specified area.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-editor-mode-that-allows-creating-selecting-and-updating-controls-with-these-editable-properties-id-label-color-size-width-height-and-position-x-y-position-must-be-editable-both-by-typing-x-y-values-and-by-dragging-on-the-workspace",
+      "title": "Add an editor mode that allows creating, selecting, and updating controls with these editable properties: id, label, color, size (width/height), and position (X/Y). Position must be editable both by typing X/Y values and by dragging on the workspace.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-support-control-types-regular-button-momentary-toggle-button-latching-slider-and-radio-group-multiple-linked-buttons-where-only-one-is-active-at-a-time-the-control-type-must-be-changeable-from-the-inspector-for-the-selected-control",
+      "title": "Support control types: regular button (momentary), toggle button (latching), slider, and radio group (multiple linked buttons where only one is active at a time). The control type must be changeable from the inspector for the selected control.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-pressed-active-visual-feedback-when-a-control-is-pressed-activated-it-should-light-up-white-with-smooth-transition-while-preserving-the-black-red-theme-for-idle-state",
+      "title": "Implement pressed/active visual feedback: when a control is pressed/activated, it should “light up” white (with smooth transition) while preserving the black/red theme for idle state.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-binary-code-assignment-per-control-and-per-radio-option-that-determines-what-binary-number-code-is-emitted-when-the-control-changes-state-press-toggle-on-off-slider-value-change-radio-selection-display-the-current-binary-code-in-the-inspector-and-allow-editing-it-as-a-string-of-0-1-characters",
+      "title": "Add a “Binary Code” assignment per control (and per radio option) that determines what binary number/code is emitted when the control changes state (press, toggle on/off, slider value change, radio selection). Display the current binary code in the inspector and allow editing it as a string of 0/1 characters.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-backend-implement-an-event-log-queue-api-that-records-the-last-n-emitted-binary-codes-with-timestamps-and-metadata-control-id-type-value-state-frontend-must-call-the-backend-to-emit-an-event-whenever-a-control-changes-state-value",
+      "title": "Backend: implement an event log/queue API that records the last N emitted binary codes with timestamps and metadata (control id, type, value/state). Frontend must call the backend to emit an event whenever a control changes state/value.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-configuration-import-export-in-the-ui-export-the-current-control-layout-as-json-and-import-json-to-restore-overwrite-the-layout-with-validation-and-clear-error-messages",
+      "title": "Provide configuration import/export in the UI: export the current control layout as JSON and import JSON to restore/overwrite the layout (with validation and clear error messages).",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-runtime-mode-toggle-that-hides-editing-affordances-and-prevents-dragging-resizing-while-allowing-controls-to-be-used-to-emit-binary-codes-provide-a-clear-way-to-switch-back-to-edit-mode",
+      "title": "Add a “Runtime” mode toggle that hides editing affordances and prevents dragging/resizing while allowing controls to be used to emit binary codes; provide a clear way to switch back to Edit mode.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-change-the-add-control-button-behavior-so-that-clicking-it-opens-a-popup-modal-instead-of-immediately-creating-a-default-control",
+      "title": "Change the \"Add Control\" button behavior so that clicking it opens a popup/modal instead of immediately creating a default control.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-the-add-control-popup-modal-provide-clearly-separated-sections-that-allow-configuring-the-new-control-with-the-same-editable-properties-currently-supported-in-the-inspector-id-label-control-type-position-x-y-size-width-height-color-binary-code-and-type-specific-settings",
+      "title": "In the \"Add Control\" popup/modal, provide clearly separated sections that allow configuring the new control with the same editable properties currently supported in the Inspector (ID, Label, Control Type, Position X/Y, Size Width/Height, Color, Binary Code, and type-specific settings).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-modal-confirmation-flow-when-the-user-confirms-creation-create-the-new-control-using-the-configured-values-add-it-to-the-workspace-and-select-it-for-further-editing-also-fix-the-current-issue-where-the-user-is-unable-to-add-a-control",
+      "title": "Implement the modal confirmation flow: when the user confirms creation, create the new control using the configured values, add it to the workspace, and select it for further editing; also fix the current issue where the user is unable to add a control.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Create Raspberry Pi 3 app named “Pair of Dice Control panel” with black/red themed control panel UI",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "UI editor for customizable controls: change color, size, position (XY input or drag), id, and label",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Support multiple control types: regular button, toggle button, slider, and radio-button groups (mutually exclusive)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Controls render as rounded-rectangle boxes that fill their specified area and light up white when pressed",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Send binary-number codes corresponding to control activations via RPi 4-channel CAN/signal module to a computer for interpretation (e.g., in VS Code tooling)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Backend: persist the control layout/configuration (controls, properties, types, radio options, binary codes) in the Motoko canister, with API methods to load and save the current configuration.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "When “Add Control” is pressed, open a popup/modal with sections for configuring the new control (e.g., control properties and button settings) as specified, instead of the current behavior",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Pair of Dice Control panel",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

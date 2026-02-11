@@ -1,0 +1,57 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-10T23:36:21.482Z",
+  "summary": "The diff implements an Add Control modal flow: the header button now opens a dialog, and a new hook method creates a control from the modal’s configured values and selects it. However, due to truncation, some modal acceptance criteria (Cancel/close dismissal behavior, full sectioned UI content, and ID validation messaging in the modal UI) cannot be fully confirmed from the provided diff summary.",
+  "missing_requirements": [
+    {
+      "id": "REQ-11",
+      "requirement": "The modal can be dismissed via an explicit Cancel action and by closing the dialog, without creating a control.",
+      "reason": "AddControlModal.tsx is truncated before the rendered JSX/footer actions are shown, so an explicit \"Cancel\" button and close behavior without creation cannot be verified from the diff summary.",
+      "evidence": [
+        "frontend/src/components/control-panel/AddControlModal.tsx (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "requirement": "The modal includes clearly separated sections for Basic, Layout, Appearance, Signal, and Type-specific settings, with English user-facing text matching existing tone (e.g., \"Cancel\", \"Create\").",
+      "reason": "The modal implementation file is truncated before the UI layout/content is shown; while imports (Card, Separator) suggest sectioning, the actual sections and required labels/text cannot be confirmed from the diff snippet alone.",
+      "evidence": [
+        "frontend/src/components/control-panel/AddControlModal.tsx (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "requirement": "If the chosen ID is invalid (empty or duplicates), the modal prevents creation and shows a clear validation message.",
+      "reason": "useControlLayout.validateId returns error strings, and AddControlModal tracks idError, but the diff is truncated before showing how/where the error message is rendered and whether the Create action is blocked in all cases.",
+      "evidence": [
+        "frontend/src/hooks/useControlLayout.ts",
+        "frontend/src/components/control-panel/AddControlModal.tsx (truncated)"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Binary code validation and blocking creation on invalid binary code (in addition to ID validation).",
+      "reason": "The BuildRequest explicitly requires validation for invalid/duplicate ID, but does not require validating the binary code format during creation; the modal tracks binaryError and validates via validateBinaryCode in handleCreate.",
+      "evidence": [
+        "frontend/src/components/control-panel/AddControlModal.tsx (truncated)"
+      ]
+    },
+    {
+      "description": "Success toast notification on control creation (\"Control created\").",
+      "reason": "The BuildRequest does not ask for toast notifications as part of the add-control modal flow.",
+      "evidence": [
+        "frontend/src/hooks/useControlLayout.ts"
+      ]
+    }
+  ],
+  "confidence": 0.62,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/src/components/control-panel/AddControlModal.tsx",
+    "frontend/src/components/control-panel/CreateControlButton.tsx",
+    "frontend/src/hooks/useControlLayout.ts",
+    "project_state.json"
+  ]
+}

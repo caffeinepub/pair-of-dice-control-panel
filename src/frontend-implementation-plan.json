@@ -1,0 +1,82 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Add Control modal configuration + reliable control creation",
+  "requirements": [
+    {
+      "id": "REQ-11",
+      "summary": "Change Add Control button to open a modal instead of immediately creating a default control.",
+      "acceptanceCriteria": [
+        "In Edit mode, clicking the existing header button labeled \"Add Control\" opens a modal dialog.",
+        "No new control is added to the workspace until the user confirms creation from the modal.",
+        "The modal can be dismissed via an explicit Cancel action and by closing the dialog, without creating a control."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/control-panel/CreateControlButton.tsx",
+          "operation": "modify",
+          "description": "Replace the direct createControl call with local state that opens/closes an Add Control modal; keep the existing \"Add Control\" header button look/placement and ensure no control is created until modal confirmation."
+        },
+        {
+          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
+          "operation": "create",
+          "description": "Implement a modal dialog component (compose existing styling/Tailwind; do not edit files under frontend/src/components/ui) that supports open/close, Cancel, and close-button dismissal without creating a control; keep the black-and-red control-surface theme consistent. Use shadcn-ui (selected component) primitives where available by composing them (verify the component's usage instructions before implementing)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Provide modal sections to configure new controls with the same editable properties as the Inspector, including type-specific settings for slider and radio group.",
+      "acceptanceCriteria": [
+        "The modal includes sections for: (1) Basic (ID, Label, Control Type), (2) Layout (X, Y, Width, Height), (3) Appearance (Color), (4) Signal (Binary Code), and (5) Type-specific settings.",
+        "If Control Type is Slider, the modal shows Slider Min and Slider Max inputs.",
+        "If Control Type is Radio Group, the modal shows an editable list of radio options (label + binary code per option) and allows adding/removing options.",
+        "User-facing text is in English and matches existing tone (e.g., \"Add Control\", \"Cancel\", \"Create\")."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
+          "operation": "modify",
+          "description": "Add clearly separated UI sections (Basic/Layout/Appearance/Signal/Type-specific) with inputs for ID, Label, Control Type, X/Y, Width/Height, Color, Binary Code, and conditional type-specific fields (Slider min/max; Radio options list with add/remove and per-option label + binary code). Compose shadcn-ui (selected component) inputs/buttons where available (verify the component's usage instructions before implementing)."
+        },
+        {
+          "path": "frontend/src/lib/controlDefaults.ts",
+          "operation": "modify",
+          "description": "Ensure defaults used for initial modal state align with current Inspector-supported fields (including sliderMin/sliderMax and radioOptions shape), so switching Control Type in the modal can safely re-seed relevant type-specific values while preserving user-entered shared fields."
+        },
+        {
+          "path": "frontend/src/types/controlPanel.ts",
+          "operation": "modify",
+          "description": "If needed for the modal (without introducing new control types), refine/extend typing helpers for draft creation configuration (e.g., a draft type or helper types for radio options) while keeping existing runtime types compatible."
+        }
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "summary": "Implement modal confirmation flow to create and select the configured control, add validation for ID, and fix Add Control reliability.",
+      "acceptanceCriteria": [
+        "After clicking \"Create\" (or equivalent) in the modal, a new control appears in the workspace and is immediately selected.",
+        "The newly created control uses the values set in the modal (not hardcoded defaults) for all fields shown in the modal.",
+        "If the chosen ID is invalid (empty or duplicates an existing control), the modal prevents creation and shows a clear validation message.",
+        "Add Control works reliably across repeated attempts (e.g., adding 5 controls in a row results in 5 new controls)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useControlLayout.ts",
+          "operation": "modify",
+          "description": "Add a creation method that accepts a fully configured ControlConfig (from the modal), validates/guards creation (e.g., uniqueness checks via existing validateId), appends to localControls via functional updates, and selects the new control ID; keep existing save/load behavior unchanged and do not change backend APIs."
+        },
+        {
+          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
+          "operation": "modify",
+          "description": "Wire the modal \"Create\" action to call the new useControlLayout creation method with the configured draft values, close the modal only on successful creation, and show inline validation messaging for invalid/duplicate ID (and binary code validation where applicable) before allowing creation. Compose shadcn-ui (selected component) feedback/controls where available (verify the component's usage instructions before implementing)."
+        },
+        {
+          "path": "frontend/src/components/control-panel/CreateControlButton.tsx",
+          "operation": "modify",
+          "description": "Connect modal open/close state, pass handlers to AddControlModal, and ensure repeated open→configure→create cycles reliably add multiple controls without stale state issues."
+        }
+      ]
+    }
+  ]
+}
