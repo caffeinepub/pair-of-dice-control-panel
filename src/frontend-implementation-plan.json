@@ -1,36 +1,58 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Unify New Tab vs in-Caffeine draft theming and layout rendering",
+  "title": "Runtime pointer-based button presses and enhanced event logging (binary code + button name)",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Ensure the app renders identical theme, spacing, and control-panel behavior when opened in a standalone browser tab versus embedded inside Caffeine by unifying global CSS sources and root layout sizing/scroll handling.",
+      "summary": "Make runtime-mode button presses work reliably with both mouse and touch via Pointer Events, while preserving edit-mode no-signal behavior and preventing stuck pressed state.",
       "acceptanceCriteria": [
-        "When the app is opened in a new browser tab, the UI matches the in-Caffeine draft (same theme colors, typography, spacing, and component styling).",
-        "No CSS/Tailwind/theme-related regressions occur only in the new-tab view (e.g., missing styles, different background, different layout sizing/scrolling).",
-        "Core interactions continue to work the same in the new-tab view (e.g., edit/runtime mode toggle, adding controls modal, inspector panel in edit mode, recent signals panel, import/export panel)."
+        "In runtime mode, pressing a button with a mouse triggers the press behavior.",
+        "In runtime mode, tapping a button on a touch screen triggers the press behavior.",
+        "The interaction does not get stuck in a pressed state when the pointer leaves/cancels (e.g., pointercancel/leave is handled).",
+        "In edit mode, button presses do not emit signals (existing behavior preserved)."
       ],
       "file_operations": [
         {
-          "path": "frontend/index.css",
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Remove divergence between the root-level stylesheet and the app stylesheet by making frontend/index.css delegate to (or exactly mirror) frontend/src/index.css so any host (including Caffeine) loading the root stylesheet gets the same Tailwind theme variables, base styles, and control-panel-specific rules."
+          "description": "Update the button control interaction handling to use Pointer Events (e.g., onPointerDown/onPointerUp/onPointerCancel/onPointerLeave) so both mouse and touch reliably trigger presses in runtime mode, and ensure pressed UI state is always cleared on leave/cancel to prevent stuck-pressed behavior. Keep existing edit-mode gating so no signals are emitted in edit mode."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Include button name (control label) along with binary code when emitting runtime-mode button press events from the frontend so recent-events queries can return both fields.",
+      "acceptanceCriteria": [
+        "Backend event records include the button name (label) along with binaryCode for button press events.",
+        "Frontend emits button press events with both binaryCode and button name (label) included.",
+        "Recent events fetched from the backend include the binary code and button name for button press events."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useSignalEmitter.ts",
+          "operation": "modify",
+          "description": "Update the signal emission mutation to pass controlName (control label) into the backend emitEvent call using the existing backend interface signature, while preserving existing React Query invalidation behavior."
         },
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Harden global base styling so both embedded and standalone contexts compute the same layout: ensure html/body/#root height and overflow expectations are explicitly defined, preserve the intended dark theme variables, and keep control-panel-specific styles (fullscreen region + scrollbars) consistent across hosting contexts."
-        },
+          "description": "When emitting runtime-mode events for button presses (and any other control emissions needed for schema compatibility), include the control's label as controlName so emitted events contain both binaryCode and the button name (label)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Display the button name (label) alongside binary code in the Recent Signals UI for logged button press events, and remain resilient to missing/optional fields.",
+      "acceptanceCriteria": [
+        "The Recent Signals list shows the binary code and the button name (label) for button press events.",
+        "The Recent Signals panel continues to render without errors after the backend event shape/API changes."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/components/control-panel/RecentSignalsPanel.tsx",
           "operation": "modify",
-          "description": "Align document-level defaults between new-tab and embedded rendering by setting consistent root element attributes (e.g., default dark theme class for first paint if needed), and ensure the HTML/body/root container sizing/margins do not cause spacing or scrolling differences between environments."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Verify the root app wrapper applies the same background/text classes and minimum height behavior in all contexts; adjust only the top-level wrapper (not shadcn components under frontend/src/components/ui) to prevent new-tab-only layout/theme drift."
+          "description": "Update rendering of recent events to show event.controlName (label) alongside event.binaryCode (with a safe fallback when controlName is missing), ensuring the panel continues to render without errors when optional fields are absent."
         }
       ]
     }

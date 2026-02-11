@@ -17,27 +17,28 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   const handleButtonPress = () => {
     if (isEditMode) return;
     setIsPressed(true);
-    emit(control.id, control.controlType, 'pressed', control.binaryCode);
+    emit(control.id, control.controlType, control.label, 'pressed', control.binaryCode);
+    console.log(`Button pressed: ${control.label} (${control.binaryCode})`);
   };
 
   const handleButtonRelease = () => {
     if (isEditMode) return;
     setIsPressed(false);
-    emit(control.id, control.controlType, 'released', control.binaryCode);
+    emit(control.id, control.controlType, control.label, 'released', control.binaryCode);
   };
 
   const handleToggle = () => {
     if (isEditMode) return;
     const newState = !control.toggleState;
     updateControl(control.id, { toggleState: newState });
-    emit(control.id, control.controlType, newState ? 'on' : 'off', control.binaryCode);
+    emit(control.id, control.controlType, control.label, newState ? 'on' : 'off', control.binaryCode);
   };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isEditMode) return;
     const value = Number(e.target.value);
     updateControl(control.id, { sliderValue: value });
-    emit(control.id, control.controlType, value.toString(), control.binaryCode);
+    emit(control.id, control.controlType, control.label, value.toString(), control.binaryCode);
   };
 
   const handleRadioSelect = (optionKey: string) => {
@@ -45,7 +46,7 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     const option = control.radioOptions?.find((opt) => opt.key === optionKey);
     if (!option) return;
     updateControl(control.id, { radioSelected: optionKey });
-    emit(control.id, 'radio', option.label, option.binaryCode);
+    emit(control.id, 'radio', control.label, option.label, option.binaryCode);
   };
 
   const baseClasses = cn(
@@ -65,9 +66,10 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
         style={{
           backgroundColor: !isPressed || isEditMode ? control.color : undefined,
         }}
-        onMouseDown={handleButtonPress}
-        onMouseUp={handleButtonRelease}
-        onMouseLeave={handleButtonRelease}
+        onPointerDown={handleButtonPress}
+        onPointerUp={handleButtonRelease}
+        onPointerCancel={handleButtonRelease}
+        onPointerLeave={handleButtonRelease}
         disabled={isEditMode}
       >
         <span className={cn(isPressed && !isEditMode ? 'text-black' : 'text-white')}>{control.label}</span>
@@ -104,6 +106,31 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     const min = control.sliderMin ?? 0;
     const max = control.sliderMax ?? 100;
     const percentage = ((value - min) / (max - min)) * 100;
+    const isVertical = control.sliderIsVertical === true;
+
+    if (isVertical) {
+      return (
+        <div
+          className={cn(baseClasses, 'flex-col gap-2 p-4')}
+          style={{ backgroundColor: control.color, borderColor: control.color }}
+        >
+          <span className="text-sm text-white">{control.label}</span>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            value={value}
+            onChange={handleSliderChange}
+            disabled={isEditMode}
+            className="slider-vertical accent-white"
+            style={{
+              background: `linear-gradient(to top, white ${percentage}%, rgba(255,255,255,0.3) ${percentage}%)`,
+            }}
+          />
+          <span className="text-lg font-bold text-white">{value}</span>
+        </div>
+      );
+    }
 
     return (
       <div

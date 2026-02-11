@@ -10,6 +10,7 @@ import { IDL } from '@icp-sdk/core/candid';
 
 export const Time = IDL.Int;
 export const Event = IDL.Record({
+  'controlName' : IDL.Opt(IDL.Text),
   'controlType' : IDL.Text,
   'value' : IDL.Text,
   'controlId' : IDL.Text,
@@ -18,18 +19,23 @@ export const Event = IDL.Record({
 });
 export const Control = IDL.Record({
   'id' : IDL.Text,
+  'controlName' : IDL.Opt(IDL.Text),
   'controlType' : IDL.Text,
   'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
   'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
+  'sliderIsVertical' : IDL.Opt(IDL.Bool),
   'binaryCode' : IDL.Text,
 });
 export const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
 
 export const idlService = IDL.Service({
-  'emitEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
+  'emitEvent' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
+      [],
+      [],
+    ),
   'getEventsByControlId' : IDL.Func([IDL.Text], [IDL.Vec(Event)], ['query']),
   'getLayout' : IDL.Func([], [Layout], ['query']),
-  'getRadioGroupLayout' : IDL.Func([], [IDL.Bool], ['query']),
   'getRecentEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
   'saveLayout' : IDL.Func([Layout], [], []),
 });
@@ -39,6 +45,7 @@ export const idlInitArgs = [];
 export const idlFactory = ({ IDL }) => {
   const Time = IDL.Int;
   const Event = IDL.Record({
+    'controlName' : IDL.Opt(IDL.Text),
     'controlType' : IDL.Text,
     'value' : IDL.Text,
     'controlId' : IDL.Text,
@@ -47,18 +54,23 @@ export const idlFactory = ({ IDL }) => {
   });
   const Control = IDL.Record({
     'id' : IDL.Text,
+    'controlName' : IDL.Opt(IDL.Text),
     'controlType' : IDL.Text,
     'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
     'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
+    'sliderIsVertical' : IDL.Opt(IDL.Bool),
     'binaryCode' : IDL.Text,
   });
   const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
   
   return IDL.Service({
-    'emitEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
+    'emitEvent' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
+        [],
+        [],
+      ),
     'getEventsByControlId' : IDL.Func([IDL.Text], [IDL.Vec(Event)], ['query']),
     'getLayout' : IDL.Func([], [Layout], ['query']),
-    'getRadioGroupLayout' : IDL.Func([], [IDL.Bool], ['query']),
     'getRecentEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
     'saveLayout' : IDL.Func([Layout], [], []),
   });

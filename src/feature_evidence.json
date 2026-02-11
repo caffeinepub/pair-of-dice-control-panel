@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-new-tab-draft-experience-so-it-matches-the-in-caffeine-draft-experience-in-layout-styling-and-behavior-i-e-opening-the-app-in-a-new-browser-tab-should-render-the-same-ui-theme-spacing-and-component-behavior-as-when-viewed-inside-caffeine",
-      "featureTitle": "Fix the \"New Tab\" draft experience so it matches the \"in Caffeine\" draft experience in layout, styling, and behavior (i.e., opening the app in a new browser tab should render the same UI theme, spacing, and component behavior as when viewed inside Caffeine).",
+      "featureId": "feature-update-runtime-mode-button-interactions-so-a-button-press-can-be-triggered-reliably-via-either-mouse-or-touch-input-e-g-using-pointer-events-and-does-not-require-edit-mode-to-be-off",
+      "featureTitle": "Update runtime-mode button interactions so a button press can be triggered reliably via either mouse or touch input (e.g., using Pointer Events) and does not require edit mode to be off.",
       "files": [
-        "frontend/index.css",
-        "frontend/index.html"
+        "frontend/src/components/control-panel/ControlRenderer.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,6 +16,43 @@
       ],
       "testIds": [
         "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-when-a-runtime-mode-button-is-pushed-log-an-event-that-includes-at-minimum-the-button-s-binary-code-and-the-button-s-name-use-the-control-s-label-as-the-name-ensure-this-information-is-persisted-in-the-backend-event-log-and-returned-by-recent-events-queries",
+      "featureTitle": "When a runtime-mode button is pushed, log an event that includes (at minimum) the button's binary code and the button's name (use the control's label as the name). Ensure this information is persisted in the backend event log and returned by recent-events queries.",
+      "files": [
+        "frontend/src/components/control-panel/ControlRenderer.tsx",
+        "frontend/src/hooks/useSignalEmitter.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-recent-signals-ui-to-display-the-button-name-label-alongside-the-binary-code-for-logged-button-press-events-so-users-can-see-both-in-the-log",
+      "featureTitle": "Update the Recent Signals UI to display the button name (label) alongside the binary code for logged button press events, so users can see both in the log.",
+      "files": [
+        "frontend/src/components/control-panel/RecentSignalsPanel.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

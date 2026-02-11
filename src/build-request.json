@@ -1,34 +1,70 @@
 {
   "kind": "build_request",
-  "title": "Make the New Tab draft match the in-Caffeine draft",
+  "title": "Enable mouse/touch button presses in runtime mode and log button binary code + name",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the \"New Tab\" draft experience so it matches the \"in Caffeine\" draft experience in layout, styling, and behavior (i.e., opening the app in a new browser tab should render the same UI theme, spacing, and component behavior as when viewed inside Caffeine).",
+      "text": "Update runtime-mode button interactions so a button press can be triggered reliably via either mouse or touch input (e.g., using Pointer Events) and does not require edit mode to be off.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "fix the new tab draft to be like the in caffeine draft"
+          "make the runtime mode allow the buttons to be pushed my either mouse or touch screen"
         ]
       },
       "acceptanceCriteria": [
-        "When the app is opened in a new browser tab, the UI matches the in-Caffeine draft (same theme colors, typography, spacing, and component styling).",
-        "No CSS/Tailwind/theme-related regressions occur only in the new-tab view (e.g., missing styles, different background, different layout sizing/scrolling).",
-        "Core interactions continue to work the same in the new-tab view (e.g., edit/runtime mode toggle, adding controls modal, inspector panel in edit mode, recent signals panel, import/export panel)."
+        "In runtime mode, pressing a button with a mouse triggers the press behavior.",
+        "In runtime mode, tapping a button on a touch screen triggers the press behavior.",
+        "The interaction does not get stuck in a pressed state when the pointer leaves/cancels (e.g., pointercancel/leave is handled).",
+        "In edit mode, button presses do not emit signals (existing behavior preserved)."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "When a runtime-mode button is pushed, log an event that includes (at minimum) the button's binary code and the button's name (use the control's label as the name). Ensure this information is persisted in the backend event log and returned by recent-events queries.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "and log the binary code and name of the button when it is pushed"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend event records include the button name (label) along with binaryCode for button press events.",
+        "Frontend emits button press events with both binaryCode and button name (label) included.",
+        "Recent events fetched from the backend include the binary code and button name for button press events."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update the Recent Signals UI to display the button name (label) alongside the binary code for logged button press events, so users can see both in the log.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "log the binary code and name of the button when it is pushed"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Recent Signals list shows the binary code and the button name (label) for button press events.",
+        "The Recent Signals panel continues to render without errors after the backend event shape/API changes."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (Shadcn components are read-only).",
-    "Backend must remain a single Motoko actor in backend/main.mo; introduce backend changes only if required to resolve the new-tab vs in-Caffeine mismatch."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not modify files under frontend/src/components/ui or any other paths listed as immutable in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Adding new product features unrelated to the new-tab draft mismatch.",
-    "Changing the radio-group behavior/orientation/logging functionality beyond what is necessary to make the new-tab draft match the in-Caffeine draft."
+    "Changing how non-button controls (toggle/slider/radio) are logged beyond what is required to support the updated event schema.",
+    "Adding real-time streaming of events (polling via existing React Query behavior is sufficient)."
   ],
   "imageRequirements": {
     "required": [],

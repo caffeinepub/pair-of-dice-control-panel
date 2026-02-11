@@ -76,6 +76,16 @@
         border-color: white !important;
     }
 
+    /* Vertical slider styling */
+    .slider-vertical {
+        writing-mode: bt-lr; /* IE */
+        -webkit-appearance: slider-vertical; /* WebKit */
+        width: 8px;
+        height: 100px;
+        padding: 0;
+        margin: 0 auto;
+    }
+
     /* Fullscreen workspace region styling */
     .control-workspace-region:fullscreen {
         width: 100vw;

@@ -21,6 +21,7 @@ export interface ControlConfig {
   sliderValue?: number;
   sliderMin?: number;
   sliderMax?: number;
+  sliderIsVertical?: boolean;
   radioOptions?: RadioOption[];
   radioSelected?: string;
   radioGroupIsVertical?: boolean;

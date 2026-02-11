@@ -19,7 +19,9 @@ export interface ControlLayoutContextValue {
     binaryCode: string;
     sliderMin?: number;
     sliderMax?: number;
+    sliderIsVertical?: boolean;
     radioOptions?: Array<{ key: string; label: string; binaryCode: string }>;
+    radioGroupIsVertical?: boolean;
   }) => boolean;
   updateControl: (id: string, updates: Partial<ControlConfig>) => void;
   deleteControl: (id: string) => void;

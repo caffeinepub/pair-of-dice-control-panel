@@ -49,16 +49,28 @@ export function validateLayout(layout: any): ValidationError[] {
       errors.push({ field: `${prefix}.size`, message: 'Width and height must be positive numbers' });
     }
 
-    if (ctrl.controlType === 'radio' && Array.isArray(ctrl.radioOptions)) {
-      ctrl.radioOptions.forEach((opt: any, optIdx: number) => {
-        const optError = validateBinaryCode(opt.binaryCode || '');
-        if (optError) {
-          errors.push({
-            field: `${prefix}.radioOptions[${optIdx}].binaryCode`,
-            message: optError,
-          });
-        }
-      });
+    if (ctrl.controlType === 'slider') {
+      if (ctrl.sliderIsVertical !== undefined && typeof ctrl.sliderIsVertical !== 'boolean') {
+        errors.push({ field: `${prefix}.sliderIsVertical`, message: 'sliderIsVertical must be a boolean' });
+      }
+    }
+
+    if (ctrl.controlType === 'radio') {
+      if (ctrl.radioGroupIsVertical !== undefined && typeof ctrl.radioGroupIsVertical !== 'boolean') {
+        errors.push({ field: `${prefix}.radioGroupIsVertical`, message: 'radioGroupIsVertical must be a boolean' });
+      }
+      
+      if (Array.isArray(ctrl.radioOptions)) {
+        ctrl.radioOptions.forEach((opt: any, optIdx: number) => {
+          const optError = validateBinaryCode(opt.binaryCode || '');
+          if (optError) {
+            errors.push({
+              field: `${prefix}.radioOptions[${optIdx}].binaryCode`,
+              message: optError,
+            });
+          }
+        });
+      }
     }
   });
 

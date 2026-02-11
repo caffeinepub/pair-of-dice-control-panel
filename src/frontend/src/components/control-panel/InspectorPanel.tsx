@@ -23,11 +23,11 @@ export function InspectorPanel() {
       setLocalId(selectedControl.id);
       setIdError(null);
     }
-  }, [selectedControl]);
+  }, [selectedControl?.id]);
 
   if (!selectedControl) {
     return (
-      <Card className="m-4">
+      <Card className="h-full">
         <CardHeader>
           <CardTitle>Inspector</CardTitle>
         </CardHeader>
@@ -53,12 +53,11 @@ export function InspectorPanel() {
       ...defaults,
       controlType: newType,
       id: selectedControl.id,
+      label: selectedControl.label,
+      x: selectedControl.x,
+      y: selectedControl.y,
       binaryCode: selectedControl.binaryCode,
     });
-  };
-
-  const handleBinaryCodeChange = (code: string) => {
-    updateControl(selectedControl.id, { binaryCode: code });
   };
 
   const handleAddRadioOption = () => {
@@ -68,42 +67,33 @@ export function InspectorPanel() {
       label: 'New Option',
       binaryCode: generateDefaultBinaryCode(newKey),
     };
-    const newOptions = [...(selectedControl.radioOptions || []), newOption];
-    updateControl(selectedControl.id, { radioOptions: newOptions });
+    updateControl(selectedControl.id, {
+      radioOptions: [...(selectedControl.radioOptions || []), newOption],
+    });
   };
 
   const handleUpdateRadioOption = (key: string, updates: Partial<RadioOption>) => {
-    const newOptions = selectedControl.radioOptions?.map((opt) =>
+    const updatedOptions = selectedControl.radioOptions?.map((opt) =>
       opt.key === key ? { ...opt, ...updates } : opt
     );
-    updateControl(selectedControl.id, { radioOptions: newOptions });
+    updateControl(selectedControl.id, { radioOptions: updatedOptions });
   };
 
   const handleDeleteRadioOption = (key: string) => {
-    const newOptions = selectedControl.radioOptions?.filter((opt) => opt.key !== key);
-    updateControl(selectedControl.id, { radioOptions: newOptions });
+    const updatedOptions = selectedControl.radioOptions?.filter((opt) => opt.key !== key);
+    updateControl(selectedControl.id, { radioOptions: updatedOptions });
   };
-
-  const handleDelete = () => {
-    if (confirm(`Delete control "${selectedControl.label}"?`)) {
-      deleteControl(selectedControl.id);
-      toast.success('Control deleted');
-    }
-  };
-
-  const binaryError = validateBinaryCode(selectedControl.binaryCode);
 
   return (
-    <Card className="m-4">
+    <Card className="h-full overflow-y-auto">
       <CardHeader>
         <CardTitle>Inspector</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* ID */}
         <div className="space-y-2">
-          <Label htmlFor="id">ID</Label>
+          <Label htmlFor="inspector-id">ID</Label>
           <Input
-            id="id"
+            id="inspector-id"
             value={localId}
             onChange={(e) => handleIdChange(e.target.value)}
             className={idError ? 'border-destructive' : ''}
@@ -111,21 +101,19 @@ export function InspectorPanel() {
           {idError && <p className="text-xs text-destructive">{idError}</p>}
         </div>
 
-        {/* Label */}
         <div className="space-y-2">
-          <Label htmlFor="label">Label</Label>
+          <Label htmlFor="inspector-label">Label</Label>
           <Input
-            id="label"
+            id="inspector-label"
             value={selectedControl.label}
             onChange={(e) => updateControl(selectedControl.id, { label: e.target.value })}
           />
         </div>
 
-        {/* Control Type */}
         <div className="space-y-2">
-          <Label htmlFor="type">Control Type</Label>
+          <Label htmlFor="inspector-type">Control Type</Label>
           <Select value={selectedControl.controlType} onValueChange={handleTypeChange}>
-            <SelectTrigger id="type">
+            <SelectTrigger id="inspector-type">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -139,21 +127,20 @@ export function InspectorPanel() {
 
         <Separator />
 
-        {/* Position */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="x">X Position</Label>
+            <Label htmlFor="inspector-x">X</Label>
             <Input
-              id="x"
+              id="inspector-x"
               type="number"
               value={selectedControl.x}
               onChange={(e) => updateControl(selectedControl.id, { x: Number(e.target.value) })}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="y">Y Position</Label>
+            <Label htmlFor="inspector-y">Y</Label>
             <Input
-              id="y"
+              id="inspector-y"
               type="number"
               value={selectedControl.y}
               onChange={(e) => updateControl(selectedControl.id, { y: Number(e.target.value) })}
@@ -161,21 +148,20 @@ export function InspectorPanel() {
           </div>
         </div>
 
-        {/* Size */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="width">Width</Label>
+            <Label htmlFor="inspector-width">Width</Label>
             <Input
-              id="width"
+              id="inspector-width"
               type="number"
               value={selectedControl.width}
               onChange={(e) => updateControl(selectedControl.id, { width: Number(e.target.value) })}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="height">Height</Label>
+            <Label htmlFor="inspector-height">Height</Label>
             <Input
-              id="height"
+              id="inspector-height"
               type="number"
               value={selectedControl.height}
               onChange={(e) => updateControl(selectedControl.id, { height: Number(e.target.value) })}
@@ -183,58 +169,64 @@ export function InspectorPanel() {
           </div>
         </div>
 
-        {/* Color */}
         <div className="space-y-2">
-          <Label htmlFor="color">Color</Label>
-          <div className="flex gap-2">
-            <Input
-              id="color"
-              type="color"
-              value={selectedControl.color}
-              onChange={(e) => updateControl(selectedControl.id, { color: e.target.value })}
-              className="h-10 w-20"
-            />
-            <Input
-              value={selectedControl.color}
-              onChange={(e) => updateControl(selectedControl.id, { color: e.target.value })}
-              className="flex-1"
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Binary Code */}
-        <div className="space-y-2">
-          <Label htmlFor="binaryCode">Binary Code</Label>
+          <Label htmlFor="inspector-color">Color</Label>
           <Input
-            id="binaryCode"
-            value={selectedControl.binaryCode}
-            onChange={(e) => handleBinaryCodeChange(e.target.value)}
-            className={binaryError ? 'border-destructive' : ''}
-            placeholder="e.g., 10101010"
+            id="inspector-color"
+            type="color"
+            value={selectedControl.color}
+            onChange={(e) => updateControl(selectedControl.id, { color: e.target.value })}
           />
-          {binaryError && <p className="text-xs text-destructive">{binaryError}</p>}
         </div>
 
-        {/* Type-specific settings */}
+        <div className="space-y-2">
+          <Label htmlFor="inspector-binaryCode">Binary Code</Label>
+          <Input
+            id="inspector-binaryCode"
+            value={selectedControl.binaryCode}
+            onChange={(e) => {
+              const error = validateBinaryCode(e.target.value);
+              if (!error) {
+                updateControl(selectedControl.id, { binaryCode: e.target.value });
+              } else {
+                toast.error(error);
+              }
+            }}
+          />
+        </div>
+
         {selectedControl.controlType === 'slider' && (
           <>
             <Separator />
+            <div className="space-y-2">
+              <Label htmlFor="inspector-sliderOrientation">Orientation</Label>
+              <Select
+                value={selectedControl.sliderIsVertical ? 'vertical' : 'horizontal'}
+                onValueChange={(value) => updateControl(selectedControl.id, { sliderIsVertical: value === 'vertical' })}
+              >
+                <SelectTrigger id="inspector-sliderOrientation">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="horizontal">Horizontal</SelectItem>
+                  <SelectItem value="vertical">Vertical</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="sliderMin">Min</Label>
+                <Label htmlFor="inspector-sliderMin">Min</Label>
                 <Input
-                  id="sliderMin"
+                  id="inspector-sliderMin"
                   type="number"
                   value={selectedControl.sliderMin ?? 0}
                   onChange={(e) => updateControl(selectedControl.id, { sliderMin: Number(e.target.value) })}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sliderMax">Max</Label>
+                <Label htmlFor="inspector-sliderMax">Max</Label>
                 <Input
-                  id="sliderMax"
+                  id="inspector-sliderMax"
                   type="number"
                   value={selectedControl.sliderMax ?? 100}
                   onChange={(e) => updateControl(selectedControl.id, { sliderMax: Number(e.target.value) })}
@@ -248,12 +240,14 @@ export function InspectorPanel() {
           <>
             <Separator />
             <div className="space-y-2">
-              <Label htmlFor="radioOrientation">Orientation</Label>
+              <Label htmlFor="inspector-radioOrientation">Orientation</Label>
               <Select
                 value={selectedControl.radioGroupIsVertical !== false ? 'vertical' : 'horizontal'}
-                onValueChange={(value) => updateControl(selectedControl.id, { radioGroupIsVertical: value === 'vertical' })}
+                onValueChange={(value) =>
+                  updateControl(selectedControl.id, { radioGroupIsVertical: value === 'vertical' })
+                }
               >
-                <SelectTrigger id="radioOrientation">
+                <SelectTrigger id="inspector-radioOrientation">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -282,8 +276,14 @@ export function InspectorPanel() {
                       <Input
                         placeholder="Binary Code"
                         value={option.binaryCode}
-                        onChange={(e) => handleUpdateRadioOption(option.key, { binaryCode: e.target.value })}
-                        className={validateBinaryCode(option.binaryCode) ? 'border-destructive' : ''}
+                        onChange={(e) => {
+                          const error = validateBinaryCode(e.target.value);
+                          if (!error) {
+                            handleUpdateRadioOption(option.key, { binaryCode: e.target.value });
+                          } else {
+                            toast.error(error);
+                          }
+                        }}
                       />
                       <Button
                         size="sm"
@@ -304,12 +304,11 @@ export function InspectorPanel() {
 
         <Separator />
 
-        {/* Actions */}
         <div className="flex gap-2">
-          <Button onClick={saveLayout} disabled={isSaving || !!idError || !!binaryError} className="flex-1">
+          <Button onClick={saveLayout} disabled={isSaving} className="flex-1">
             {isSaving ? 'Saving...' : 'Save Layout'}
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
+          <Button variant="destructive" onClick={() => deleteControl(selectedControl.id)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

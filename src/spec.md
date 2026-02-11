@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Make the “New Tab” draft experience match the “in Caffeine” draft experience in layout, styling, and behavior.
+**Goal:** Make runtime-mode buttons respond reliably to mouse and touch presses, and log/display each button press with both its binary code and button name.
 
 **Planned changes:**
-- Identify and fix differences in theme/CSS/Tailwind application between the in-Caffeine view and the standalone new-tab view so both render the same colors, typography, spacing, and component styling.
-- Align new-tab layout sizing/scrolling and overall page structure to prevent view-specific regressions (e.g., missing styles, different background, different layout behavior).
-- Verify and preserve core interactions in the new-tab view (edit/runtime toggle, adding controls modal, inspector panel, recent signals panel, import/export panel) so they behave the same as in-Caffeine.
+- Update runtime-mode button interactions to use unified pointer-based input so presses work with both mouse and touch, and properly handle leave/cancel to avoid stuck pressed state.
+- Preserve existing edit-mode behavior so button presses do not emit signals while editing.
+- Extend button press event payloads to include the button name (using the control label) alongside the binary code, and persist this in the backend event log and recent-events responses.
+- Update the Recent Signals UI to display both the binary code and button name for button press events, aligned with the updated backend event shape.
 
-**User-visible outcome:** Opening the app in a new browser tab shows the same UI theme, layout, and interactions as when viewed inside Caffeine.
+**User-visible outcome:** In runtime mode, users can press buttons via mouse or touch without getting stuck, and the Recent Signals log shows each button press with its binary code and the button’s name.

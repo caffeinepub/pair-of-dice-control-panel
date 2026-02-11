@@ -1,24 +1,26 @@
-import Map "mo:core/Map";
-import Text "mo:core/Text";
+import Array "mo:core/Array";
+import Time "mo:core/Time";
 
 module {
+  type OldEvent = {
+    timestamp : Time.Time;
+    controlId : Text;
+    controlType : Text;
+    value : Text;
+    binaryCode : Text;
+  };
+
   type OldControl = {
     id : Text;
     controlType : Text;
     binaryCode : Text;
     radioOptions : ?[Text];
+    radioGroupIsVertical : ?Bool;
+    sliderIsVertical : ?Bool;
   };
 
   type OldLayout = {
     controls : [OldControl];
-  };
-
-  type OldEvent = {
-    timestamp : Int;
-    controlId : Text;
-    controlType : Text;
-    value : Text;
-    binaryCode : Text;
   };
 
   type OldEventLog = {
@@ -31,39 +33,61 @@ module {
     eventLog : OldEventLog;
   };
 
+  type NewEvent = {
+    timestamp : Time.Time;
+    controlId : Text;
+    controlType : Text;
+    controlName : ?Text;
+    value : Text;
+    binaryCode : Text;
+  };
+
   type NewControl = {
     id : Text;
     controlType : Text;
+    controlName : ?Text;
     binaryCode : Text;
     radioOptions : ?[Text];
     radioGroupIsVertical : ?Bool;
+    sliderIsVertical : ?Bool;
   };
 
   type NewLayout = {
     controls : [NewControl];
   };
 
+  type NewEventLog = {
+    events : [NewEvent];
+    maxSize : Nat;
+  };
+
   type NewActor = {
     currentLayout : NewLayout;
-    eventLog : OldEventLog;
+    eventLog : NewEventLog;
   };
 
   public func run(old : OldActor) : NewActor {
     let newControls = old.currentLayout.controls.map(
-      func(control) {
+      func(oldControl) {
         {
-          id = control.id;
-          controlType = control.controlType;
-          binaryCode = control.binaryCode;
-          radioOptions = control.radioOptions;
-          radioGroupIsVertical = ?false;
+          oldControl with
+          controlName = null;
         };
       }
     );
+
+    let newEvents = old.eventLog.events.map(
+      func(oldEvent) {
+        {
+          oldEvent with
+          controlName = null;
+        };
+      }
+    );
+
     {
-      currentLayout = { controls = newControls };
-      eventLog = old.eventLog;
+      currentLayout = { old.currentLayout with controls = newControls };
+      eventLog = { old.eventLog with events = newEvents };
     };
   };
 };
-

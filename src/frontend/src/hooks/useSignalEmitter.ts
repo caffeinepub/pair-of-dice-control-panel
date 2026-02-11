@@ -10,16 +10,18 @@ export function useSignalEmitter() {
     mutationFn: async ({
       controlId,
       controlType,
+      controlName,
       value,
       binaryCode,
     }: {
       controlId: string;
       controlType: string;
+      controlName: string;
       value: string;
       binaryCode: string;
     }) => {
       if (!actor) throw new Error('Actor not initialized');
-      await actor.emitEvent(controlId, controlType, value, binaryCode);
+      await actor.emitEvent(controlId, controlType, controlName, value, binaryCode);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recentEvents'] });
@@ -29,8 +31,8 @@ export function useSignalEmitter() {
     },
   });
 
-  const emit = (controlId: string, controlType: string, value: string, binaryCode: string) => {
-    emitMutation.mutate({ controlId, controlType, value, binaryCode });
+  const emit = (controlId: string, controlType: string, controlName: string, value: string, binaryCode: string) => {
+    emitMutation.mutate({ controlId, controlType, controlName, value, binaryCode });
   };
 
   return { emit, isEmitting: emitMutation.isPending };

@@ -12,12 +12,15 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Control {
   'id' : string,
+  'controlName' : [] | [string],
   'controlType' : string,
   'radioOptions' : [] | [Array<string>],
   'radioGroupIsVertical' : [] | [boolean],
+  'sliderIsVertical' : [] | [boolean],
   'binaryCode' : string,
 }
 export interface Event {
+  'controlName' : [] | [string],
   'controlType' : string,
   'value' : string,
   'controlId' : string,
@@ -27,10 +30,12 @@ export interface Event {
 export interface Layout { 'controls' : Array<Control> }
 export type Time = bigint;
 export interface _SERVICE {
-  'emitEvent' : ActorMethod<[string, string, string, string], undefined>,
+  'emitEvent' : ActorMethod<
+    [string, string, [] | [string], string, string],
+    undefined
+  >,
   'getEventsByControlId' : ActorMethod<[string], Array<Event>>,
   'getLayout' : ActorMethod<[], Layout>,
-  'getRadioGroupLayout' : ActorMethod<[], boolean>,
   'getRecentEvents' : ActorMethod<[], Array<Event>>,
   'saveLayout' : ActorMethod<[Layout], undefined>,
 }

@@ -32,6 +32,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
   const [binaryCode, setBinaryCode] = useState('');
   const [sliderMin, setSliderMin] = useState(0);
   const [sliderMax, setSliderMax] = useState(100);
+  const [sliderIsVertical, setSliderIsVertical] = useState(false);
   const [radioOptions, setRadioOptions] = useState<RadioOption[]>([
     { key: 'option_1', label: 'Option 1', binaryCode: '0001' },
     { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
@@ -46,6 +47,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     setControlType('button');
     setSliderMin(0);
     setSliderMax(100);
+    setSliderIsVertical(false);
     setRadioOptions([
       { key: 'option_1', label: 'Option 1', binaryCode: '0001' },
       { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
@@ -99,6 +101,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     if (controlType === 'slider') {
       config.sliderMin = sliderMin;
       config.sliderMax = sliderMax;
+      config.sliderIsVertical = sliderIsVertical;
     }
 
     if (controlType === 'radio') {
@@ -176,26 +179,43 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
           </div>
 
           {controlType === 'slider' && (
-            <div className="grid grid-cols-2 gap-4">
+            <>
               <div className="space-y-2">
-                <Label htmlFor="new-sliderMin">Min</Label>
-                <Input
-                  id="new-sliderMin"
-                  type="number"
-                  value={sliderMin}
-                  onChange={(e) => setSliderMin(Number(e.target.value))}
-                />
+                <Label htmlFor="new-sliderOrientation">Orientation</Label>
+                <Select
+                  value={sliderIsVertical ? 'vertical' : 'horizontal'}
+                  onValueChange={(value) => setSliderIsVertical(value === 'vertical')}
+                >
+                  <SelectTrigger id="new-sliderOrientation">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="horizontal">Horizontal</SelectItem>
+                    <SelectItem value="vertical">Vertical</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-sliderMax">Max</Label>
-                <Input
-                  id="new-sliderMax"
-                  type="number"
-                  value={sliderMax}
-                  onChange={(e) => setSliderMax(Number(e.target.value))}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-sliderMin">Min</Label>
+                  <Input
+                    id="new-sliderMin"
+                    type="number"
+                    value={sliderMin}
+                    onChange={(e) => setSliderMin(Number(e.target.value))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-sliderMax">Max</Label>
+                  <Input
+                    id="new-sliderMax"
+                    type="number"
+                    value={sliderMax}
+                    onChange={(e) => setSliderMax(Number(e.target.value))}
+                  />
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {controlType === 'radio' && (

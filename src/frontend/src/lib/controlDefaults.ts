@@ -29,6 +29,7 @@ export function getControlDefaults(type: ControlType): Omit<ControlConfig, 'id' 
         sliderValue: 50,
         sliderMin: 0,
         sliderMax: 100,
+        sliderIsVertical: false,
         width: 200,
         height: 60,
       };

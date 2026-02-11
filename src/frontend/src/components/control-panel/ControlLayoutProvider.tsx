@@ -89,6 +89,7 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
     binaryCode: string;
     sliderMin?: number;
     sliderMax?: number;
+    sliderIsVertical?: boolean;
     radioOptions?: Array<{ key: string; label: string; binaryCode: string }>;
     radioGroupIsVertical?: boolean;
   }): boolean => {
@@ -178,6 +179,9 @@ function deserializeLayout(backendLayout: Layout): LayoutConfig {
     // Parse radio group orientation (default to true/vertical if not present for backward compatibility)
     const radioGroupIsVertical = ctrl.radioGroupIsVertical !== undefined ? ctrl.radioGroupIsVertical : true;
 
+    // Parse slider orientation (default to false/horizontal if not present for backward compatibility)
+    const sliderIsVertical = ctrl.sliderIsVertical !== undefined ? ctrl.sliderIsVertical : false;
+
     return {
       ...defaults,
       id: ctrl.id,
@@ -185,6 +189,7 @@ function deserializeLayout(backendLayout: Layout): LayoutConfig {
       binaryCode: ctrl.binaryCode,
       radioOptions,
       radioGroupIsVertical,
+      sliderIsVertical,
     };
   });
 
@@ -198,6 +203,7 @@ function serializeLayout(layout: LayoutConfig): Layout {
     binaryCode: ctrl.binaryCode,
     radioOptions: ctrl.radioOptions?.map((opt) => opt.label),
     radioGroupIsVertical: ctrl.radioGroupIsVertical,
+    sliderIsVertical: ctrl.sliderIsVertical,
   }));
 
   return { controls };

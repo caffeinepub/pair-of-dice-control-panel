@@ -1,39 +1,66 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T22:32:09.165Z",
+  "generatedAt": "2026-02-11T22:52:43.190Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the \"New Tab\" draft experience so it matches the \"in Caffeine\" draft experience in layout, styling, and behavior (i.e., opening the app in a new browser tab should render the same UI theme, spacing, and component behavior as when viewed inside Caffeine).",
+        "summary": "Update runtime-mode button interactions so a button press can be triggered reliably via either mouse or touch input (e.g., using Pointer Events) and does not require edit mode to be off.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/index.css",
-          "frontend/src/index.css",
-          "frontend/index.html",
-          "frontend/src/App.tsx"
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ],
         "matchedFiles": [
-          "frontend/index.css",
-          "frontend/index.html"
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "When a runtime-mode button is pushed, log an event that includes (at minimum) the button's binary code and the button's name (use the control's label as the name). Ensure this information is persisted in the backend event log and returned by recent-events queries.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useSignalEmitter.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useSignalEmitter.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Update the Recent Signals UI to display the button name (label) alongside the binary code for logged button press events, so users can see both in the log.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/control-panel/RecentSignalsPanel.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/control-panel/RecentSignalsPanel.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.css",
-    "frontend/index.html",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
+    "frontend/src/components/control-panel/RecentSignalsPanel.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useSignalEmitter.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

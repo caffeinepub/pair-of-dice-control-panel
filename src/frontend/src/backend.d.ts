@@ -10,15 +10,18 @@ export type Option<T> = Some<T> | None;
 export type Time = bigint;
 export interface Control {
     id: string;
+    controlName?: string;
     controlType: string;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
+    sliderIsVertical?: boolean;
     binaryCode: string;
 }
 export interface Layout {
     controls: Array<Control>;
 }
 export interface Event {
+    controlName?: string;
     controlType: string;
     value: string;
     controlId: string;
@@ -26,10 +29,9 @@ export interface Event {
     binaryCode: string;
 }
 export interface backendInterface {
-    emitEvent(controlId: string, controlType: string, value: string, binaryCode: string): Promise<void>;
+    emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
-    getRadioGroupLayout(): Promise<boolean>;
     getRecentEvents(): Promise<Array<Event>>;
     saveLayout(layout: Layout): Promise<void>;
 }
