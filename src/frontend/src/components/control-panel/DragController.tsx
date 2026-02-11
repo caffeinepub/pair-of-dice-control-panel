@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { useControlLayout } from '@/hooks/useControlLayout';
 import type { ControlConfig } from '@/types/controlPanel';
+import { cn } from '@/lib/utils';
 
 interface DragControllerProps {
   control: ControlConfig;
@@ -60,18 +61,20 @@ export function DragController({ control, isSelected, onSelect, isDraggable, chi
 
   return (
     <div
-      className="absolute cursor-pointer transition-all"
+      className={cn(
+        'absolute transition-all',
+        isDraggable ? 'cursor-move' : 'cursor-default'
+      )}
       style={{
-        left: `${control.x}px`,
-        top: `${control.y}px`,
-        width: `${control.width}px`,
-        height: `${control.height}px`,
+        left: control.x,
+        top: control.y,
+        width: control.width,
+        height: control.height,
+        outline: isSelected && isDraggable ? '2px solid hsl(var(--primary))' : 'none',
+        outlineOffset: '2px',
       }}
       onMouseDown={handleMouseDown}
     >
-      {isSelected && isDraggable && (
-        <div className="absolute inset-0 -m-1 rounded-lg border-2 border-destructive pointer-events-none" />
-      )}
       {children}
     </div>
   );

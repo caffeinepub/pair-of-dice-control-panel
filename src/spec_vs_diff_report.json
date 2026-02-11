@@ -1,24 +1,44 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T23:26:15.611Z",
-  "summary": "SharedAddControlButton was updated to gate opening the Add Control modal on (mode===edit && isInitialized && !isLoading), show a loading spinner during layout loading, and provide disabled-state tooltips via a wrapper element so the tooltip can trigger even when the underlying button is disabled. However, the diff summary does not provide evidence that both the header Add Control button and the Import/Export Versions-tab button are actually using this shared component/implementation as required.",
+  "generatedAt": "2026-02-11T23:36:56.401Z",
+  "summary": "Diff implements runtime-vs-edit behavioral split for dragging/selection, hides Inspector and Import/Export in runtime, and adds reliable event emission + Recent Signals refresh via react-query invalidation/polling. However, there is insufficient evidence that all remaining layout/control mutation entry points (notably creating controls) are blocked in runtime.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Header and Versions-tab “Add Control” buttons both use the shared implementation and behave identically.",
-      "reason": "Only SharedAddControlButton.tsx changes are shown. The diff summary does not include the header button implementation or confirm that both the header and Versions tab are wired to use SharedAddControlButton (or that both were updated/reverted together).",
+      "requirement": "No new controls can be created in Runtime mode (existing Add Control gating remains effective).",
+      "reason": "ControlPanelScreen always renders the CreateControlButton regardless of mode; the diff summary does not show CreateControlButton being disabled/hidden in runtime, nor any other explicit gating preventing control creation while in runtime.",
       "evidence": [
-        "frontend/src/components/control-panel/SharedAddControlButton.tsx",
-        "frontend-file-summaries.txt (mentions ImportExportPanel uses shared button, but no actual diff for header/ImportExportPanel wiring)"
+        "frontend/src/screens/ControlPanelScreen.tsx"
       ]
     }
   ],
-  "hallucinated_features": [],
+  "hallucinated_features": [
+    {
+      "description": "Added backend in-canister event log structure (EventLog with maxSize trimming) and additional query getEventsByControlId.",
+      "reason": "BuildRequest focuses on runtime UI locking and ensuring events appear in Recent Signals; it does not request adding new backend event-log APIs beyond supporting emission/display behavior.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Introduced/propagated slider and radio orientation configuration fields (sliderIsVertical, radioGroupIsVertical) across types/defaults/inspector/serialization.",
+      "reason": "Orientation settings are not part of the BuildRequest requirements (REQ-1..REQ-3) which are about runtime locking and signal logging.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
   "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/control-panel/SharedAddControlButton.tsx",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
+    "frontend/src/components/control-panel/DragController.tsx",
+    "frontend/src/components/control-panel/ImportExportPanel.tsx",
+    "frontend/src/hooks/useRecentSignals.ts",
+    "frontend/src/hooks/useSignalEmitter.ts",
+    "frontend/src/screens/ControlPanelScreen.tsx",
     "project_state.json"
   ]
 }

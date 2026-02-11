@@ -1,43 +1,77 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Restore Add Control modal open/disabled behavior",
+  "title": "Lock edit capabilities in Runtime mode while preserving control interactions and signal logging",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix shared Add Control button so it reliably opens the Add Control modal in Edit mode when layout is initialized and not loading, without the modal auto-closing due to guard-state changes.",
+      "summary": "In Runtime mode, prevent any layout/control configuration edits while still allowing control interactions and UI signal logging.",
       "acceptanceCriteria": [
-        "When Mode is Edit, the layout is initialized, and the layout is not loading, clicking “Add Control” opens the Add Control modal on the first click.",
-        "This behavior is identical for the header button and the Versions-tab button (they both use the shared implementation and behave the same).",
-        "If the modal is opened, it stays open until the user closes it or successfully creates a control (it must not immediately close due to guard logic flapping)."
+        "Switching to Runtime mode disables or hides any UI that can mutate control definitions/layout (e.g., import layout, export+reimport workflow, delete, save layout, edit attributes).",
+        "In Runtime mode, controls cannot be repositioned via drag interactions (no movement occurs) and edit-selection affordances are not shown.",
+        "In Runtime mode, interacting with a button emits events (e.g., pressed/released) and those events appear in the Recent Signals list without requiring a page reload.",
+        "No new controls can be created in Runtime mode (existing Add Control gating remains effective)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/SharedAddControlButton.tsx",
+          "path": "frontend/src/screens/ControlPanelScreen.tsx",
           "operation": "modify",
-          "description": "Revert/repair modal open-state handling by removing the effect that auto-closes the modal when canAddControl flips false after opening; keep guard logic only for whether the click can open the modal so the modal stays open until user closes it or creation succeeds. Ensure both header and Versions-tab usage continue to share this exact implementation. Use existing shadcn-ui Tooltip/Dialog/Button components already imported (Verify the component's usage instructions before implementing)."
+          "description": "Gate edit-only panels/actions by Panel Mode: keep Inspector hidden in runtime (already), and additionally hide or disable the Import/Export panel in runtime while leaving RecentSignalsPanel visible. Use existing shadcn-ui layout components already in the screen structure. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/control-panel/ImportExportPanel.tsx",
+          "operation": "modify",
+          "description": "Add Panel Mode awareness so import/export actions are disabled or not rendered in runtime (including the file input trigger), ensuring no layout mutation workflows are accessible. Use existing shadcn-ui Button/Alert/Tabs components and their disabled states. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "operation": "modify",
+          "description": "Ensure Runtime interactions do not mutate control configuration/layout state: remove runtime calls to updateControl for toggle/slider/radio (keep interaction state locally in the renderer via React state) while still emitting events; keep edit-mode restrictions intact. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Restore Add Control button disabled/loading UX with spinner during layout loading and a visible tooltip explaining disabled reasons, including when the button is disabled.",
+      "summary": "Make Runtime interactions reliably emit events and refresh the Recent Signals list after emission.",
       "acceptanceCriteria": [
-        "While the layout is loading, the Add Control button shows a spinner and is not clickable.",
-        "When not in Edit mode, the Add Control button is disabled and hovering/focusing it shows a tooltip explaining to switch to Edit mode.",
-        "When initialized state is false (initializing), the Add Control button is disabled and hovering/focusing it shows an initializing tooltip message.",
-        "The disabled-state tooltip is actually visible/triggerable even when the underlying button is disabled (including in the Versions tab)."
+        "For button controls, pointer down/up results in backend events being recorded via emitEvent and visible in Recent Signals.",
+        "The Recent Signals panel reflects newly emitted events shortly after interaction (via query invalidation on emit success and/or existing polling), without manual refresh being required."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/SharedAddControlButton.tsx",
+          "path": "frontend/src/hooks/useSignalEmitter.ts",
           "operation": "modify",
-          "description": "Adjust disabled/loading rendering so the spinner is shown when layout is loading, the button remains non-clickable while loading/disabled, and the tooltip remains triggerable even when the underlying button is disabled by moving the TooltipTrigger target to a focusable wrapper (e.g., wrapper span with appropriate focus/aria-disabled) for both hover and keyboard focus. Use existing shadcn-ui Tooltip components already referenced (Verify the component's usage instructions before implementing)."
+          "description": "Harden the emit helper typing/handling so it can safely pass an optional controlName (string or null) to the backend actor call, and keep react-query invalidation of the recentEvents query on success for immediate UI refresh. This leverages the existing core-infrastructure actor connection + react-query setup. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/control-panel/ImportExportPanel.tsx",
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Confirm the Versions tab continues to use SharedAddControlButton directly (no local overrides) so the restored disabled/loading/tooltip behavior is identical to the header button. If any layout-specific wrapper/styling interferes with tooltip triggering, adjust only composition/styling here without modifying files under frontend/src/components/ui (Verify the component's usage instructions before implementing)."
+          "description": "Ensure button pointer down/up and other control interactions call the signal emitter consistently in Runtime mode (including passing a null controlName when label is empty/undefined) and do not require reload to see updates (relies on recentEvents invalidation + polling). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useRecentSignals.ts",
+          "operation": "modify",
+          "description": "Confirm the recentEvents query behavior works well with emit invalidation (e.g., ensure the query remains enabled when the actor is ready and returns stable defaults), so newly emitted signals appear shortly after interaction without manual refresh. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Adjust control wrapper cursor/affordances in Runtime mode to avoid suggesting editability while preserving click/drag-free interaction with controls.",
+      "acceptanceCriteria": [
+        "In Runtime mode, the wrapper around controls does not display a draggable/edit cursor style.",
+        "Buttons/toggles/sliders/radio options remain clickable/usable in Runtime mode and are not blocked by wrapper event handling."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/control-panel/DragController.tsx",
+          "operation": "modify",
+          "description": "Change wrapper cursor styling based on isDraggable (e.g., pointer/move in edit, default in runtime) and ensure wrapper mouse handling never interferes with child control pointer interactions when dragging is disabled. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/control-panel/Workspace.tsx",
+          "operation": "modify",
+          "description": "Confirm workspace wiring passes the correct mode-derived isDraggable/onSelect behavior and that runtime mode does not present edit-selection affordances while still rendering interactive controls. Verify the component's usage instructions before implementing."
         }
       ]
     }

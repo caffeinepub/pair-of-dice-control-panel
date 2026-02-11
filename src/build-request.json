@@ -1,56 +1,83 @@
 {
   "kind": "build_request",
-  "title": "Revert Add Control button behavior to last known working state",
+  "title": "Lock control configuration in Runtime mode while still emitting and displaying button outputs",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Restore the “Add Control” button behavior to the last known working state so that, when the panel is in Edit mode and the control layout is initialized (and not loading), clicking the button reliably opens the Add Control modal (both in the header and in the Import/Export panel “Versions” tab).",
+      "text": "When Panel Mode is set to \"runtime\", lock all control configuration/editing capabilities (i.e., prevent any layout/control property mutations such as importing a new layout, editing control attributes, deleting controls, or dragging/repositioning), while still allowing users to interact with the rendered controls to emit events and see those outputs in the UI log.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "revert the button back to when it worked"
+          "now  when runtime mode is active lock all attributes of the buttons and allow me to use the buttons and log the outputs"
         ]
       },
       "acceptanceCriteria": [
-        "When Mode is Edit, the layout is initialized, and the layout is not loading, clicking “Add Control” opens the Add Control modal on the first click.",
-        "This behavior is identical for the header button and the Versions-tab button (they both use the shared implementation and behave the same).",
-        "If the modal is opened, it stays open until the user closes it or successfully creates a control (it must not immediately close due to guard logic flapping)."
+        "Switching to Runtime mode disables or hides any UI that can mutate control definitions/layout (e.g., import layout, export+reimport workflow, delete, save layout, edit attributes).",
+        "In Runtime mode, controls cannot be repositioned via drag interactions (no movement occurs) and edit-selection affordances are not shown.",
+        "In Runtime mode, interacting with a button emits events (e.g., pressed/released) and those events appear in the Recent Signals list without requiring a page reload.",
+        "No new controls can be created in Runtime mode (existing Add Control gating remains effective)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Revert/repair the Add Control button’s disabled/loading UX so it matches the last working version: the button is disabled when not allowed to add controls, shows a loading spinner while the layout is loading, and displays a visible tooltip explaining why it is disabled (e.g., runtime mode, initializing, loading).",
-      "target": "frontend",
+      "text": "Ensure Runtime-mode interactions continue to log control outputs by reliably emitting events to the backend and refreshing the Recent Signals panel upon successful emission.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "revert the button back to when it worked"
+          "allow me to use the buttons and log the outputs"
         ]
       },
       "acceptanceCriteria": [
-        "While the layout is loading, the Add Control button shows a spinner and is not clickable.",
-        "When not in Edit mode, the Add Control button is disabled and hovering/focusing it shows a tooltip explaining to switch to Edit mode.",
-        "When initialized state is false (initializing), the Add Control button is disabled and hovering/focusing it shows an initializing tooltip message.",
-        "The disabled-state tooltip is actually visible/triggerable even when the underlying button is disabled (including in the Versions tab)."
+        "For button controls, pointer down/up results in backend events being recorded via emitEvent and visible in Recent Signals.",
+        "The Recent Signals panel reflects newly emitted events shortly after interaction (via query invalidation on emit success and/or existing polling), without manual refresh being required."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Adjust the workspace control wrapper cursor/interaction affordances so that in Runtime mode it does not suggest editability (e.g., avoid showing a drag-style cursor when dragging is disabled), while preserving correct pointer interaction with the controls themselves.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "when runtime mode is active lock all attributes of the buttons and allow me to use the buttons"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In Runtime mode, the wrapper around controls does not display a draggable/edit cursor style.",
+        "Buttons/toggles/sliders/radio options remain clickable/usable in Runtime mode and are not blocked by wrapper event handling."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (compose existing UI components instead).",
-    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx."
+    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if persistent schema/state changes are required.",
+    "Do not edit files under frontend/src/components/ui or other paths listed as immutable in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Changing backend APIs or Motoko state schema.",
-    "Redesigning unrelated control panel UI/UX beyond restoring the Add Control button’s prior working behavior."
+    "Adding third-party auth providers (only Internet Identity is supported).",
+    "Adding real-time transport beyond existing polling/invalidation (no WebSockets).",
+    "Redesigning the event schema or adding external databases/logging services."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

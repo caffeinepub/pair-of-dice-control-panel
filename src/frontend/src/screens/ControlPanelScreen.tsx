@@ -59,8 +59,12 @@ export function ControlPanelScreen() {
           <aside className="w-96 border-l border-border bg-card overflow-y-auto">
             <div className="flex flex-col gap-4 p-4">
               <RecentSignalsPanel />
-              <Separator />
-              <ImportExportPanel />
+              {mode === 'edit' && (
+                <>
+                  <Separator />
+                  <ImportExportPanel />
+                </>
+              )}
             </div>
           </aside>
         </main>

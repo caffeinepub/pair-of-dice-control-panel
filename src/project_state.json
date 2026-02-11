@@ -3,30 +3,43 @@
   "projectStateVersion": 3,
   "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [
-    "Request to revert the add-control button to the last known working version (regression suspected)."
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-restore-the-add-control-button-behavior-to-the-last-known-working-state-so-that-when-the-panel-is-in-edit-mode-and-the-control-layout-is-initialized-and-not-loading-clicking-the-button-reliably-opens-the-add-control-modal-both-in-the-header-and-in-the-import-export-panel-versions-tab",
-      "title": "Restore the “Add Control” button behavior to the last known working state so that, when the panel is in Edit mode and the control layout is initialized (and not loading), clicking the button reliably opens the Add Control modal (both in the header and in the Import/Export panel “Versions” tab).",
+      "id": "feature-when-panel-mode-is-set-to-runtime-lock-all-control-configuration-editing-capabilities-i-e-prevent-any-layout-control-property-mutations-such-as-importing-a-new-layout-editing-control-attributes-deleting-controls-or-dragging-repositioning-while-still-allowing-users-to-interact-with-the-rendered-controls-to-emit-events-and-see-those-outputs-in-the-ui-log",
+      "title": "When Panel Mode is set to \"runtime\", lock all control configuration/editing capabilities (i.e., prevent any layout/control property mutations such as importing a new layout, editing control attributes, deleting controls, or dragging/repositioning), while still allowing users to interact with the rendered controls to emit events and see those outputs in the UI log.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-revert-repair-the-add-control-button-s-disabled-loading-ux-so-it-matches-the-last-working-version-the-button-is-disabled-when-not-allowed-to-add-controls-shows-a-loading-spinner-while-the-layout-is-loading-and-displays-a-visible-tooltip-explaining-why-it-is-disabled-e-g-runtime-mode-initializing-loading",
-      "title": "Revert/repair the Add Control button’s disabled/loading UX so it matches the last working version: the button is disabled when not allowed to add controls, shows a loading spinner while the layout is loading, and displays a visible tooltip explaining why it is disabled (e.g., runtime mode, initializing, loading).",
+      "id": "feature-ensure-runtime-mode-interactions-continue-to-log-control-outputs-by-reliably-emitting-events-to-the-backend-and-refreshing-the-recent-signals-panel-upon-successful-emission",
+      "title": "Ensure Runtime-mode interactions continue to log control outputs by reliably emitting events to the backend and refreshing the Recent Signals panel upon successful emission.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-adjust-the-workspace-control-wrapper-cursor-interaction-affordances-so-that-in-runtime-mode-it-does-not-suggest-editability-e-g-avoid-showing-a-drag-style-cursor-when-dragging-is-disabled-while-preserving-correct-pointer-interaction-with-the-controls-themselves",
+      "title": "Adjust the workspace control wrapper cursor/interaction affordances so that in Runtime mode it does not suggest editability (e.g., avoid showing a drag-style cursor when dragging is disabled), while preserving correct pointer interaction with the controls themselves.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Revert Add Control button behavior to last known working state",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "When runtime mode is active, lock all button attributes (prevent editing) while still allowing button interaction and logging button outputs.",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Lock control configuration in Runtime mode while still emitting and displaying button outputs",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

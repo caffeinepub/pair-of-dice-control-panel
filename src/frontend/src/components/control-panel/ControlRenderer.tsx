@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { ControlConfig } from '@/types/controlPanel';
-import { useControlLayout } from '@/hooks/useControlLayout';
 import { useSignalEmitter } from '@/hooks/useSignalEmitter';
 import { cn } from '@/lib/utils';
 
@@ -10,43 +9,45 @@ interface ControlRendererProps {
 }
 
 export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
-  const { updateControl } = useControlLayout();
   const { emit } = useSignalEmitter();
   const [isPressed, setIsPressed] = useState(false);
+  const [localToggleState, setLocalToggleState] = useState(control.toggleState ?? false);
+  const [localSliderValue, setLocalSliderValue] = useState(control.sliderValue ?? 50);
+  const [localRadioSelected, setLocalRadioSelected] = useState(control.radioSelected ?? '');
 
   const handleButtonPress = () => {
     if (isEditMode) return;
     setIsPressed(true);
-    emit(control.id, control.controlType, control.label, 'pressed', control.binaryCode);
-    console.log(`Button pressed: ${control.label} (${control.binaryCode})`);
+    emit(control.id, control.controlType, control.label || null, 'pressed', control.binaryCode);
+    console.log(`Button pressed: ${control.label || 'Unnamed'} (${control.binaryCode})`);
   };
 
   const handleButtonRelease = () => {
     if (isEditMode) return;
     setIsPressed(false);
-    emit(control.id, control.controlType, control.label, 'released', control.binaryCode);
+    emit(control.id, control.controlType, control.label || null, 'released', control.binaryCode);
   };
 
   const handleToggle = () => {
     if (isEditMode) return;
-    const newState = !control.toggleState;
-    updateControl(control.id, { toggleState: newState });
-    emit(control.id, control.controlType, control.label, newState ? 'on' : 'off', control.binaryCode);
+    const newState = !localToggleState;
+    setLocalToggleState(newState);
+    emit(control.id, control.controlType, control.label || null, newState ? 'on' : 'off', control.binaryCode);
   };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isEditMode) return;
     const value = Number(e.target.value);
-    updateControl(control.id, { sliderValue: value });
-    emit(control.id, control.controlType, control.label, value.toString(), control.binaryCode);
+    setLocalSliderValue(value);
+    emit(control.id, control.controlType, control.label || null, value.toString(), control.binaryCode);
   };
 
   const handleRadioSelect = (optionKey: string) => {
     if (isEditMode) return;
     const option = control.radioOptions?.find((opt) => opt.key === optionKey);
     if (!option) return;
-    updateControl(control.id, { radioSelected: optionKey });
-    emit(control.id, 'radio', control.label, option.label, option.binaryCode);
+    setLocalRadioSelected(optionKey);
+    emit(control.id, 'radio', control.label || null, option.label, option.binaryCode);
   };
 
   const baseClasses = cn(
@@ -78,7 +79,7 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   }
 
   if (control.controlType === 'toggle') {
-    const isOn = control.toggleState;
+    const isOn = isEditMode ? (control.toggleState ?? false) : localToggleState;
     return (
       <button
         className={cn(
@@ -102,7 +103,7 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   }
 
   if (control.controlType === 'slider') {
-    const value = control.sliderValue ?? 50;
+    const value = isEditMode ? (control.sliderValue ?? 50) : localSliderValue;
     const min = control.sliderMin ?? 0;
     const max = control.sliderMax ?? 100;
     const percentage = ((value - min) / (max - min)) * 100;
@@ -157,6 +158,7 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
 
   if (control.controlType === 'radio') {
     const isVertical = control.radioGroupIsVertical !== false;
+    const selected = isEditMode ? (control.radioSelected ?? '') : localRadioSelected;
     
     return (
       <div
@@ -169,7 +171,7 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
           isVertical ? 'flex-col' : 'flex-row'
         )}>
           {control.radioOptions?.map((option) => {
-            const isSelected = control.radioSelected === option.key;
+            const isSelected = selected === option.key;
             return (
               <button
                 key={option.key}

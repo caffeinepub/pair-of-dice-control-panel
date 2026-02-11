@@ -16,7 +16,7 @@ export function useSignalEmitter() {
     }: {
       controlId: string;
       controlType: string;
-      controlName: string;
+      controlName: string | null;
       value: string;
       binaryCode: string;
     }) => {
@@ -31,7 +31,13 @@ export function useSignalEmitter() {
     },
   });
 
-  const emit = (controlId: string, controlType: string, controlName: string, value: string, binaryCode: string) => {
+  const emit = (
+    controlId: string, 
+    controlType: string, 
+    controlName: string | null, 
+    value: string, 
+    binaryCode: string
+  ) => {
     emitMutation.mutate({ controlId, controlType, controlName, value, binaryCode });
   };
 

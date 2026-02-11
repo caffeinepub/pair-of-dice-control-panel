@@ -3,8 +3,6 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
 
-
-
 actor {
   type Event = {
     timestamp : Time.Time;

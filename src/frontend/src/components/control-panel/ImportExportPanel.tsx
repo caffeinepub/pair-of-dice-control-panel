@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useControlLayout } from '@/hooks/useControlLayout';
+import { usePanelMode } from '@/hooks/usePanelMode';
 import { exportLayout, importLayout } from '@/lib/layoutSerialization';
 import { downloadJSON } from '@/lib/download';
 import { Download, Upload, AlertCircle } from 'lucide-react';
@@ -12,10 +13,14 @@ import { SharedAddControlButton } from './SharedAddControlButton';
 
 export function ImportExportPanel() {
   const { controls, applyImportedLayout } = useControlLayout();
+  const { mode } = usePanelMode();
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const isEditMode = mode === 'edit';
+
   const handleExport = () => {
+    if (!isEditMode) return;
     const layout = { controls };
     const json = exportLayout(layout);
     downloadJSON(json, `control-panel-${Date.now()}.json`);
@@ -23,6 +28,7 @@ export function ImportExportPanel() {
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isEditMode) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -56,12 +62,17 @@ export function ImportExportPanel() {
       <CardContent className="space-y-4">
         <Tabs defaultValue="actions" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="actions">Actions</TabsTrigger>
-            <TabsTrigger value="versions">Versions</TabsTrigger>
+            <TabsTrigger value="actions" disabled={!isEditMode}>Actions</TabsTrigger>
+            <TabsTrigger value="versions" disabled={!isEditMode}>Versions</TabsTrigger>
           </TabsList>
           
           <TabsContent value="actions" className="space-y-4 mt-4">
-            <Button onClick={handleExport} className="w-full" variant="outline">
+            <Button 
+              onClick={handleExport} 
+              className="w-full" 
+              variant="outline"
+              disabled={!isEditMode}
+            >
               <Download className="h-4 w-4 mr-2" />
               Export Layout
             </Button>
@@ -74,12 +85,25 @@ export function ImportExportPanel() {
                 onChange={handleImport}
                 className="hidden"
                 id="import-file"
+                disabled={!isEditMode}
               />
-              <Button asChild className="w-full" variant="outline">
-                <label htmlFor="import-file" className="cursor-pointer">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Layout
-                </label>
+              <Button 
+                asChild={isEditMode} 
+                className="w-full" 
+                variant="outline"
+                disabled={!isEditMode}
+              >
+                {isEditMode ? (
+                  <label htmlFor="import-file" className="cursor-pointer">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Layout
+                  </label>
+                ) : (
+                  <span>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Layout
+                  </span>
+                )}
               </Button>
             </div>
 

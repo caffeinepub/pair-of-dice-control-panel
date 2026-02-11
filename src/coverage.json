@@ -1,46 +1,71 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T23:26:15.613Z",
+  "generatedAt": "2026-02-11T23:36:56.404Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Restore the “Add Control” button behavior to the last known working state so that, when the panel is in Edit mode and the control layout is initialized (and not loading), clicking the button reliably opens the Add Control modal (both in the header and in the Import/Export panel “Versions” tab).",
+        "summary": "When Panel Mode is set to \"runtime\", lock all control configuration/editing capabilities (i.e., prevent any layout/control property mutations such as importing a new layout, editing control attributes, deleting controls, or dragging/repositioning), while still allowing users to interact with the rendered controls to emit events and see those outputs in the UI log.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/control-panel/SharedAddControlButton.tsx"
+          "frontend/src/screens/ControlPanelScreen.tsx",
+          "frontend/src/components/control-panel/ImportExportPanel.tsx",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/control-panel/SharedAddControlButton.tsx"
+          "frontend/src/screens/ControlPanelScreen.tsx",
+          "frontend/src/components/control-panel/ImportExportPanel.tsx",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Revert/repair the Add Control button’s disabled/loading UX so it matches the last working version: the button is disabled when not allowed to add controls, shows a loading spinner while the layout is loading, and displays a visible tooltip explaining why it is disabled (e.g., runtime mode, initializing, loading).",
+        "summary": "Ensure Runtime-mode interactions continue to log control outputs by reliably emitting events to the backend and refreshing the Recent Signals panel upon successful emission.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/control-panel/SharedAddControlButton.tsx",
-          "frontend/src/components/control-panel/ImportExportPanel.tsx"
+          "frontend/src/hooks/useSignalEmitter.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "frontend/src/hooks/useRecentSignals.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/control-panel/SharedAddControlButton.tsx"
+          "frontend/src/hooks/useSignalEmitter.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "frontend/src/hooks/useRecentSignals.ts"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Adjust the workspace control wrapper cursor/interaction affordances so that in Runtime mode it does not suggest editability (e.g., avoid showing a drag-style cursor when dragging is disabled), while preserving correct pointer interaction with the controls themselves.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/control-panel/DragController.tsx",
+          "frontend/src/components/control-panel/Workspace.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/control-panel/DragController.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/control-panel/SharedAddControlButton.tsx",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
+    "frontend/src/components/control-panel/DragController.tsx",
+    "frontend/src/components/control-panel/ImportExportPanel.tsx",
+    "frontend/src/hooks/useRecentSignals.ts",
+    "frontend/src/hooks/useSignalEmitter.ts",
+    "frontend/src/screens/ControlPanelScreen.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
