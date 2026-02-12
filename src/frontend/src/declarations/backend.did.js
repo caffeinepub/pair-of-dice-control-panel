@@ -29,6 +29,7 @@ export const Control = IDL.Record({
 export const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
 
 export const idlService = IDL.Service({
+  'backendScaffoldPlaceholderFunction' : IDL.Func([], [IDL.Text], ['query']),
   'emitEvent' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
       [],
@@ -64,6 +65,7 @@ export const idlFactory = ({ IDL }) => {
   const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
   
   return IDL.Service({
+    'backendScaffoldPlaceholderFunction' : IDL.Func([], [IDL.Text], ['query']),
     'emitEvent' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
         [],

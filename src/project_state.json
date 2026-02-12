@@ -1,32 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project includes an edit mode and requires binary code input to be limited to a four-space integer.",
+  "summary": "New project",
   "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-update-binary-code-validation-to-require-a-4-bit-binary-value-exactly-4-characters-only-0-and-1-and-ensure-all-validation-error-messages-are-user-facing-english",
-      "title": "Update binary code validation to require a 4-bit binary value (exactly 4 characters, only \"0\" and \"1\"), and ensure all validation error messages are user-facing English.",
+      "id": "feature-create-a-new-frontend-scaffold-component-file-intended-for-user-extensions-with-clear-todo-markers-and-a-minimal-placeholder-ui-and-export-it-for-use-elsewhere-in-the-app",
+      "title": "Create a new frontend scaffold component file intended for user extensions, with clear TODO markers and a minimal placeholder UI, and export it for use elsewhere in the app.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-change-default-binary-code-generation-to-produce-deterministic-4-bit-codes-not-8-bit-so-newly-created-controls-and-newly-added-radio-options-always-start-with-a-4-bit-binary-code",
-      "title": "Change default binary code generation to produce deterministic 4-bit codes (not 8-bit) so newly created controls and newly added radio options always start with a 4-bit binary code.",
+      "id": "feature-add-the-new-frontend-scaffold-component-into-an-existing-screen-so-it-is-visible-in-the-running-app-without-disrupting-existing-control-panel-behavior",
+      "title": "Add the new frontend scaffold component into an existing screen so it is visible in the running app (without disrupting existing control panel behavior).",
       "reqIds": [
         "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-constrain-all-binary-code-inputs-in-the-ui-to-4-characters-and-prevent-users-from-entering-more-than-4-bits-for-control-binary-codes-and-radio-option-binary-codes",
-      "title": "Constrain all binary code inputs in the UI to 4 characters and prevent users from entering more than 4 bits for control binary codes and radio option binary codes.",
-      "reqIds": [
-        "REQ-3"
       ],
       "version": 1
     }
@@ -34,28 +26,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Limit binary code to a four-space integer (input constrained accordingly).",
+      "summary": "Add a new section/scaffold in the codebase for the user to implement the remaining functionality",
       "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-5",
-      "summary": "Enforce the same 4-bit binary code constraint during layout import validation so invalid binary codes are rejected with clear validation errors.",
+      "id": "AR-4",
+      "summary": "Add a clearly labeled backend scaffold section in backend/main.mo for future user-defined logic, implemented as at least one harmless placeholder query or shared method returning a static value.",
       "reqIds": [
-        "REQ-4"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Add backend-side validation so the canister rejects saving layouts (and recording emitted events, if applicable) whose binaryCode values are not exactly 4-bit binary strings (\"0\"/\"1\" only).",
-      "reqIds": [
-        "REQ-5"
+        "REQ-3"
       ],
       "status": "pending"
     }
   ],
-  "projectName": "Constrain binary codes to 4-bit values across the app",
+  "projectName": "Add a dedicated scaffold section for user custom code (frontend + backend)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

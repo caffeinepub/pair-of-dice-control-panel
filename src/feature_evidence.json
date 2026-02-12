@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-binary-code-validation-to-require-a-4-bit-binary-value-exactly-4-characters-only-0-and-1-and-ensure-all-validation-error-messages-are-user-facing-english",
-      "featureTitle": "Update binary code validation to require a 4-bit binary value (exactly 4 characters, only \"0\" and \"1\"), and ensure all validation error messages are user-facing English.",
+      "featureId": "feature-create-a-new-frontend-scaffold-component-file-intended-for-user-extensions-with-clear-todo-markers-and-a-minimal-placeholder-ui-and-export-it-for-use-elsewhere-in-the-app",
+      "featureTitle": "Create a new frontend scaffold component file intended for user extensions, with clear TODO markers and a minimal placeholder UI, and export it for use elsewhere in the app.",
       "files": [
-        "frontend/src/lib/binaryCode.ts"
+        "frontend/src/components/control-panel/UserExtensionsSection.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -20,12 +20,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-change-default-binary-code-generation-to-produce-deterministic-4-bit-codes-not-8-bit-so-newly-created-controls-and-newly-added-radio-options-always-start-with-a-4-bit-binary-code",
-      "featureTitle": "Change default binary code generation to produce deterministic 4-bit codes (not 8-bit) so newly created controls and newly added radio options always start with a 4-bit binary code.",
+      "featureId": "feature-add-the-new-frontend-scaffold-component-into-an-existing-screen-so-it-is-visible-in-the-running-app-without-disrupting-existing-control-panel-behavior",
+      "featureTitle": "Add the new frontend scaffold component into an existing screen so it is visible in the running app (without disrupting existing control panel behavior).",
       "files": [
-        "frontend/src/components/control-panel/AddControlModal.tsx",
-        "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
-        "frontend/src/lib/binaryCode.ts"
+        "frontend/src/screens/ControlPanelScreen.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -36,27 +34,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-constrain-all-binary-code-inputs-in-the-ui-to-4-characters-and-prevent-users-from-entering-more-than-4-bits-for-control-binary-codes-and-radio-option-binary-codes",
-      "featureTitle": "Constrain all binary code inputs in the UI to 4 characters and prevent users from entering more than 4 bits for control binary codes and radio option binary codes.",
-      "files": [
-        "frontend/src/components/control-panel/AddControlModal.tsx",
-        "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
-        "frontend/src/components/control-panel/ImportExportPanel.tsx",
-        "frontend/src/components/control-panel/InspectorPanel.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
       ],
       "confidence": "high"
     }

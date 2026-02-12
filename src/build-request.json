@@ -1,124 +1,74 @@
 {
   "kind": "build_request",
-  "title": "Constrain binary codes to 4-bit values across the app",
+  "title": "Add a dedicated scaffold section for user custom code (frontend + backend)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update binary code validation to require a 4-bit binary value (exactly 4 characters, only \"0\" and \"1\"), and ensure all validation error messages are user-facing English.",
+      "text": "Create a new frontend scaffold component file intended for user extensions, with clear TODO markers and a minimal placeholder UI, and export it for use elsewhere in the app.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "fantastic, now the binary code should only be limited to a four space integer"
+          "make a new section in the code for me to code the rest in"
         ]
       },
       "acceptanceCriteria": [
-        "validateBinaryCode rejects empty input.",
-        "validateBinaryCode rejects any input containing characters other than 0 or 1.",
-        "validateBinaryCode rejects any input not exactly 4 characters long.",
-        "validateBinaryCode accepts only strings matching /^[01]{4}$/.",
-        "All returned validation error strings are in English."
+        "A new TypeScript React component file exists in the frontend codebase dedicated to user custom code (e.g., a 'UserExtensions'/'CustomSection' component).",
+        "The file includes clear comment delimiters (e.g., 'BEGIN USER CODE' / 'END USER CODE') indicating where the user should add code.",
+        "The component renders without crashing and shows a simple placeholder (e.g., heading + short description) using existing Tailwind/shadcn styling patterns."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Change default binary code generation to produce deterministic 4-bit codes (not 8-bit) so newly created controls and newly added radio options always start with a 4-bit binary code.",
+      "text": "Add the new frontend scaffold component into an existing screen so it is visible in the running app (without disrupting existing control panel behavior).",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "the binary code should only be limited to a four space integer"
+          "make a new section in the code for me to code the rest in"
         ]
       },
       "acceptanceCriteria": [
-        "Newly created controls default to a 4-bit binary code.",
-        "Newly added radio options default to a 4-bit binary code.",
-        "No part of the UI generates or auto-fills 8-bit binary codes anymore."
+        "The Control Panel UI renders the new scaffold section in a sensible location (e.g., in a sidebar panel or below existing panels) and remains fully functional in both Edit and Interact modes.",
+        "No existing control creation, layout editing, fullscreen, import/export, or recent signals behavior regresses."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Constrain all binary code inputs in the UI to 4 characters and prevent users from entering more than 4 bits for control binary codes and radio option binary codes.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "the binary code should only be limited to a four space integer"
-        ]
-      },
-      "acceptanceCriteria": [
-        "In the Add Control modal, the Binary Code input prevents entry beyond 4 characters.",
-        "In the Inspector panel, the Binary Code input prevents entry beyond 4 characters.",
-        "For radio controls, each Radio Option Binary Code input prevents entry beyond 4 characters.",
-        "Users cannot persist (create/update/import) a layout containing binary codes that are not exactly 4 bits."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Enforce the same 4-bit binary code constraint during layout import validation so invalid binary codes are rejected with clear validation errors.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "the binary code should only be limited to a four space integer"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Importing a layout with any control binaryCode not exactly 4 bits returns validation errors for the offending fields.",
-        "Importing a layout with any radio option binaryCode not exactly 4 bits returns validation errors for the offending fields.",
-        "Importing a valid layout with only 4-bit binary codes succeeds."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Add backend-side validation so the canister rejects saving layouts (and recording emitted events, if applicable) whose binaryCode values are not exactly 4-bit binary strings (\"0\"/\"1\" only).",
+      "text": "Add a clearly labeled backend scaffold section in backend/main.mo for future user-defined logic, implemented as at least one harmless placeholder query or shared method returning a static value.",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "the binary code should only be limited to a four space integer"
+          "make a new section in the code for me to code the rest in"
         ]
       },
       "acceptanceCriteria": [
-        "saveLayout rejects any layout where any control.binaryCode is not exactly 4 bits.",
-        "saveLayout rejects any layout where any radio option binary code value is not exactly 4 bits (if present in the saved representation).",
-        "The backend does not silently accept or store binaryCode values longer than 4 characters or containing non-binary characters."
+        "backend/main.mo contains a clearly marked section for user custom code (comment block with TODO markers).",
+        "At least one placeholder canister method exists in that section (query or shared) that compiles and returns a static value (e.g., Text) without affecting existing layout/event functionality.",
+        "Existing backend methods (getLayout/saveLayout/emitEvent/getRecentEvents/getEventsByControlId) continue to behave as before, including 4-bit binary validation."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths; compose existing UI components instead.",
-    "Use English for any user-facing text."
+    "Do not modify files under frontend/src/components/ui (shadcn) directly; only compose them.",
+    "Do not edit the immutable frontend hook/bootstrap paths listed in SYSTEM_CONTEXT (e.g., frontend/src/main.tsx, frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts).",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo if state schema changes require it."
   ],
   "nonGoals": [
-    "Adding new control types or changing existing control behaviors beyond binary code length/format enforcement.",
-    "Implementing third-party auth or any non-Internet-Identity authentication changes.",
-    "Introducing external databases or non-Motoko backend services."
+    "Do not implement any new product functionality beyond providing a scaffold/extension area.",
+    "Do not redesign the existing control panel UI or change existing control behavior.",
+    "Do not add any third-party integrations, external databases, or additional backend services."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

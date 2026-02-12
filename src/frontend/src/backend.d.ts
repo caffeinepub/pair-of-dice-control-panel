@@ -29,6 +29,7 @@ export interface Event {
     binaryCode: string;
 }
 export interface backendInterface {
+    backendScaffoldPlaceholderFunction(): Promise<string>;
     emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;

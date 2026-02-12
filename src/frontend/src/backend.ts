@@ -111,6 +111,7 @@ export interface Event {
     binaryCode: string;
 }
 export interface backendInterface {
+    backendScaffoldPlaceholderFunction(): Promise<string>;
     emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
@@ -120,6 +121,20 @@ export interface backendInterface {
 import type { Control as _Control, Event as _Event, Layout as _Layout, Time as _Time } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async backendScaffoldPlaceholderFunction(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.backendScaffoldPlaceholderFunction();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.backendScaffoldPlaceholderFunction();
+            return result;
+        }
+    }
     async emitEvent(arg0: string, arg1: string, arg2: string | null, arg3: string, arg4: string): Promise<void> {
         if (this.processError) {
             try {

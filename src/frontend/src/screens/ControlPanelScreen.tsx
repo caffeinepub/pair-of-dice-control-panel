@@ -4,6 +4,7 @@ import { Workspace } from '@/components/control-panel/Workspace';
 import { InspectorPanel } from '@/components/control-panel/InspectorPanel';
 import { RecentSignalsPanel } from '@/components/control-panel/RecentSignalsPanel';
 import { ImportExportPanel } from '@/components/control-panel/ImportExportPanel';
+import { UserExtensionsSection } from '@/components/control-panel/UserExtensionsSection';
 import { ModeToggle } from '@/components/control-panel/ModeToggle';
 import { FullscreenToggleButton } from '@/components/control-panel/FullscreenToggleButton';
 import { CreateControlButton } from '@/components/control-panel/CreateControlButton';
@@ -63,7 +64,7 @@ export function ControlPanelScreen() {
             <Workspace />
           </div>
 
-          {/* Right Sidebar - Signals & Import/Export */}
+          {/* Right Sidebar - Signals & Import/Export & User Extensions */}
           <aside className="w-96 border-l border-border bg-card overflow-y-auto">
             <div className="flex flex-col gap-4 p-4">
               <RecentSignalsPanel />
@@ -73,6 +74,8 @@ export function ControlPanelScreen() {
                   <ImportExportPanel />
                 </>
               )}
+              <Separator />
+              <UserExtensionsSection />
             </div>
           </aside>
         </main>

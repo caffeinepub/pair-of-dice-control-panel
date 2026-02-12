@@ -107,4 +107,13 @@ actor {
     );
     filteredEvents.toArray();
   };
+
+  // <CODE_AREAS>
+  // ===================== BACKEND SCAFFOLD (EDIT AT WILL) =====================
+  public query ({ caller }) func backendScaffoldPlaceholderFunction() : async Text {
+    "Backend scaffold placeholder for future user-defined logic";
+  };
+  // =================== END BACKEND SCAFFOLD (EDIT AT WILL) ===================
+  // </CODE_AREAS>
 };
+

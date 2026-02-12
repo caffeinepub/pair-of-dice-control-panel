@@ -30,6 +30,7 @@ export interface Event {
 export interface Layout { 'controls' : Array<Control> }
 export type Time = bigint;
 export interface _SERVICE {
+  'backendScaffoldPlaceholderFunction' : ActorMethod<[], string>,
   'emitEvent' : ActorMethod<
     [string, string, [] | [string], string, string],
     undefined
