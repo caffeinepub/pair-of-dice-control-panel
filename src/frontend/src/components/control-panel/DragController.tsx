@@ -17,6 +17,7 @@ export function DragController({ control, isSelected, onSelect, isDraggable, chi
   const dragStartPos = useRef({ x: 0, y: 0, controlX: 0, controlY: 0 });
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Block selection and dragging in interact mode
     if (!isDraggable) return;
     
     e.stopPropagation();
@@ -34,7 +35,7 @@ export function DragController({ control, isSelected, onSelect, isDraggable, chi
   };
 
   useEffect(() => {
-    if (!isDragging) return;
+    if (!isDragging || !isDraggable) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - dragStartPos.current.x;
@@ -57,7 +58,7 @@ export function DragController({ control, isSelected, onSelect, isDraggable, chi
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, control.id, updateControl]);
+  }, [isDragging, isDraggable, control.id, updateControl]);
 
   return (
     <div

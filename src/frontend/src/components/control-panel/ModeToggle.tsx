@@ -8,7 +8,7 @@ export function ModeToggle() {
   return (
     <Button
       onClick={toggleMode}
-      variant={mode === 'edit' ? 'default' : 'destructive'}
+      variant={mode === 'edit' ? 'default' : 'secondary'}
       className="gap-2"
     >
       {mode === 'edit' ? (
@@ -19,7 +19,7 @@ export function ModeToggle() {
       ) : (
         <>
           <Play className="h-4 w-4" />
-          Runtime Mode
+          Interact Mode
         </>
       )}
     </Button>

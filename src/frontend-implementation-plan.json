@@ -1,77 +1,97 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Lock edit capabilities in Runtime mode while preserving control interactions and signal logging",
+  "title": "Constrain binary codes to 4-bit values across the app",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "In Runtime mode, prevent any layout/control configuration edits while still allowing control interactions and UI signal logging.",
+      "summary": "Make binary code validation strictly require exactly 4 bits and return only user-facing English errors.",
       "acceptanceCriteria": [
-        "Switching to Runtime mode disables or hides any UI that can mutate control definitions/layout (e.g., import layout, export+reimport workflow, delete, save layout, edit attributes).",
-        "In Runtime mode, controls cannot be repositioned via drag interactions (no movement occurs) and edit-selection affordances are not shown.",
-        "In Runtime mode, interacting with a button emits events (e.g., pressed/released) and those events appear in the Recent Signals list without requiring a page reload.",
-        "No new controls can be created in Runtime mode (existing Add Control gating remains effective)."
+        "validateBinaryCode rejects empty input.",
+        "validateBinaryCode rejects any input containing characters other than 0 or 1.",
+        "validateBinaryCode rejects any input not exactly 4 characters long.",
+        "validateBinaryCode accepts only strings matching /^[01]{4}$/.",
+        "All returned validation error strings are in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/screens/ControlPanelScreen.tsx",
+          "path": "frontend/src/lib/binaryCode.ts",
           "operation": "modify",
-          "description": "Gate edit-only panels/actions by Panel Mode: keep Inspector hidden in runtime (already), and additionally hide or disable the Import/Export panel in runtime while leaving RecentSignalsPanel visible. Use existing shadcn-ui layout components already in the screen structure. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/control-panel/ImportExportPanel.tsx",
-          "operation": "modify",
-          "description": "Add Panel Mode awareness so import/export actions are disabled or not rendered in runtime (including the file input trigger), ensuring no layout mutation workflows are accessible. Use existing shadcn-ui Button/Alert/Tabs components and their disabled states. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
-          "operation": "modify",
-          "description": "Ensure Runtime interactions do not mutate control configuration/layout state: remove runtime calls to updateControl for toggle/slider/radio (keep interaction state locally in the renderer via React state) while still emitting events; keep edit-mode restrictions intact. Verify the component's usage instructions before implementing."
+          "description": "Update validateBinaryCode to enforce exactly 4 characters of only 0/1 (strict /^[01]{4}$/) and ensure all returned error messages are clear, user-facing English."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Make Runtime interactions reliably emit events and refresh the Recent Signals list after emission.",
+      "summary": "Generate deterministic 4-bit default binary codes everywhere new controls/options are created.",
       "acceptanceCriteria": [
-        "For button controls, pointer down/up results in backend events being recorded via emitEvent and visible in Recent Signals.",
-        "The Recent Signals panel reflects newly emitted events shortly after interaction (via query invalidation on emit success and/or existing polling), without manual refresh being required."
+        "Newly created controls default to a 4-bit binary code.",
+        "Newly added radio options default to a 4-bit binary code.",
+        "No part of the UI generates or auto-fills 8-bit binary codes anymore."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useSignalEmitter.ts",
+          "path": "frontend/src/lib/binaryCode.ts",
           "operation": "modify",
-          "description": "Harden the emit helper typing/handling so it can safely pass an optional controlName (string or null) to the backend actor call, and keep react-query invalidation of the recentEvents query on success for immediate UI refresh. This leverages the existing core-infrastructure actor connection + react-query setup. Verify the component's usage instructions before implementing."
+          "description": "Change generateDefaultBinaryCode to return deterministic 4-bit binary strings (e.g., modulo 16 and padStart(4, '0')) and ensure no 8-bit generation remains."
         },
         {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "path": "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
           "operation": "modify",
-          "description": "Ensure button pointer down/up and other control interactions call the signal emitter consistently in Runtime mode (including passing a null controlName when label is empty/undefined) and do not require reload to see updates (relies on recentEvents invalidation + polling). Verify the component's usage instructions before implementing."
+          "description": "Ensure any default/derived binary codes produced when creating controls and when deriving radio option binary codes during layout deserialization use the 4-bit generator (and remove any 8-bit assumptions)."
         },
         {
-          "path": "frontend/src/hooks/useRecentSignals.ts",
+          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
           "operation": "modify",
-          "description": "Confirm the recentEvents query behavior works well with emit invalidation (e.g., ensure the query remains enabled when the actor is ready and returns stable defaults), so newly emitted signals appear shortly after interaction without manual refresh. Verify the component's usage instructions before implementing."
+          "description": "Update default/reset values and any placeholder text so new controls and newly added radio options start with 4-bit binary codes (and remove any 8-bit examples)."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Adjust control wrapper cursor/affordances in Runtime mode to avoid suggesting editability while preserving click/drag-free interaction with controls.",
+      "summary": "Limit all binary code inputs to 4 characters and prevent persisting non-4-bit binary codes via create/update/import.",
       "acceptanceCriteria": [
-        "In Runtime mode, the wrapper around controls does not display a draggable/edit cursor style.",
-        "Buttons/toggles/sliders/radio options remain clickable/usable in Runtime mode and are not blocked by wrapper event handling."
+        "In the Add Control modal, the Binary Code input prevents entry beyond 4 characters.",
+        "In the Inspector panel, the Binary Code input prevents entry beyond 4 characters.",
+        "For radio controls, each Radio Option Binary Code input prevents entry beyond 4 characters.",
+        "Users cannot persist (create/update/import) a layout containing binary codes that are not exactly 4 bits."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/DragController.tsx",
+          "path": "frontend/src/components/control-panel/AddControlModal.tsx",
           "operation": "modify",
-          "description": "Change wrapper cursor styling based on isDraggable (e.g., pointer/move in edit, default in runtime) and ensure wrapper mouse handling never interferes with child control pointer interactions when dragging is disabled. Verify the component's usage instructions before implementing."
+          "description": "Constrain Binary Code and Radio Option Binary Code inputs to max 4 characters (e.g., maxLength=4) and sanitize input to only allow 0/1 while typing; keep create submission blocked by strict validation errors."
         },
         {
-          "path": "frontend/src/components/control-panel/Workspace.tsx",
+          "path": "frontend/src/components/control-panel/InspectorPanel.tsx",
           "operation": "modify",
-          "description": "Confirm workspace wiring passes the correct mode-derived isDraggable/onSelect behavior and that runtime mode does not present edit-selection affordances while still rendering interactive controls. Verify the component's usage instructions before implementing."
+          "description": "Constrain control Binary Code and radio option Binary Code inputs to max 4 characters and sanitize to 0/1; adjust editing flow to avoid spamming strict validation errors on every keystroke while still preventing invalid values from being saved."
+        },
+        {
+          "path": "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
+          "operation": "modify",
+          "description": "Add a pre-save and pre-apply-import guard that validates all control.binaryCode and radioOptions[].binaryCode with strict 4-bit validation; if invalid, show an English error and do not call persistence (saveLayout/applyImportedLayout)."
+        },
+        {
+          "path": "frontend/src/components/control-panel/ImportExportPanel.tsx",
+          "operation": "modify",
+          "description": "Ensure import UX clearly reports binary code validation failures (English) and that imported layouts only apply when validation succeeds (no persistence of invalid codes)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Enforce 4-bit binary code constraint during layout import validation with clear field-level errors.",
+      "acceptanceCriteria": [
+        "Importing a layout with any control binaryCode not exactly 4 bits returns validation errors for the offending fields.",
+        "Importing a layout with any radio option binaryCode not exactly 4 bits returns validation errors for the offending fields.",
+        "Importing a valid layout with only 4-bit binary codes succeeds."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/layoutSerialization.ts",
+          "operation": "modify",
+          "description": "Rely on the updated strict 4-bit validateBinaryCode for import validation; ensure returned ValidationError messages remain clear English and include accurate field paths for control and radio option binaryCode fields."
         }
       ]
     }

@@ -9,7 +9,6 @@ import { exportLayout, importLayout } from '@/lib/layoutSerialization';
 import { downloadJSON } from '@/lib/download';
 import { Download, Upload, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { SharedAddControlButton } from './SharedAddControlButton';
 
 export function ImportExportPanel() {
   const { controls, applyImportedLayout } = useControlLayout();
@@ -39,7 +38,7 @@ export function ImportExportPanel() {
 
       if (result.errors) {
         setImportErrors(result.errors.map((err) => `${err.field}: ${err.message}`));
-        toast.error('Import failed - see errors below');
+        toast.error('Import failed - validation errors detected');
       } else if (result.layout) {
         applyImportedLayout(result.layout);
         setImportErrors([]);
@@ -122,10 +121,9 @@ export function ImportExportPanel() {
           </TabsContent>
 
           <TabsContent value="versions" className="space-y-4 mt-4">
-            <div className="text-sm text-muted-foreground mb-4">
-              Manage control panel versions and configurations.
+            <div className="text-sm text-muted-foreground">
+              Version management features coming soon.
             </div>
-            <SharedAddControlButton variant="outline" className="w-full gap-2" />
           </TabsContent>
         </Tabs>
       </CardContent>

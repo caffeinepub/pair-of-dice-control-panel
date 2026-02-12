@@ -21,6 +21,12 @@ export function useSignalEmitter() {
       binaryCode: string;
     }) => {
       if (!actor) throw new Error('Actor not initialized');
+      
+      // Log the interaction with both name and id
+      console.log(
+        `Control interaction: ${controlName || 'Unnamed'} (id: ${controlId}) - ${controlType} ${value} [${binaryCode}]`
+      );
+      
       await actor.emitEvent(controlId, controlType, controlName, value, binaryCode);
     },
     onSuccess: () => {

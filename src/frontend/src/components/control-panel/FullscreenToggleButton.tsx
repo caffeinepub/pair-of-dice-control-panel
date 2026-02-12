@@ -1,16 +1,14 @@
-import { RefObject } from 'react';
 import { Button } from '@/components/ui/button';
 import { Maximize, Minimize } from 'lucide-react';
-import { useFullscreen } from '@/hooks/useFullscreen';
 import { toast } from 'sonner';
 
 interface FullscreenToggleButtonProps {
-  workspaceRef: RefObject<HTMLElement | null>;
+  isFullscreen: boolean;
+  isSupported: boolean;
+  onToggle: () => Promise<void>;
 }
 
-export function FullscreenToggleButton({ workspaceRef }: FullscreenToggleButtonProps) {
-  const { isFullscreen, isSupported, toggleFullscreen } = useFullscreen(workspaceRef);
-
+export function FullscreenToggleButton({ isFullscreen, isSupported, onToggle }: FullscreenToggleButtonProps) {
   const handleToggle = async () => {
     if (!isSupported) {
       toast.error('Fullscreen is not supported in your browser');
@@ -18,7 +16,7 @@ export function FullscreenToggleButton({ workspaceRef }: FullscreenToggleButtonP
     }
 
     try {
-      await toggleFullscreen();
+      await onToggle();
     } catch (error) {
       toast.error(
         isFullscreen

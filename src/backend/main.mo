@@ -2,6 +2,7 @@ import List "mo:core/List";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
+import Char "mo:core/Char";
 
 actor {
   type Event = {
@@ -51,15 +52,35 @@ actor {
     };
   };
 
+  func isValidBinaryCode(code : Text) : Bool {
+    if (code.size() != 4) {
+      return false;
+    };
+    code.chars().all(
+      func(char) {
+        char == '0' or char == '1';
+      }
+    );
+  };
+
   public query ({ caller }) func getLayout() : async Layout {
     currentLayout;
   };
 
   public shared ({ caller }) func saveLayout(layout : Layout) : async () {
+    for (control in layout.controls.values()) {
+      if (not isValidBinaryCode(control.binaryCode)) {
+        return;
+      };
+    };
     currentLayout := layout;
   };
 
   public shared ({ caller }) func emitEvent(controlId : Text, controlType : Text, controlName : ?Text, value : Text, binaryCode : Text) : async () {
+    if (not isValidBinaryCode(binaryCode)) {
+      return;
+    };
+
     let event : Event = {
       timestamp = Time.now();
       controlId;

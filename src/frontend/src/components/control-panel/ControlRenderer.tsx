@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { ControlConfig } from '@/types/controlPanel';
 import { useSignalEmitter } from '@/hooks/useSignalEmitter';
 import { cn } from '@/lib/utils';
@@ -14,18 +14,48 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   const [localToggleState, setLocalToggleState] = useState(control.toggleState ?? false);
   const [localSliderValue, setLocalSliderValue] = useState(control.sliderValue ?? 50);
   const [localRadioSelected, setLocalRadioSelected] = useState(control.radioSelected ?? '');
+  const keyPressedRef = useRef(false);
 
   const handleButtonPress = () => {
     if (isEditMode) return;
     setIsPressed(true);
     emit(control.id, control.controlType, control.label || null, 'pressed', control.binaryCode);
-    console.log(`Button pressed: ${control.label || 'Unnamed'} (${control.binaryCode})`);
   };
 
   const handleButtonRelease = () => {
     if (isEditMode) return;
     setIsPressed(false);
     emit(control.id, control.controlType, control.label || null, 'released', control.binaryCode);
+  };
+
+  const handleButtonKeyDown = (e: React.KeyboardEvent) => {
+    if (isEditMode) return;
+    // Only handle Enter and Space keys
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      // Prevent repeat events when key is held down
+      if (!keyPressedRef.current) {
+        keyPressedRef.current = true;
+        handleButtonPress();
+      }
+    }
+  };
+
+  const handleButtonKeyUp = (e: React.KeyboardEvent) => {
+    if (isEditMode) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      keyPressedRef.current = false;
+      handleButtonRelease();
+    }
+  };
+
+  const handleButtonBlur = () => {
+    // Reset key state and release button if it was pressed when focus is lost
+    if (keyPressedRef.current) {
+      keyPressedRef.current = false;
+      handleButtonRelease();
+    }
   };
 
   const handleToggle = () => {
@@ -71,6 +101,9 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
         onPointerUp={handleButtonRelease}
         onPointerCancel={handleButtonRelease}
         onPointerLeave={handleButtonRelease}
+        onKeyDown={handleButtonKeyDown}
+        onKeyUp={handleButtonKeyUp}
+        onBlur={handleButtonBlur}
         disabled={isEditMode}
       >
         <span className={cn(isPressed && !isEditMode ? 'text-black' : 'text-white')}>{control.label}</span>

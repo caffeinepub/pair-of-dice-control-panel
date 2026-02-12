@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { validateBinaryCode, generateDefaultBinaryCode } from '@/lib/binaryCode';
 import { getControlDefaults } from '@/lib/controlDefaults';
 import type { ControlType, RadioOption } from '@/types/controlPanel';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Terminal } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function InspectorPanel() {
@@ -17,22 +17,31 @@ export function InspectorPanel() {
 
   const [localId, setLocalId] = useState('');
   const [idError, setIdError] = useState<string | null>(null);
+  const [localBinaryCode, setLocalBinaryCode] = useState('');
+  const [binaryCodeError, setBinaryCodeError] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedControl) {
       setLocalId(selectedControl.id);
       setIdError(null);
+      setLocalBinaryCode(selectedControl.binaryCode);
+      setBinaryCodeError(null);
     }
-  }, [selectedControl?.id]);
+  }, [selectedControl?.id, selectedControl?.binaryCode]);
 
   if (!selectedControl) {
     return (
       <Card className="h-full">
         <CardHeader>
-          <CardTitle>Inspector</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Terminal className="h-5 w-5" />
+            Terminal
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Select a control to edit its properties</p>
+          <p className="text-sm text-muted-foreground">
+            Select a control in the workspace to edit its properties
+          </p>
         </CardContent>
       </Card>
     );
@@ -44,6 +53,25 @@ export function InspectorPanel() {
     setIdError(error);
     if (!error) {
       updateControl(selectedControl.id, { id: newId });
+    }
+  };
+
+  const handleBinaryCodeChange = (newCode: string) => {
+    // Sanitize input: only 0 and 1, max 4 characters
+    const sanitized = newCode.replace(/[^01]/g, '').slice(0, 4);
+    setLocalBinaryCode(sanitized);
+    
+    // Validate only if user has entered 4 characters
+    if (sanitized.length === 4) {
+      const error = validateBinaryCode(sanitized);
+      setBinaryCodeError(error);
+      if (!error) {
+        updateControl(selectedControl.id, { binaryCode: sanitized });
+      }
+    } else if (sanitized.length === 0) {
+      setBinaryCodeError('Binary code cannot be empty');
+    } else {
+      setBinaryCodeError('Binary code must be exactly 4 characters');
     }
   };
 
@@ -84,10 +112,18 @@ export function InspectorPanel() {
     updateControl(selectedControl.id, { radioOptions: updatedOptions });
   };
 
+  const sanitizeBinaryInput = (value: string): string => {
+    // Only allow 0 and 1, max 4 characters
+    return value.replace(/[^01]/g, '').slice(0, 4);
+  };
+
   return (
     <Card className="h-full overflow-y-auto">
       <CardHeader>
-        <CardTitle>Inspector</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Terminal className="h-5 w-5" />
+          Terminal
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -180,19 +216,16 @@ export function InspectorPanel() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="inspector-binaryCode">Binary Code</Label>
+          <Label htmlFor="inspector-binaryCode">Binary Code (4 bits)</Label>
           <Input
             id="inspector-binaryCode"
-            value={selectedControl.binaryCode}
-            onChange={(e) => {
-              const error = validateBinaryCode(e.target.value);
-              if (!error) {
-                updateControl(selectedControl.id, { binaryCode: e.target.value });
-              } else {
-                toast.error(error);
-              }
-            }}
+            value={localBinaryCode}
+            onChange={(e) => handleBinaryCodeChange(e.target.value)}
+            placeholder="e.g., 1010"
+            maxLength={4}
+            className={binaryCodeError ? 'border-destructive' : ''}
           />
+          {binaryCodeError && <p className="text-xs text-destructive">{binaryCodeError}</p>}
         </div>
 
         {selectedControl.controlType === 'slider' && (
@@ -202,7 +235,9 @@ export function InspectorPanel() {
               <Label htmlFor="inspector-sliderOrientation">Orientation</Label>
               <Select
                 value={selectedControl.sliderIsVertical ? 'vertical' : 'horizontal'}
-                onValueChange={(value) => updateControl(selectedControl.id, { sliderIsVertical: value === 'vertical' })}
+                onValueChange={(value) =>
+                  updateControl(selectedControl.id, { sliderIsVertical: value === 'vertical' })
+                }
               >
                 <SelectTrigger id="inspector-sliderOrientation">
                   <SelectValue />
@@ -219,7 +254,7 @@ export function InspectorPanel() {
                 <Input
                   id="inspector-sliderMin"
                   type="number"
-                  value={selectedControl.sliderMin ?? 0}
+                  value={selectedControl.sliderMin}
                   onChange={(e) => updateControl(selectedControl.id, { sliderMin: Number(e.target.value) })}
                 />
               </div>
@@ -228,7 +263,7 @@ export function InspectorPanel() {
                 <Input
                   id="inspector-sliderMax"
                   type="number"
-                  value={selectedControl.sliderMax ?? 100}
+                  value={selectedControl.sliderMax}
                   onChange={(e) => updateControl(selectedControl.id, { sliderMax: Number(e.target.value) })}
                 />
               </div>
@@ -242,7 +277,7 @@ export function InspectorPanel() {
             <div className="space-y-2">
               <Label htmlFor="inspector-radioOrientation">Orientation</Label>
               <Select
-                value={selectedControl.radioGroupIsVertical !== false ? 'vertical' : 'horizontal'}
+                value={selectedControl.radioGroupIsVertical ? 'vertical' : 'horizontal'}
                 onValueChange={(value) =>
                   updateControl(selectedControl.id, { radioGroupIsVertical: value === 'vertical' })
                 }
@@ -274,16 +309,14 @@ export function InspectorPanel() {
                         onChange={(e) => handleUpdateRadioOption(option.key, { label: e.target.value })}
                       />
                       <Input
-                        placeholder="Binary Code"
+                        placeholder="Binary Code (4 bits)"
                         value={option.binaryCode}
-                        onChange={(e) => {
-                          const error = validateBinaryCode(e.target.value);
-                          if (!error) {
-                            handleUpdateRadioOption(option.key, { binaryCode: e.target.value });
-                          } else {
-                            toast.error(error);
-                          }
-                        }}
+                        onChange={(e) =>
+                          handleUpdateRadioOption(option.key, {
+                            binaryCode: sanitizeBinaryInput(e.target.value),
+                          })
+                        }
+                        maxLength={4}
                       />
                       <Button
                         size="sm"
@@ -304,14 +337,14 @@ export function InspectorPanel() {
 
         <Separator />
 
-        <div className="flex gap-2">
-          <Button onClick={saveLayout} disabled={isSaving} className="flex-1">
-            {isSaving ? 'Saving...' : 'Save Layout'}
-          </Button>
-          <Button variant="destructive" onClick={() => deleteControl(selectedControl.id)}>
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button onClick={saveLayout} disabled={isSaving || !!idError || !!binaryCodeError} className="w-full">
+          {isSaving ? 'Saving...' : 'Save Layout'}
+        </Button>
+
+        <Button variant="destructive" onClick={() => deleteControl(selectedControl.id)} className="w-full">
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete Control
+        </Button>
       </CardContent>
     </Card>
   );

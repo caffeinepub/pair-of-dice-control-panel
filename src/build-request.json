@@ -1,70 +1,111 @@
 {
   "kind": "build_request",
-  "title": "Lock control configuration in Runtime mode while still emitting and displaying button outputs",
+  "title": "Constrain binary codes to 4-bit values across the app",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "When Panel Mode is set to \"runtime\", lock all control configuration/editing capabilities (i.e., prevent any layout/control property mutations such as importing a new layout, editing control attributes, deleting controls, or dragging/repositioning), while still allowing users to interact with the rendered controls to emit events and see those outputs in the UI log.",
+      "text": "Update binary code validation to require a 4-bit binary value (exactly 4 characters, only \"0\" and \"1\"), and ensure all validation error messages are user-facing English.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "now  when runtime mode is active lock all attributes of the buttons and allow me to use the buttons and log the outputs"
+          "fantastic, now the binary code should only be limited to a four space integer"
         ]
       },
       "acceptanceCriteria": [
-        "Switching to Runtime mode disables or hides any UI that can mutate control definitions/layout (e.g., import layout, export+reimport workflow, delete, save layout, edit attributes).",
-        "In Runtime mode, controls cannot be repositioned via drag interactions (no movement occurs) and edit-selection affordances are not shown.",
-        "In Runtime mode, interacting with a button emits events (e.g., pressed/released) and those events appear in the Recent Signals list without requiring a page reload.",
-        "No new controls can be created in Runtime mode (existing Add Control gating remains effective)."
+        "validateBinaryCode rejects empty input.",
+        "validateBinaryCode rejects any input containing characters other than 0 or 1.",
+        "validateBinaryCode rejects any input not exactly 4 characters long.",
+        "validateBinaryCode accepts only strings matching /^[01]{4}$/.",
+        "All returned validation error strings are in English."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure Runtime-mode interactions continue to log control outputs by reliably emitting events to the backend and refreshing the Recent Signals panel upon successful emission.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "allow me to use the buttons and log the outputs"
-        ]
-      },
-      "acceptanceCriteria": [
-        "For button controls, pointer down/up results in backend events being recorded via emitEvent and visible in Recent Signals.",
-        "The Recent Signals panel reflects newly emitted events shortly after interaction (via query invalidation on emit success and/or existing polling), without manual refresh being required."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Adjust the workspace control wrapper cursor/interaction affordances so that in Runtime mode it does not suggest editability (e.g., avoid showing a drag-style cursor when dragging is disabled), while preserving correct pointer interaction with the controls themselves.",
+      "text": "Change default binary code generation to produce deterministic 4-bit codes (not 8-bit) so newly created controls and newly added radio options always start with a 4-bit binary code.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "when runtime mode is active lock all attributes of the buttons and allow me to use the buttons"
+          "the binary code should only be limited to a four space integer"
         ]
       },
       "acceptanceCriteria": [
-        "In Runtime mode, the wrapper around controls does not display a draggable/edit cursor style.",
-        "Buttons/toggles/sliders/radio options remain clickable/usable in Runtime mode and are not blocked by wrapper event handling."
+        "Newly created controls default to a 4-bit binary code.",
+        "Newly added radio options default to a 4-bit binary code.",
+        "No part of the UI generates or auto-fills 8-bit binary codes anymore."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Constrain all binary code inputs in the UI to 4 characters and prevent users from entering more than 4 bits for control binary codes and radio option binary codes.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "the binary code should only be limited to a four space integer"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In the Add Control modal, the Binary Code input prevents entry beyond 4 characters.",
+        "In the Inspector panel, the Binary Code input prevents entry beyond 4 characters.",
+        "For radio controls, each Radio Option Binary Code input prevents entry beyond 4 characters.",
+        "Users cannot persist (create/update/import) a layout containing binary codes that are not exactly 4 bits."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Enforce the same 4-bit binary code constraint during layout import validation so invalid binary codes are rejected with clear validation errors.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "the binary code should only be limited to a four space integer"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Importing a layout with any control binaryCode not exactly 4 bits returns validation errors for the offending fields.",
+        "Importing a layout with any radio option binaryCode not exactly 4 bits returns validation errors for the offending fields.",
+        "Importing a valid layout with only 4-bit binary codes succeeds."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add backend-side validation so the canister rejects saving layouts (and recording emitted events, if applicable) whose binaryCode values are not exactly 4-bit binary strings (\"0\"/\"1\" only).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "the binary code should only be limited to a four space integer"
+        ]
+      },
+      "acceptanceCriteria": [
+        "saveLayout rejects any layout where any control.binaryCode is not exactly 4 bits.",
+        "saveLayout rejects any layout where any radio option binary code value is not exactly 4 bits (if present in the saved representation).",
+        "The backend does not silently accept or store binaryCode values longer than 4 characters or containing non-binary characters."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if persistent schema/state changes are required.",
-    "Do not edit files under frontend/src/components/ui or other paths listed as immutable in SYSTEM_CONTEXT."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths; compose existing UI components instead.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Adding third-party auth providers (only Internet Identity is supported).",
-    "Adding real-time transport beyond existing polling/invalidation (no WebSockets).",
-    "Redesigning the event schema or adding external databases/logging services."
+    "Adding new control types or changing existing control behaviors beyond binary code length/format enforcement.",
+    "Implementing third-party auth or any non-Internet-Identity authentication changes.",
+    "Introducing external databases or non-Motoko backend services."
   ],
   "imageRequirements": {
     "required": [],

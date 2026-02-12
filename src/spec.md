@@ -1,12 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** When Panel Mode is set to Runtime, prevent any control/layout editing while still allowing users to interact with controls and see emitted events in the Recent Signals log.
+**Goal:** Constrain all binary codes across the app to exactly 4-bit binary strings and enforce this consistently in the UI, import flow, and backend persistence.
 
 **Planned changes:**
-- In Runtime mode, disable or hide all UI/actions that mutate layouts or control definitions (e.g., import layout, delete controls, save layout, edit attributes, edit-selection affordances).
-- In Runtime mode, prevent drag/reposition interactions so controls cannot move and do not appear editable.
-- Ensure control interactions (e.g., button pointer down/up) still emit events to the backend and refresh the Recent Signals panel shortly after successful emission (via existing polling and/or query invalidation).
-- Adjust control wrapper cursor/interaction handling in Runtime mode to avoid draggable/edit cursor styling while preserving correct pointer interaction with the controls themselves.
+- Update binary code validation to accept only 4-character strings containing only `0`/`1`, with all user-facing validation messages in English.
+- Change default binary code generation so new controls and new radio options start with deterministic 4-bit codes (no 8-bit defaults anywhere in the UI).
+- Constrain binary code inputs to a maximum of 4 characters in relevant UI surfaces (Add Control modal, Inspector panel, and radio option editors) and block create/update/import when codes are not exactly 4 bits.
+- Add/adjust layout import validation to reject any non-4-bit control or radio option binary codes with clear validation errors.
+- Add backend validation so saving layouts (and any emitted event recording, if applicable) rejects any binaryCode values that are not exactly 4-bit binary strings.
 
-**User-visible outcome:** In Runtime mode, users can press/use existing controls and immediately see their outputs appear in Recent Signals, but cannot edit, move, add, delete, or reconfigure controls/layout.
+**User-visible outcome:** Users can only enter, generate, import, and save layouts with binary codes that are exactly 4 bits (e.g., `0101`), and any invalid codes are blocked with clear English error messages.

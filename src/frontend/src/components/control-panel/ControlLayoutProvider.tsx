@@ -5,7 +5,7 @@ import { ControlLayoutContext, type ControlLayoutContextValue } from '@/hooks/us
 import type { ControlConfig, LayoutConfig } from '@/types/controlPanel';
 import type { Layout, Control } from '@/backend';
 import { getControlDefaults } from '@/lib/controlDefaults';
-import { generateDefaultBinaryCode } from '@/lib/binaryCode';
+import { generateDefaultBinaryCode, validateBinaryCode } from '@/lib/binaryCode';
 import { toast } from 'sonner';
 
 export function ControlLayoutProvider({ children }: { children: ReactNode }) {
@@ -49,6 +49,25 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
   const saveLayoutMutation = useMutation({
     mutationFn: async (layout: LayoutConfig) => {
       if (!actor) throw new Error('Actor not initialized');
+      
+      // Validate all binary codes before saving
+      for (const control of layout.controls) {
+        const error = validateBinaryCode(control.binaryCode);
+        if (error) {
+          throw new Error(`Control "${control.label}" (${control.id}): ${error}`);
+        }
+        
+        // Validate radio option binary codes
+        if (control.controlType === 'radio' && control.radioOptions) {
+          for (const option of control.radioOptions) {
+            const optionError = validateBinaryCode(option.binaryCode);
+            if (optionError) {
+              throw new Error(`Control "${control.label}" radio option "${option.label}": ${optionError}`);
+            }
+          }
+        }
+      }
+      
       const backendLayout = serializeLayout(layout);
       await actor.saveLayout(backendLayout);
     },
@@ -135,6 +154,26 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
   );
 
   const applyImportedLayout = useCallback((layout: LayoutConfig) => {
+    // Validate all binary codes before applying
+    for (const control of layout.controls) {
+      const error = validateBinaryCode(control.binaryCode);
+      if (error) {
+        toast.error(`Cannot import: Control "${control.label}" (${control.id}): ${error}`);
+        return;
+      }
+      
+      // Validate radio option binary codes
+      if (control.controlType === 'radio' && control.radioOptions) {
+        for (const option of control.radioOptions) {
+          const optionError = validateBinaryCode(option.binaryCode);
+          if (optionError) {
+            toast.error(`Cannot import: Control "${control.label}" radio option "${option.label}": ${optionError}`);
+            return;
+          }
+        }
+      }
+    }
+    
     setLocalControls(layout.controls);
     setSelectedControlId(null);
     saveLayoutMutation.mutate(layout);

@@ -1,56 +1,73 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T23:36:56.404Z",
+  "generatedAt": "2026-02-12T17:25:10.846Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 5,
     "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "When Panel Mode is set to \"runtime\", lock all control configuration/editing capabilities (i.e., prevent any layout/control property mutations such as importing a new layout, editing control attributes, deleting controls, or dragging/repositioning), while still allowing users to interact with the rendered controls to emit events and see those outputs in the UI log.",
+        "summary": "Update binary code validation to require a 4-bit binary value (exactly 4 characters, only \"0\" and \"1\"), and ensure all validation error messages are user-facing English.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/screens/ControlPanelScreen.tsx",
-          "frontend/src/components/control-panel/ImportExportPanel.tsx",
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/src/lib/binaryCode.ts"
         ],
         "matchedFiles": [
-          "frontend/src/screens/ControlPanelScreen.tsx",
-          "frontend/src/components/control-panel/ImportExportPanel.tsx",
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/src/lib/binaryCode.ts"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure Runtime-mode interactions continue to log control outputs by reliably emitting events to the backend and refreshing the Recent Signals panel upon successful emission.",
+        "summary": "Change default binary code generation to produce deterministic 4-bit codes (not 8-bit) so newly created controls and newly added radio options always start with a 4-bit binary code.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useSignalEmitter.ts",
-          "frontend/src/components/control-panel/ControlRenderer.tsx",
-          "frontend/src/hooks/useRecentSignals.ts"
+          "frontend/src/lib/binaryCode.ts",
+          "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
+          "frontend/src/components/control-panel/AddControlModal.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useSignalEmitter.ts",
-          "frontend/src/components/control-panel/ControlRenderer.tsx",
-          "frontend/src/hooks/useRecentSignals.ts"
+          "frontend/src/lib/binaryCode.ts",
+          "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
+          "frontend/src/components/control-panel/AddControlModal.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Adjust the workspace control wrapper cursor/interaction affordances so that in Runtime mode it does not suggest editability (e.g., avoid showing a drag-style cursor when dragging is disabled), while preserving correct pointer interaction with the controls themselves.",
+        "summary": "Constrain all binary code inputs in the UI to 4 characters and prevent users from entering more than 4 bits for control binary codes and radio option binary codes.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/control-panel/DragController.tsx",
-          "frontend/src/components/control-panel/Workspace.tsx"
+          "frontend/src/components/control-panel/AddControlModal.tsx",
+          "frontend/src/components/control-panel/InspectorPanel.tsx",
+          "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
+          "frontend/src/components/control-panel/ImportExportPanel.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/control-panel/DragController.tsx"
+          "frontend/src/components/control-panel/AddControlModal.tsx",
+          "frontend/src/components/control-panel/InspectorPanel.tsx",
+          "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
+          "frontend/src/components/control-panel/ImportExportPanel.tsx"
         ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Enforce the same 4-bit binary code constraint during layout import validation so invalid binary codes are rejected with clear validation errors.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/src/lib/layoutSerialization.ts"
+        ],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Add backend-side validation so the canister rejects saving layouts (and recording emitted events, if applicable) whose binaryCode values are not exactly 4-bit binary strings (\"0\"/\"1\" only).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
@@ -60,12 +77,11 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/control-panel/ControlRenderer.tsx",
-    "frontend/src/components/control-panel/DragController.tsx",
+    "frontend/src/components/control-panel/AddControlModal.tsx",
+    "frontend/src/components/control-panel/ControlLayoutProvider.tsx",
     "frontend/src/components/control-panel/ImportExportPanel.tsx",
-    "frontend/src/hooks/useRecentSignals.ts",
-    "frontend/src/hooks/useSignalEmitter.ts",
-    "frontend/src/screens/ControlPanelScreen.tsx",
+    "frontend/src/components/control-panel/InspectorPanel.tsx",
+    "frontend/src/lib/binaryCode.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

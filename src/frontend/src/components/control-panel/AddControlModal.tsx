@@ -135,6 +135,11 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     setRadioOptions(radioOptions.filter((opt) => opt.key !== key));
   };
 
+  const sanitizeBinaryInput = (value: string): string => {
+    // Only allow 0 and 1, max 4 characters
+    return value.replace(/[^01]/g, '').slice(0, 4);
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
@@ -169,12 +174,13 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="new-binaryCode">Binary Code</Label>
+            <Label htmlFor="new-binaryCode">Binary Code (4 bits)</Label>
             <Input
               id="new-binaryCode"
               value={binaryCode}
-              onChange={(e) => setBinaryCode(e.target.value)}
-              placeholder="e.g., 10101010"
+              onChange={(e) => setBinaryCode(sanitizeBinaryInput(e.target.value))}
+              placeholder="e.g., 1010"
+              maxLength={4}
             />
           </div>
 
@@ -253,9 +259,14 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                           onChange={(e) => handleUpdateRadioOption(option.key, { label: e.target.value })}
                         />
                         <Input
-                          placeholder="Binary Code"
+                          placeholder="Binary Code (4 bits)"
                           value={option.binaryCode}
-                          onChange={(e) => handleUpdateRadioOption(option.key, { binaryCode: e.target.value })}
+                          onChange={(e) =>
+                            handleUpdateRadioOption(option.key, {
+                              binaryCode: sanitizeBinaryInput(e.target.value),
+                            })
+                          }
+                          maxLength={4}
                         />
                         <Button
                           size="sm"

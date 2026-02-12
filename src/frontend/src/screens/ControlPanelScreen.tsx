@@ -5,16 +5,18 @@ import { InspectorPanel } from '@/components/control-panel/InspectorPanel';
 import { RecentSignalsPanel } from '@/components/control-panel/RecentSignalsPanel';
 import { ImportExportPanel } from '@/components/control-panel/ImportExportPanel';
 import { ModeToggle } from '@/components/control-panel/ModeToggle';
-import { CreateControlButton } from '@/components/control-panel/CreateControlButton';
 import { FullscreenToggleButton } from '@/components/control-panel/FullscreenToggleButton';
+import { CreateControlButton } from '@/components/control-panel/CreateControlButton';
 import { ControlLayoutProvider } from '@/components/control-panel/ControlLayoutProvider';
 import { usePanelMode } from '@/hooks/usePanelMode';
+import { useFullscreen } from '@/hooks/useFullscreen';
 import { safeGetHostname } from '@/lib/safeBrowser';
 import { SiX } from 'react-icons/si';
 
 export function ControlPanelScreen() {
   const { mode } = usePanelMode();
   const workspaceRef = useRef<HTMLDivElement>(null);
+  const { isFullscreen, isSupported, toggleFullscreen } = useFullscreen(workspaceRef);
 
   return (
     <ControlLayoutProvider>
@@ -29,16 +31,22 @@ export function ControlPanelScreen() {
               <h1 className="text-2xl font-bold tracking-tight">Pair of Dice Control Panel</h1>
             </div>
             <div className="flex items-center gap-4">
-              <FullscreenToggleButton workspaceRef={workspaceRef} />
+              {mode === 'edit' && <CreateControlButton />}
+              {mode === 'interact' && (
+                <FullscreenToggleButton 
+                  isFullscreen={isFullscreen}
+                  isSupported={isSupported}
+                  onToggle={toggleFullscreen}
+                />
+              )}
               <ModeToggle />
-              <CreateControlButton />
             </div>
           </div>
         </header>
 
         {/* Main Content */}
         <main className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar - Inspector */}
+          {/* Left Sidebar - Terminal Editor (Edit mode only) */}
           {mode === 'edit' && (
             <aside className="w-80 border-r border-border bg-card overflow-y-auto">
               <InspectorPanel />

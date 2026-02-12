@@ -13,11 +13,11 @@ export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFul
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSupported] = useState(() => isFullscreenSupported());
 
-  // Update state when fullscreen changes (including Escape key or browser UI)
+  // Sync fullscreen state on mount and when it changes
   useEffect(() => {
     if (!isBrowserAvailable()) return;
 
-    const handleFullscreenChange = () => {
+    const syncFullscreenState = () => {
       try {
         const fullscreenElement =
           document.fullscreenElement ||
@@ -31,6 +31,13 @@ export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFul
         // Fullscreen API unavailable
         setIsFullscreen(false);
       }
+    };
+
+    // Initialize state immediately
+    syncFullscreenState();
+
+    const handleFullscreenChange = () => {
+      syncFullscreenState();
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
