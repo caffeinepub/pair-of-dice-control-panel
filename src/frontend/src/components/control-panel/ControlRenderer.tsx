@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import type { ControlConfig } from '@/types/controlPanel';
 import { useSignalEmitter } from '@/hooks/useSignalEmitter';
 import { cn } from '@/lib/utils';
+import { generateGpiosetCommandSequence } from '@/lib/gpiosetCommands';
+import { validateBinaryCode } from '@/lib/binaryCode';
 
 interface ControlRendererProps {
   control: ControlConfig;
@@ -18,14 +20,36 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
 
   const handleButtonPress = () => {
     if (isEditMode) return;
+    
+    // Validate binary code before emitting
+    const validationError = validateBinaryCode(control.binaryCode);
+    if (validationError) {
+      console.warn(`Button press ignored: ${validationError}`);
+      return;
+    }
+    
     setIsPressed(true);
-    emit(control.id, control.controlType, control.label || null, 'pressed', control.binaryCode);
+    
+    // Generate gpioset command sequence for button press
+    const gpiosetSequence = generateGpiosetCommandSequence(control.binaryCode);
+    emit(control.id, control.controlType, control.label || null, gpiosetSequence, control.binaryCode);
   };
 
   const handleButtonRelease = () => {
     if (isEditMode) return;
+    
+    // Validate binary code before emitting
+    const validationError = validateBinaryCode(control.binaryCode);
+    if (validationError) {
+      console.warn(`Button release ignored: ${validationError}`);
+      return;
+    }
+    
     setIsPressed(false);
-    emit(control.id, control.controlType, control.label || null, 'released', control.binaryCode);
+    
+    // Generate gpioset command sequence for button release
+    const gpiosetSequence = generateGpiosetCommandSequence(control.binaryCode);
+    emit(control.id, control.controlType, control.label || null, gpiosetSequence, control.binaryCode);
   };
 
   const handleButtonKeyDown = (e: React.KeyboardEvent) => {

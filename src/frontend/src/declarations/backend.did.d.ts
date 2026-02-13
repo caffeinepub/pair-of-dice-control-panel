@@ -35,6 +35,10 @@ export interface _SERVICE {
     [string, string, [] | [string], string, string],
     undefined
   >,
+  'emitHatGpiosetEvent' : ActorMethod<
+    [string, string, [] | [string], string],
+    undefined
+  >,
   'getEventsByControlId' : ActorMethod<[string], Array<Event>>,
   'getLayout' : ActorMethod<[], Layout>,
   'getRecentEvents' : ActorMethod<[], Array<Event>>,

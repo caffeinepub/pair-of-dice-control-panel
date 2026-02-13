@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-a-new-frontend-scaffold-component-file-intended-for-user-extensions-with-clear-todo-markers-and-a-minimal-placeholder-ui-and-export-it-for-use-elsewhere-in-the-app",
-      "featureTitle": "Create a new frontend scaffold component file intended for user extensions, with clear TODO markers and a minimal placeholder UI, and export it for use elsewhere in the app.",
+      "featureId": "feature-create-a-downloadable-linux-bundle-that-lets-a-user-run-and-test-the-app-locally-on-a-linux-machine-with-a-single-command-including-the-built-frontend-assets-and-a-launcher-script",
+      "featureTitle": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
       "files": [
-        "frontend/src/components/control-panel/UserExtensionsSection.tsx"
+        "frontend/scripts/linux_bundle_run.sh",
+        "frontend/scripts/package_linux_bundle.sh"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -20,10 +21,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-the-new-frontend-scaffold-component-into-an-existing-screen-so-it-is-visible-in-the-running-app-without-disrupting-existing-control-panel-behavior",
-      "featureTitle": "Add the new frontend scaffold component into an existing screen so it is visible in the running app (without disrupting existing control panel behavior).",
+      "featureId": "feature-add-linux-specific-testing-documentation-that-explains-how-to-download-the-bundle-prerequisites-how-to-run-the-launcher-script-and-how-to-troubleshoot-common-issues",
+      "featureTitle": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
       "files": [
-        "frontend/src/screens/ControlPanelScreen.tsx"
+        "frontend/docs/linux-local-test-bundle.md"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -34,6 +35,25 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-packaged-linux-bundle-includes-the-raspberry-pi-helper-scripts-and-documentation-already-present-in-the-project-so-the-user-can-test-both-the-ui-and-the-gpio-workflow-from-a-single-download",
+      "featureTitle": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+      "files": [
+        "frontend/docs/linux-local-test-bundle.md",
+        "frontend/scripts/package_linux_bundle.sh"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

@@ -31,6 +31,7 @@ export interface Event {
 export interface backendInterface {
     backendScaffoldPlaceholderFunction(): Promise<string>;
     emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
+    emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
     getRecentEvents(): Promise<Array<Event>>;

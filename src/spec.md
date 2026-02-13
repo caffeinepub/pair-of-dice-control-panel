@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add clearly marked frontend and backend scaffold sections where the user can safely extend the app with custom code.
+**Goal:** Provide a downloadable Linux bundle that lets users run and test the app locally with a single command.
 
 **Planned changes:**
-- Create a new dedicated frontend React/TypeScript scaffold component (with clear BEGIN/END user-code comment delimiters, TODO markers, and a minimal placeholder UI) and export it for reuse.
-- Render the new frontend scaffold component within an existing Control Panel screen in a sensible location, without disrupting existing Edit/Interact mode behavior or other control panel features.
-- Add a clearly labeled user-code scaffold section in `backend/main.mo`, including at least one harmless placeholder canister method (query/shared) that returns a static value and does not affect existing backend behavior.
+- Add a Linux packaging script (e.g., under `scripts/`) that builds the frontend, includes required local canister artifacts, and outputs a single distributable archive (e.g., `.tar.gz`).
+- Include a launcher script inside the archive (e.g., `run.sh`) that starts any required local services (e.g., replica) and deploys/serves the app for testing.
+- Add/extend Linux testing documentation covering prerequisites, download/extract steps, how to run the launcher script, expected local URL/ports, how to stop/reset, and troubleshooting (with copy-pasteable bash commands).
+- Ensure the bundle includes existing Raspberry Pi helper scripts and docs (`frontend/scripts/rpi_event_runner.sh`, `frontend/scripts/rpi_pin_test.sh`, `frontend/docs/rpi-bash-runner.md`) and that the documentation points to their included paths and usage.
 
-**User-visible outcome:** The running app shows a new “custom code” section in the Control Panel UI, and the backend exposes a simple placeholder method—both serving as safe starting points for the user to add their own logic.
+**User-visible outcome:** A user can download and extract a single Linux archive, run one script to start the app locally for testing, and access clear Linux/Raspberry Pi testing instructions from the included documentation.

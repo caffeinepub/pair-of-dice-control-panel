@@ -1,74 +1,84 @@
 {
   "kind": "build_request",
-  "title": "Add a dedicated scaffold section for user custom code (frontend + backend)",
+  "title": "Package the project as a downloadable Linux testable app bundle",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Create a new frontend scaffold component file intended for user extensions, with clear TODO markers and a minimal placeholder UI, and export it for use elsewhere in the app.",
-      "target": "frontend",
+      "text": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "make a new section in the code for me to code the rest in"
+          "turn this into a Linux app so i can download it and test"
         ]
       },
       "acceptanceCriteria": [
-        "A new TypeScript React component file exists in the frontend codebase dedicated to user custom code (e.g., a 'UserExtensions'/'CustomSection' component).",
-        "The file includes clear comment delimiters (e.g., 'BEGIN USER CODE' / 'END USER CODE') indicating where the user should add code.",
-        "The component renders without crashing and shows a simple placeholder (e.g., heading + short description) using existing Tailwind/shadcn styling patterns."
+        "A new packaging script exists in the repo (e.g., under a scripts/ directory) that produces a single distributable archive (e.g., .tar.gz) when run on Linux.",
+        "The distributable archive contains: (1) the built frontend assets, (2) the compiled canister artifacts needed for local deployment, and (3) a run script (e.g., run.sh) that starts a local replica (if needed) and deploys/serves the app for testing.",
+        "Running the included run script on Linux results in the app being accessible for testing (e.g., via a local URL) without requiring the user to manually execute multiple setup commands."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add the new frontend scaffold component into an existing screen so it is visible in the running app (without disrupting existing control panel behavior).",
+      "text": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "make a new section in the code for me to code the rest in"
+          "turn this into a Linux app so i can download it and test"
         ]
       },
       "acceptanceCriteria": [
-        "The Control Panel UI renders the new scaffold section in a sensible location (e.g., in a sidebar panel or below existing panels) and remains fully functional in both Edit and Interact modes.",
-        "No existing control creation, layout editing, fullscreen, import/export, or recent signals behavior regresses."
+        "A new documentation page is added (or an existing doc is extended) describing: required dependencies (e.g., DFX, Node/npm if applicable), how to run the packaged bundle, expected output (URL/ports), and how to stop/reset the local environment.",
+        "Documentation is written in English and includes copy-pasteable commands for typical Linux shells (bash)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a clearly labeled backend scaffold section in backend/main.mo for future user-defined logic, implemented as at least one harmless placeholder query or shared method returning a static value.",
-      "target": "backend",
+      "text": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "make a new section in the code for me to code the rest in"
+          "turn this into a Linux app so i can download it and test"
         ]
       },
       "acceptanceCriteria": [
-        "backend/main.mo contains a clearly marked section for user custom code (comment block with TODO markers).",
-        "At least one placeholder canister method exists in that section (query or shared) that compiles and returns a static value (e.g., Text) without affecting existing layout/event functionality.",
-        "Existing backend methods (getLayout/saveLayout/emitEvent/getRecentEvents/getEventsByControlId) continue to behave as before, including 4-bit binary validation."
+        "The distributable archive includes the existing Raspberry Pi scripts (frontend/scripts/rpi_event_runner.sh and frontend/scripts/rpi_pin_test.sh) and the related documentation (frontend/docs/rpi-bash-runner.md).",
+        "The included documentation in the bundle clearly points to the included scripts’ paths and how to execute them from the extracted directory."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/components/ui (shadcn) directly; only compose them.",
-    "Do not edit the immutable frontend hook/bootstrap paths listed in SYSTEM_CONTEXT (e.g., frontend/src/main.tsx, frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts).",
-    "Backend must remain a single Motoko actor in backend/main.mo; only add migration.mo if state schema changes require it."
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything under frontend/src/components/ui (compose instead of editing).",
+    "Do not require third-party auth providers; Internet Identity remains the only supported auth method."
   ],
   "nonGoals": [
-    "Do not implement any new product functionality beyond providing a scaffold/extension area.",
-    "Do not redesign the existing control panel UI or change existing control behavior.",
-    "Do not add any third-party integrations, external databases, or additional backend services."
+    "Creating a true native desktop GUI application using Electron/Tauri or OS-specific installers (e.g., .deb/.rpm) unless explicitly requested later.",
+    "Adding new GPIO features beyond packaging and documentation inclusion."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [
+      "Download and run the project on Linux for local testing"
+    ],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

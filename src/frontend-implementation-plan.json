@@ -1,36 +1,66 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend user extension scaffold section",
+  "title": "Downloadable Linux test bundle packaging + docs (frontend-only)",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a dedicated frontend scaffold React component for user custom code with clear TODO markers and placeholder UI.",
+      "summary": "Add a Linux packaging script that produces a single archive containing built frontend assets plus a single-command launcher script for local testing.",
       "acceptanceCriteria": [
-        "A new TypeScript React component file exists in the frontend codebase dedicated to user custom code (e.g., a 'UserExtensions'/'CustomSection' component).",
-        "The file includes clear comment delimiters (e.g., 'BEGIN USER CODE' / 'END USER CODE') indicating where the user should add code.",
-        "The component renders without crashing and shows a simple placeholder (e.g., heading + short description) using existing Tailwind/shadcn styling patterns."
+        "A new packaging script exists in the repo (e.g., under a scripts/ directory) that produces a single distributable archive (e.g., .tar.gz) when run on Linux.",
+        "The distributable archive contains: (1) the built frontend assets, (2) the compiled canister artifacts needed for local deployment, and (3) a run script (e.g., run.sh) that starts a local replica (if needed) and deploys/serves the app for testing.",
+        "Running the included run script on Linux results in the app being accessible for testing (e.g., via a local URL) without requiring the user to manually execute multiple setup commands."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/UserExtensionsSection.tsx",
+          "path": "frontend/scripts/package_linux_bundle.sh",
           "operation": "create",
-          "description": "Create an exported scaffold component (e.g., `UserExtensionsSection`) containing clearly labeled comment delimiters (BEGIN USER CODE / END USER CODE) and a minimal placeholder UI. Use the shadcn-ui Card (and related subcomponents) to match existing panel styling patterns; compose from existing UI components without modifying files under frontend/src/components/ui. Verify the component's usage instructions before implementing."
+          "description": "Create a Linux-only packaging script that (a) builds the frontend, (b) gathers required local testing artifacts produced by the repo’s existing IC tooling, and (c) emits a single .tar.gz containing the built frontend output, required IC local artifacts, and the launcher script. Ensure the script also copies any required docs/scripts into the archive and prints the output archive location."
+        },
+        {
+          "path": "frontend/scripts/linux_bundle_run.sh",
+          "operation": "create",
+          "description": "Create the launcher script intended to be included inside the distributable archive as run.sh. Script should start/prepare the local environment using the repo’s existing IC tooling, deploy the app for local testing, and print the local URL/port for access; include stop/reset guidance output as needed."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Render the new scaffold component inside the existing Control Panel screen without changing existing behavior in Edit/Interact modes.",
+      "summary": "Add Linux testing documentation for downloading, prerequisites, running the launcher script, and troubleshooting.",
       "acceptanceCriteria": [
-        "The Control Panel UI renders the new scaffold section in a sensible location (e.g., in a sidebar panel or below existing panels) and remains fully functional in both Edit and Interact modes.",
-        "No existing control creation, layout editing, fullscreen, import/export, or recent signals behavior regresses."
+        "A new documentation page is added (or an existing doc is extended) describing: required dependencies (e.g., DFX, Node/npm if applicable), how to run the packaged bundle, expected output (URL/ports), and how to stop/reset the local environment.",
+        "Documentation is written in English and includes copy-pasteable commands for typical Linux shells (bash)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/screens/ControlPanelScreen.tsx",
+          "path": "frontend/docs/linux-local-test-bundle.md",
+          "operation": "create",
+          "description": "Add English Linux documentation describing prerequisites, how to generate the archive with the packaging script, how to download/extract/run the included run.sh in bash, expected URL/ports, and how to stop/reset/troubleshoot common issues (dfx not found, ports in use, stale local state, permissions)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Ensure the Linux bundle includes existing Raspberry Pi helper scripts and their documentation and references their paths from within the extracted bundle.",
+      "acceptanceCriteria": [
+        "The distributable archive includes the existing Raspberry Pi scripts (frontend/scripts/rpi_event_runner.sh and frontend/scripts/rpi_pin_test.sh) and the related documentation (frontend/docs/rpi-bash-runner.md).",
+        "The included documentation in the bundle clearly points to the included scripts’ paths and how to execute them from the extracted directory."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/scripts/package_linux_bundle.sh",
           "operation": "modify",
-          "description": "Wire `UserExtensionsSection` into the Control Panel UI (e.g., in the right sidebar stack near existing panels) so it is visible in both Edit and Interact modes, while preserving all current mode-conditional rendering and behaviors (create control button, fullscreen toggle, import/export visibility, recent signals polling). Verify the component's usage instructions before implementing."
+          "description": "Update the packaging script to explicitly include frontend/scripts/rpi_event_runner.sh, frontend/scripts/rpi_pin_test.sh, and frontend/docs/rpi-bash-runner.md in the generated archive under predictable paths, and ensure file modes preserve executability for the .sh scripts."
+        },
+        {
+          "path": "frontend/docs/rpi-bash-runner.md",
+          "operation": "modify",
+          "description": "Extend the Raspberry Pi runner documentation to include a short section for users running from the extracted Linux bundle, explicitly referencing the included script paths (as laid out by the bundle) and copy-pasteable bash commands to execute them."
+        },
+        {
+          "path": "frontend/docs/linux-local-test-bundle.md",
+          "operation": "modify",
+          "description": "Add a section that points to the included Raspberry Pi helper scripts and rpi-bash-runner.md inside the extracted bundle, including copy-pasteable bash commands to run rpi_pin_test.sh and rpi_event_runner.sh."
         }
       ]
     }

@@ -35,6 +35,11 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'emitHatGpiosetEvent' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+      [],
+      [],
+    ),
   'getEventsByControlId' : IDL.Func([IDL.Text], [IDL.Vec(Event)], ['query']),
   'getLayout' : IDL.Func([], [Layout], ['query']),
   'getRecentEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
@@ -68,6 +73,11 @@ export const idlFactory = ({ IDL }) => {
     'backendScaffoldPlaceholderFunction' : IDL.Func([], [IDL.Text], ['query']),
     'emitEvent' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
+        [],
+        [],
+      ),
+    'emitHatGpiosetEvent' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
         [],
         [],
       ),

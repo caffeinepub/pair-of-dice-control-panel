@@ -113,6 +113,7 @@ export interface Event {
 export interface backendInterface {
     backendScaffoldPlaceholderFunction(): Promise<string>;
     emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
+    emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
     getRecentEvents(): Promise<Array<Event>>;
@@ -146,6 +147,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.emitEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3, arg4);
+            return result;
+        }
+    }
+    async emitHatGpiosetEvent(arg0: string, arg1: string, arg2: string | null, arg3: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.emitHatGpiosetEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.emitHatGpiosetEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
             return result;
         }
     }

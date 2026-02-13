@@ -7,18 +7,26 @@
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-create-a-new-frontend-scaffold-component-file-intended-for-user-extensions-with-clear-todo-markers-and-a-minimal-placeholder-ui-and-export-it-for-use-elsewhere-in-the-app",
-      "title": "Create a new frontend scaffold component file intended for user extensions, with clear TODO markers and a minimal placeholder UI, and export it for use elsewhere in the app.",
+      "id": "feature-create-a-downloadable-linux-bundle-that-lets-a-user-run-and-test-the-app-locally-on-a-linux-machine-with-a-single-command-including-the-built-frontend-assets-and-a-launcher-script",
+      "title": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-the-new-frontend-scaffold-component-into-an-existing-screen-so-it-is-visible-in-the-running-app-without-disrupting-existing-control-panel-behavior",
-      "title": "Add the new frontend scaffold component into an existing screen so it is visible in the running app (without disrupting existing control panel behavior).",
+      "id": "feature-add-linux-specific-testing-documentation-that-explains-how-to-download-the-bundle-prerequisites-how-to-run-the-launcher-script-and-how-to-troubleshoot-common-issues",
+      "title": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-packaged-linux-bundle-includes-the-raspberry-pi-helper-scripts-and-documentation-already-present-in-the-project-so-the-user-can-test-both-the-ui-and-the-gpio-workflow-from-a-single-download",
+      "title": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
@@ -26,20 +34,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add a new section/scaffold in the codebase for the user to implement the remaining functionality",
+      "summary": "Package the project as a downloadable Linux app for user testing",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Add a clearly labeled backend scaffold section in backend/main.mo for future user-defined logic, implemented as at least one harmless placeholder query or shared method returning a static value.",
-      "reqIds": [
-        "REQ-3"
-      ],
       "status": "pending"
     }
   ],
-  "projectName": "Add a dedicated scaffold section for user custom code (frontend + backend)",
+  "projectName": "Package the project as a downloadable Linux testable app bundle",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

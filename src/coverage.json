@@ -1,58 +1,66 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T21:41:55.857Z",
+  "generatedAt": "2026-02-12T23:49:22.803Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 2,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Create a new frontend scaffold component file intended for user extensions, with clear TODO markers and a minimal placeholder UI, and export it for use elsewhere in the app.",
+        "summary": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/control-panel/UserExtensionsSection.tsx"
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/scripts/linux_bundle_run.sh"
         ],
         "matchedFiles": [
-          "frontend/src/components/control-panel/UserExtensionsSection.tsx"
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/scripts/linux_bundle_run.sh"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add the new frontend scaffold component into an existing screen so it is visible in the running app (without disrupting existing control panel behavior).",
+        "summary": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/screens/ControlPanelScreen.tsx"
+          "frontend/docs/linux-local-test-bundle.md"
         ],
         "matchedFiles": [
-          "frontend/src/screens/ControlPanelScreen.tsx"
+          "frontend/docs/linux-local-test-bundle.md"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Add a clearly labeled backend scaffold section in backend/main.mo for future user-defined logic, implemented as at least one harmless placeholder query or shared method returning a static value.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/docs/rpi-bash-runner.md",
+          "frontend/docs/linux-local-test-bundle.md"
+        ],
+        "matchedFiles": [
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/docs/linux-local-test-bundle.md"
+        ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/control-panel/UserExtensionsSection.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/screens/ControlPanelScreen.tsx",
+    "frontend/docs/linux-local-test-bundle.md",
+    "frontend/docs/rpi-bash-runner.md.backup",
+    "frontend/scripts/linux_bundle_run.sh",
+    "frontend/scripts/package_linux_bundle.sh",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
