@@ -1,60 +1,72 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T22:43:34.448Z",
+  "generatedAt": "2026-02-17T23:03:20.909Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 4,
-    "implemented": 3,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Change button interaction event emission so that the emitted command string (event.value) uses the format `gpioset -c gpiochip0 #=$`, where `#` is the button's numeric code (1–16) and `$` is `1` when pressed and `0` when released.",
+        "summary": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/scripts/rpi_event_runner.service.example",
+          "frontend/scripts/rpi_event_runner.env.example",
+          "frontend/docs/linux-local-test-bundle.md"
         ],
         "matchedFiles": [
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/scripts/rpi_event_runner.service.example",
+          "frontend/scripts/rpi_event_runner.env.example",
+          "frontend/docs/linux-local-test-bundle.md"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Derive the `#` value for the new gpioset command from the existing button code configuration (the button’s 1–16 code) rather than the control's textual layout id, and ensure the command is only emitted when the derived code is valid (1–16).",
+        "summary": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/lib/buttonCode.ts",
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/scripts/linux_bundle_run.sh",
+          "frontend/docs/linux-local-test-bundle.md"
         ],
         "matchedFiles": [
-          "frontend/src/lib/buttonCode.ts",
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/scripts/linux_bundle_run.sh",
+          "frontend/docs/linux-local-test-bundle.md"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Update the gpioset command generation utility so it can generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release, and remove or stop using the old 4-bit-to-multiple-pin mapping generator for button events.",
+        "summary": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/lib/gpiosetCommands.ts",
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/scripts/rpi_event_runner.sh",
+          "frontend/docs/rpi-bash-runner.md"
         ],
         "matchedFiles": [
-          "frontend/src/lib/gpiosetCommands.ts",
-          "frontend/src/components/control-panel/ControlRenderer.tsx"
+          "frontend/scripts/rpi_event_runner.sh",
+          "frontend/docs/rpi-bash-runner.md"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Update Raspberry Pi bash runner documentation to reflect that button events now emit single `gpioset -c gpiochip0 <id>=<state>` commands on press and release.",
-        "status": "missing",
+        "summary": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/docs/rpi-bash-runner.md"
+          "frontend/scripts/rpi_event_runner.service.example",
+          "frontend/docs/rpi-bash-runner.md",
+          "frontend/scripts/package_linux_bundle.sh"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/scripts/rpi_event_runner.service.example",
+          "frontend/docs/rpi-bash-runner.md",
+          "frontend/scripts/package_linux_bundle.sh"
+        ]
       }
     ]
   },
@@ -63,9 +75,13 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/control-panel/ControlRenderer.tsx",
-    "frontend/src/lib/buttonCode.ts",
-    "frontend/src/lib/gpiosetCommands.ts",
+    "frontend/docs/linux-local-test-bundle.md",
+    "frontend/docs/rpi-bash-runner.md",
+    "frontend/scripts/linux_bundle_run.sh",
+    "frontend/scripts/package_linux_bundle.sh",
+    "frontend/scripts/rpi_event_runner.env.example",
+    "frontend/scripts/rpi_event_runner.service.example",
+    "frontend/scripts/rpi_event_runner.sh",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -2,10 +2,13 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-change-button-interaction-event-emission-so-that-the-emitted-command-string-event-value-uses-the-format-gpioset-c-gpiochip0-where-is-the-button-s-numeric-code-1-16-and-is-1-when-pressed-and-0-when-released",
-      "featureTitle": "Change button interaction event emission so that the emitted command string (event.value) uses the format `gpioset -c gpiochip0 #=$`, where `#` is the button's numeric code (1–16) and `$` is `1` when pressed and `0` when released.",
+      "featureId": "feature-provide-a-raspberry-pi-linux-friendly-distribution-workflow-that-produces-a-self-contained-linux-bundle-archive-for-running-the-app-on-a-raspberry-pi-linux-os-including-the-built-frontend-backend-canister-artifacts-launcher-script-and-raspberry-pi-helper-scripts",
+      "featureTitle": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx"
+        "frontend/docs/linux-local-test-bundle.md",
+        "frontend/scripts/package_linux_bundle.sh",
+        "frontend/scripts/rpi_event_runner.env.example",
+        "frontend/scripts/rpi_event_runner.service.example"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -20,11 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-derive-the-value-for-the-new-gpioset-command-from-the-existing-button-code-configuration-the-button-s-1-16-code-rather-than-the-control-s-textual-layout-id-and-ensure-the-command-is-only-emitted-when-the-derived-code-is-valid-1-16",
-      "featureTitle": "Derive the `#` value for the new gpioset command from the existing button code configuration (the button’s 1–16 code) rather than the control's textual layout id, and ensure the command is only emitted when the derived code is valid (1–16).",
+      "featureId": "feature-ensure-the-extracted-linux-bundle-can-be-started-with-a-single-command-and-provides-clear-copy-paste-able-output-showing-how-to-access-the-ui-locally-and-how-to-stop-clean-the-local-replica",
+      "featureTitle": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx",
-        "frontend/src/lib/buttonCode.ts"
+        "frontend/docs/linux-local-test-bundle.md",
+        "frontend/scripts/linux_bundle_run.sh"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -39,11 +42,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-gpioset-command-generation-utility-so-it-can-generate-the-single-command-format-gpioset-c-gpiochip0-id-state-for-button-press-release-and-remove-or-stop-using-the-old-4-bit-to-multiple-pin-mapping-generator-for-button-events",
-      "featureTitle": "Update the gpioset command generation utility so it can generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release, and remove or stop using the old 4-bit-to-multiple-pin mapping generator for button events.",
+      "featureId": "feature-add-raspberry-pi-guidance-and-runnable-commands-for-gpio-execution-via-the-included-raspberry-pi-event-runner-script-including-required-environment-variables-and-a-safe-dry-run-mode",
+      "featureTitle": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx",
-        "frontend/src/lib/gpiosetCommands.ts"
+        "frontend/docs/rpi-bash-runner.md",
+        "frontend/scripts/rpi_event_runner.sh"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -54,6 +57,26 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-an-optional-raspberry-pi-run-at-boot-setup-path-by-providing-a-systemd-service-example-and-any-small-helper-script-if-needed-that-starts-the-raspberry-pi-event-runner-automatically-with-user-provided-configuration",
+      "featureTitle": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
+      "files": [
+        "frontend/docs/rpi-bash-runner.md",
+        "frontend/scripts/package_linux_bundle.sh",
+        "frontend/scripts/rpi_event_runner.service.example"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

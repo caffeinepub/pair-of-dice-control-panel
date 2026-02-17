@@ -1,76 +1,100 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "GPIO Control Panel: Emit single gpioset command on button press/release",
+  "title": "GPIO Control Panel — Raspberry Pi/Linux bundle workflow",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Emit `gpioset -c gpiochip0 <id>=<state>` on button press/release instead of 4-bit pin-mapped sequences.",
+      "summary": "Provide a Raspberry Pi/Linux-friendly packaging workflow that outputs a self-contained .tar.gz bundle with built frontend, backend artifacts, launcher, and Pi helper scripts.",
       "acceptanceCriteria": [
-        "When a button control is pressed in interact mode, the emitted event.value equals `gpioset -c gpiochip0 <N>=1` where <N> is that button’s code (derived from its configured 1–16 code).",
-        "When the same button is released (pointer up/cancel/leave and keyboard keyup/blur paths), the emitted event.value equals `gpioset -c gpiochip0 <N>=0` for the same <N>.",
-        "No `gpioset` command sequence based on 4-bit pin mappings is emitted for button press/release after this change."
+        "Running the packaging script produces a .tar.gz bundle that includes: frontend build output, backend canister artifacts, run launcher script, and Raspberry Pi helper scripts.",
+        "The bundle can be extracted on a Raspberry Pi (Linux) and contains clear entrypoints for starting the app and running GPIO helpers."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "path": "frontend/scripts/package_linux_bundle.sh",
           "operation": "modify",
-          "description": "Update button interaction handlers to emit a single gpioset command on press (state=1) and on release (state=0), and stop using the 4-bit pin-mapping command sequence generator for button events."
+          "description": "Extend the packager to include additional Raspberry Pi boot/run assets (systemd unit example + optional env/example config) and ensure they are placed into well-named bundle subfolders under scripts/ and/or docs/ alongside existing launcher, helper scripts, and artifacts."
+        },
+        {
+          "path": "frontend/scripts/rpi_event_runner.service.example",
+          "operation": "create",
+          "description": "Add a documented systemd unit example file intended to be shipped inside the Linux bundle, referencing the bundled Raspberry Pi event runner and an EnvironmentFile for user-provided configuration."
+        },
+        {
+          "path": "frontend/scripts/rpi_event_runner.env.example",
+          "operation": "create",
+          "description": "Add an example environment file for systemd/manual usage that documents required variables (e.g., CANISTER_ID, NETWORK) and optional ones (DRY_RUN, POLL_INTERVAL, STATE_FILE, ALLOWED_PREFIX)."
+        },
+        {
+          "path": "frontend/docs/linux-local-test-bundle.md",
+          "operation": "modify",
+          "description": "Update the bundle guide to explicitly list the packaged contents (including new systemd examples), and to describe the bundle’s entrypoints (run.sh and Raspberry Pi helper scripts) in a Raspberry Pi-friendly way."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Derive gpioset `<id>` from the configured button code (1–16) and only emit when valid; otherwise warn and skip emission.",
+      "summary": "Ensure the extracted Linux bundle starts with a single command and prints copy/paste-able access, stop, and clean instructions.",
       "acceptanceCriteria": [
-        "For button controls, the emitted command uses a numeric id between 1 and 16 (inclusive).",
-        "If a button’s configured code cannot be derived/validated as 1–16, the press/release does not emit a gpioset command and logs a warning to the console."
+        "From the extracted bundle directory, running the launcher script starts (or reuses) a local replica, installs the backend canister from the bundled WASM, and prints the backend canister ID and example URLs/commands to open the UI.",
+        "The launcher script supports explicit stop and clean actions and prints user-facing help text for these options."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/buttonCode.ts",
+          "path": "frontend/scripts/linux_bundle_run.sh",
           "operation": "modify",
-          "description": "Add a small reusable helper to safely derive/validate a 1–16 decimal button code from the existing stored representation (e.g., from a control's stored 4-bit binary code), returning null/undefined when invalid."
+          "description": "Adjust launcher behavior/output to (1) reuse an already-running replica without forcing a clean start, (2) keep clean as an explicit action, and (3) print clear copy/paste commands for: starting, serving the built frontend locally, the URL to open with canisterId, stopping the replica, and cleaning local state; ensure --help output documents stop/clean usage."
         },
         {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "path": "frontend/docs/linux-local-test-bundle.md",
           "operation": "modify",
-          "description": "Use the button code derivation/validation helper to compute the gpioset <id> from the button’s configured code (not from layout/control textual id) and gate press/release command emission; log a console warning and skip emitting when invalid."
+          "description": "Add/complete documentation steps showing the single-command start from the extracted bundle directory, what output to expect (UI URL, canister ID), and copy/paste-able stop/clean commands matching run.sh behavior."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add a reusable gpioset single-command helper and have button press/release use it.",
+      "summary": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the bundled event runner, including env vars and safe dry-run mode.",
       "acceptanceCriteria": [
-        "There is a reusable helper that returns exactly `gpioset -c gpiochip0 <id>=<state>` (with a space after `gpioset`, and `-c gpiochip0` present).",
-        "ControlRenderer (button press/release paths) uses the new helper to build the emitted value."
+        "Documentation in the bundle explains how to run the Raspberry Pi event runner with the required CANISTER_ID and network selection, and how to run in DRY_RUN mode.",
+        "Documentation states required Linux packages/tools for GPIO execution on Raspberry Pi (e.g., jq and libgpiod/gpioset) and how to install them on common Raspberry Pi Linux distributions."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/gpiosetCommands.ts",
+          "path": "frontend/scripts/rpi_event_runner.sh",
           "operation": "modify",
-          "description": "Introduce a helper to generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release flows, while keeping existing 4-bit mapping utilities available for non-button controls."
+          "description": "Add a user-facing --help/-h mode (and/or clearer startup banner text) that prints required environment variables, supported NETWORK values, a DRY_RUN example, and prerequisite tool checks, without changing the script’s existing safe execution model."
         },
         {
-          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "path": "frontend/docs/rpi-bash-runner.md",
           "operation": "modify",
-          "description": "Wire ControlRenderer button press/release emissions to call the new single-command gpioset helper (instead of generateGpiosetCommandSequence) so event.value matches the required format."
+          "description": "Expand the Raspberry Pi runner documentation with explicit copy/paste commands for running the runner (local vs ic network), required env vars (CANISTER_ID, NETWORK), DRY_RUN mode usage, and Raspberry Pi package prerequisites/installation steps for jq and libgpiod/gpioset on common distributions."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Update Raspberry Pi bash runner documentation for the new single-command button event format.",
+      "summary": "Provide an optional 'run at boot' path using a systemd service example to auto-start the Raspberry Pi event runner.",
       "acceptanceCriteria": [
-        "`frontend/docs/rpi-bash-runner.md` mentions the new emitted command format for button events, including that `state` is 1 on press and 0 on release.",
-        "The documentation does not claim button events emit 4-line pin-mapping sequences for 4-bit codes."
+        "Bundle includes a documented systemd unit example for the Raspberry Pi event runner, including where to set CANISTER_ID/NETWORK and how to enable/disable/start/stop the service.",
+        "The systemd setup path is optional and does not break manual execution of the scripts."
       ],
       "file_operations": [
         {
+          "path": "frontend/scripts/rpi_event_runner.service.example",
+          "operation": "modify",
+          "description": "Ensure the systemd unit example is suitable for 'optional run at boot' usage (clear WorkingDirectory, ExecStart pointing at the bundled runner, and EnvironmentFile usage), and includes inline comments for where CANISTER_ID/NETWORK are configured."
+        },
+        {
           "path": "frontend/docs/rpi-bash-runner.md",
           "operation": "modify",
-          "description": "Update the documentation to state that button press/release events emit a single `gpioset -c gpiochip0 <id>=<state>` command (state=1 on press, state=0 on release) and remove any claims that button events emit multi-line 4-bit pin-mapping sequences."
+          "description": "Add a 'Run at boot (systemd)' section documenting: where to place the unit file and env file, how to edit CANISTER_ID/NETWORK, and the exact enable/disable/start/stop/status commands; explicitly state this is optional and manual execution still works."
+        },
+        {
+          "path": "frontend/scripts/package_linux_bundle.sh",
+          "operation": "modify",
+          "description": "Update the packager to copy the systemd service example and env example into the bundle (e.g., scripts/systemd/ or scripts/), and mention them in the generated bundle README so users can discover the optional boot setup."
         }
       ]
     }

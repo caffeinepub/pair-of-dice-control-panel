@@ -1,90 +1,99 @@
 {
   "kind": "build_request",
-  "title": "Emit gpioset -c gpiochip0 <id>=<state> on button press/release",
+  "title": "Raspberry Pi (Linux) runnable distribution",
   "projectName": "GPIO Control Panel",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Change button interaction event emission so that the emitted command string (event.value) uses the format `gpioset -c gpiochip0 #=$`, where `#` is the button's numeric code (1–16) and `$` is `1` when pressed and `0` when released.",
+      "text": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-4"
+          "msg-10"
         ],
         "quotes": [
-          "change the output signal to (gpioset -cgpiochip0 #=$). where #= the id of the button and $=1 when pressed and 0 when released."
+          "an app that runs on a raspberry PI using a Linux os"
         ]
       },
       "acceptanceCriteria": [
-        "When a button control is pressed in interact mode, the emitted event.value equals `gpioset -c gpiochip0 <N>=1` where <N> is that button’s code (derived from its configured 1–16 code).",
-        "When the same button is released (pointer up/cancel/leave and keyboard keyup/blur paths), the emitted event.value equals `gpioset -c gpiochip0 <N>=0` for the same <N>.",
-        "No `gpioset` command sequence based on 4-bit pin mappings is emitted for button press/release after this change."
+        "Running the packaging script produces a .tar.gz bundle that includes: frontend build output, backend canister artifacts, run launcher script, and Raspberry Pi helper scripts.",
+        "The bundle can be extracted on a Raspberry Pi (Linux) and contains clear entrypoints for starting the app and running GPIO helpers."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Derive the `#` value for the new gpioset command from the existing button code configuration (the button’s 1–16 code) rather than the control's textual layout id, and ensure the command is only emitted when the derived code is valid (1–16).",
+      "text": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-4"
+          "msg-10"
         ],
         "quotes": [
-          "#= the id of the button"
+          "an app that runs on a raspberry PI using a Linux os"
         ]
       },
       "acceptanceCriteria": [
-        "For button controls, the emitted command uses a numeric id between 1 and 16 (inclusive).",
-        "If a button’s configured code cannot be derived/validated as 1–16, the press/release does not emit a gpioset command and logs a warning to the console."
+        "From the extracted bundle directory, running the launcher script starts (or reuses) a local replica, installs the backend canister from the bundled WASM, and prints the backend canister ID and example URLs/commands to open the UI.",
+        "The launcher script supports explicit stop and clean actions and prints user-facing help text for these options."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Update the gpioset command generation utility so it can generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release, and remove or stop using the old 4-bit-to-multiple-pin mapping generator for button events.",
+      "text": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-4"
+          "msg-10"
         ],
         "quotes": [
-          "change the output signal to (gpioset -cgpiochip0 #=$)"
+          "an app that runs on a raspberry PI using a Linux os"
         ]
       },
       "acceptanceCriteria": [
-        "There is a reusable helper that returns exactly `gpioset -c gpiochip0 <id>=<state>` (with a space after `gpioset`, and `-c gpiochip0` present).",
-        "ControlRenderer (button press/release paths) uses the new helper to build the emitted value."
+        "Documentation in the bundle explains how to run the Raspberry Pi event runner with the required CANISTER_ID and network selection, and how to run in DRY_RUN mode.",
+        "Documentation states required Linux packages/tools for GPIO execution on Raspberry Pi (e.g., jq and libgpiod/gpioset) and how to install them on common Raspberry Pi Linux distributions."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Update Raspberry Pi bash runner documentation to reflect that button events now emit single `gpioset -c gpiochip0 <id>=<state>` commands on press and release.",
+      "text": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-4"
+          "msg-10"
         ],
         "quotes": [
-          "change the output signal to (gpioset -cgpiochip0 #=$)"
+          "an app that runs on a raspberry PI using a Linux os"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/docs/rpi-bash-runner.md` mentions the new emitted command format for button events, including that `state` is 1 on press and 0 on release.",
-        "The documentation does not claim button events emit 4-line pin-mapping sequences for 4-bit codes."
+        "Bundle includes a documented systemd unit example for the Raspberry Pi event runner, including where to set CANISTER_ID/NETWORK and how to enable/disable/start/stop the service.",
+        "The systemd setup path is optional and does not break manual execution of the scripts."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo.",
-    "Do not edit any files under frontend/src/components/ui or any paths listed as immutable in SYSTEM_CONTEXT."
+    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo only if persistent state upgrades are required.",
+    "Do not modify files under frontend/src/components/ui or other immutable paths listed in SYSTEM_CONTEXT; compose or wrap these components instead."
   ],
   "nonGoals": [
-    "Changing the backend event schema or adding new backend canister methods.",
-    "Adding new authentication methods beyond Internet Identity.",
-    "Redesigning non-button controls (toggle/slider/radio/dial) emission formats unless required for the new button press/release command format."
+    "Building a native Raspberry Pi desktop binary (e.g., Electron, .deb/.rpm installer)",
+    "Adding third-party authentication providers (only Internet Identity is supported)",
+    "Adding external databases or cloud hosting dependencies"
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

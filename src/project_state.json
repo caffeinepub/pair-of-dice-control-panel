@@ -1,34 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project to map button press/release events to GPIO output commands.",
-  "architectural_notes": [
-    "Output command format: `gpioset -c gpiochip0 <button_id>=<state>`; <state>=1 when pressed, 0 when released."
-  ],
+  "summary": "Build an application that runs on Raspberry Pi using Linux.",
+  "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-change-button-interaction-event-emission-so-that-the-emitted-command-string-event-value-uses-the-format-gpioset-c-gpiochip0-where-is-the-button-s-numeric-code-1-16-and-is-1-when-pressed-and-0-when-released",
-      "title": "Change button interaction event emission so that the emitted command string (event.value) uses the format `gpioset -c gpiochip0 #=$`, where `#` is the button's numeric code (1–16) and `$` is `1` when pressed and `0` when released.",
+      "id": "feature-provide-a-raspberry-pi-linux-friendly-distribution-workflow-that-produces-a-self-contained-linux-bundle-archive-for-running-the-app-on-a-raspberry-pi-linux-os-including-the-built-frontend-backend-canister-artifacts-launcher-script-and-raspberry-pi-helper-scripts",
+      "title": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-derive-the-value-for-the-new-gpioset-command-from-the-existing-button-code-configuration-the-button-s-1-16-code-rather-than-the-control-s-textual-layout-id-and-ensure-the-command-is-only-emitted-when-the-derived-code-is-valid-1-16",
-      "title": "Derive the `#` value for the new gpioset command from the existing button code configuration (the button’s 1–16 code) rather than the control's textual layout id, and ensure the command is only emitted when the derived code is valid (1–16).",
+      "id": "feature-ensure-the-extracted-linux-bundle-can-be-started-with-a-single-command-and-provides-clear-copy-paste-able-output-showing-how-to-access-the-ui-locally-and-how-to-stop-clean-the-local-replica",
+      "title": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-gpioset-command-generation-utility-so-it-can-generate-the-single-command-format-gpioset-c-gpiochip0-id-state-for-button-press-release-and-remove-or-stop-using-the-old-4-bit-to-multiple-pin-mapping-generator-for-button-events",
-      "title": "Update the gpioset command generation utility so it can generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release, and remove or stop using the old 4-bit-to-multiple-pin mapping generator for button events.",
+      "id": "feature-add-raspberry-pi-guidance-and-runnable-commands-for-gpio-execution-via-the-included-raspberry-pi-event-runner-script-including-required-environment-variables-and-a-safe-dry-run-mode",
+      "title": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-optional-raspberry-pi-run-at-boot-setup-path-by-providing-a-systemd-service-example-and-any-small-helper-script-if-needed-that-starts-the-raspberry-pi-event-runner-automatically-with-user-provided-configuration",
+      "title": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -36,16 +42,8 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Change output signal to use `gpioset -c gpiochip0 <button_id>=<state>` where state is 1 on press and 0 on release.",
+      "summary": "Create a Linux application that runs on Raspberry Pi (Linux OS).",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Update Raspberry Pi bash runner documentation to reflect that button events now emit single `gpioset -c gpiochip0 <id>=<state>` commands on press and release.",
-      "reqIds": [
-        "REQ-4"
-      ],
       "status": "pending"
     }
   ],

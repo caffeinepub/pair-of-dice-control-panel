@@ -10,6 +10,7 @@
 #   ./run.sh              # Start the application
 #   ./run.sh --stop       # Stop the local replica
 #   ./run.sh --clean      # Stop and clean all local state
+#   ./run.sh --help       # Show help message
 #
 
 set -euo pipefail
@@ -121,6 +122,8 @@ case "$COMMAND" in
         exit 0
         ;;
     --help|-h)
+        echo "GPIO Control Panel - Linux Bundle Launcher"
+        echo ""
         echo "Usage: ./run.sh [OPTION]"
         echo ""
         echo "Options:"
@@ -128,6 +131,11 @@ case "$COMMAND" in
         echo "  --stop         Stop the local replica"
         echo "  --clean        Stop and clean all local state"
         echo "  --help, -h     Show this help message"
+        echo ""
+        echo "Examples:"
+        echo "  ./run.sh                # Start the app"
+        echo "  ./run.sh --stop         # Stop the replica"
+        echo "  ./run.sh --clean        # Clean and reset"
         echo ""
         exit 0
         ;;
@@ -214,7 +222,7 @@ cd "$BUNDLE_ROOT"
 # Check if replica is already running
 if dfx ping 2>/dev/null | grep -q "replica"; then
     log_warning "Local replica is already running"
-    log_instruction "If you want to start fresh, run: ./run.sh --clean"
+    log_instruction "Reusing existing replica (use './run.sh --clean' to start fresh)"
 else
     # Start local replica
     log "Starting local Internet Computer replica..."
@@ -260,41 +268,50 @@ log_success "Backend canister ID: $BACKEND_CANISTER_ID"
 
 echo ""
 
-# Serve frontend
-log "Frontend is available in: $BUNDLE_ROOT/frontend/dist"
-log_instruction "The frontend is pre-built and ready to serve"
-
 # Get replica URL
 REPLICA_URL="http://localhost:4943"
 FRONTEND_URL="${REPLICA_URL}?canisterId=${BACKEND_CANISTER_ID}"
 
+# Success!
 echo ""
 echo -e "${BOLD}${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}${GREEN}║  Application is ready!                                     ║${NC}"
+echo -e "${BOLD}${GREEN}║  Application deployed successfully!                        ║${NC}"
 echo -e "${BOLD}${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-log_success "Local replica running at: ${BOLD}$REPLICA_URL${NC}"
-log_success "Backend canister ID: ${BOLD}$BACKEND_CANISTER_ID${NC}"
+
+log_success "Backend Canister ID: ${BOLD}${BACKEND_CANISTER_ID}${NC}"
 echo ""
-log_instruction "To access the application, you have two options:"
+
+# Print access instructions
+echo -e "${BOLD}${CYAN}Access the application:${NC}"
 echo ""
-echo "  ${BOLD}Option 1: Use a simple HTTP server${NC}"
-echo "    Run in a new terminal:"
-echo "    ${CYAN}cd $BUNDLE_ROOT/frontend/dist && python3 -m http.server 8080${NC}"
-echo "    Then open: ${BOLD}http://localhost:8080?canisterId=$BACKEND_CANISTER_ID${NC}"
+echo -e "${BOLD}1. Serve the frontend:${NC}"
+echo -e "   ${CYAN}cd $BUNDLE_ROOT/frontend/dist && npx http-server -p 3000${NC}"
 echo ""
-echo "  ${BOLD}Option 2: Deploy frontend canister (recommended)${NC}"
-echo "    Run: ${CYAN}dfx deploy frontend${NC}"
-echo "    Then open the URL shown by dfx"
+echo -e "${BOLD}2. Open in browser:${NC}"
+echo -e "   ${CYAN}${FRONTEND_URL}${NC}"
 echo ""
-log_instruction "For Raspberry Pi GPIO testing:"
-echo "  1. Verify GPIO wiring: ${CYAN}bash scripts/rpi_pin_test.sh${NC}"
-echo "  2. Run event runner: ${CYAN}CANISTER_ID=$BACKEND_CANISTER_ID NETWORK=local bash scripts/rpi_event_runner.sh${NC}"
-echo "  3. See docs/rpi-bash-runner.md for detailed instructions"
+
+# Print Raspberry Pi instructions
+echo -e "${BOLD}${CYAN}Raspberry Pi GPIO Setup (optional):${NC}"
 echo ""
-log_instruction "To stop the replica:"
-echo "  ${CYAN}./run.sh --stop${NC}"
+echo -e "${BOLD}1. Install prerequisites:${NC}"
+echo -e "   ${CYAN}sudo apt-get update && sudo apt-get install -y jq gpiod${NC}"
 echo ""
-log_instruction "To clean and reset everything:"
-echo "  ${CYAN}./run.sh --clean${NC}"
+echo -e "${BOLD}2. Test GPIO pins:${NC}"
+echo -e "   ${CYAN}./scripts/rpi_pin_test.sh${NC}"
+echo ""
+echo -e "${BOLD}3. Run event runner (manual):${NC}"
+echo -e "   ${CYAN}CANISTER_ID=${BACKEND_CANISTER_ID} NETWORK=local ./scripts/rpi_event_runner.sh${NC}"
+echo ""
+echo -e "${BOLD}4. Optional: Set up auto-start at boot${NC}"
+echo -e "   See ${CYAN}docs/rpi-bash-runner.md${NC} for systemd setup instructions"
+echo ""
+
+# Print control commands
+echo -e "${BOLD}${CYAN}Control commands:${NC}"
+echo ""
+echo -e "  ${BOLD}Stop replica:${NC}      ${CYAN}./run.sh --stop${NC}"
+echo -e "  ${BOLD}Clean and reset:${NC}   ${CYAN}./run.sh --clean${NC}"
+echo -e "  ${BOLD}Show help:${NC}         ${CYAN}./run.sh --help${NC}"
 echo ""
