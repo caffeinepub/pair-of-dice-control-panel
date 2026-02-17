@@ -1,66 +1,65 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Downloadable Linux test bundle packaging + docs (frontend-only)",
+  "title": "GPIO HTTP POST on button press and immediate reset on release",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a Linux packaging script that produces a single archive containing built frontend assets plus a single-command launcher script for local testing.",
+      "summary": "Send GPIO HTTP POST with the pressed button's validated 4-bit binary code on button press (pointer down / keyboard activation), disabled in edit mode.",
       "acceptanceCriteria": [
-        "A new packaging script exists in the repo (e.g., under a scripts/ directory) that produces a single distributable archive (e.g., .tar.gz) when run on Linux.",
-        "The distributable archive contains: (1) the built frontend assets, (2) the compiled canister artifacts needed for local deployment, and (3) a run script (e.g., run.sh) that starts a local replica (if needed) and deploys/serves the app for testing.",
-        "Running the included run script on Linux results in the app being accessible for testing (e.g., via a local URL) without requiring the user to manually execute multiple setup commands."
+        "Pressing a button control triggers a POST to http://localhost:3000/gpio.",
+        "The request includes header Content-Type: application/json.",
+        "The request body is valid JSON and includes the pressed code as {\"binary\":\"<4-bit code>\"}.",
+        "No POST is sent while in edit mode.",
+        "If the control’s binary code is invalid, no POST is sent and the existing validation behavior remains (warn/ignore)."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/package_linux_bundle.sh",
+          "path": "frontend/src/lib/gpioHttp.ts",
           "operation": "create",
-          "description": "Create a Linux-only packaging script that (a) builds the frontend, (b) gathers required local testing artifacts produced by the repo’s existing IC tooling, and (c) emits a single .tar.gz containing the built frontend output, required IC local artifacts, and the launcher script. Ensure the script also copies any required docs/scripts into the archive and prints the output archive location."
+          "description": "Add a small fetch-based helper to POST JSON to http://localhost:3000/gpio with Content-Type: application/json and body {\"binary\":\"XXXX\"}, intended for button-press signaling."
         },
         {
-          "path": "frontend/scripts/linux_bundle_run.sh",
-          "operation": "create",
-          "description": "Create the launcher script intended to be included inside the distributable archive as run.sh. Script should start/prepare the local environment using the repo’s existing IC tooling, deploy the app for local testing, and print the local URL/port for access; include stop/reset guidance output as needed."
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "operation": "modify",
+          "description": "Update the button control interaction logic to call the new GPIO POST helper on press (pointer down and keyboard activation) only when not in edit mode and only when validateBinaryCode(control.binaryCode) passes; keep existing warn/ignore validation behavior unchanged."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Add Linux testing documentation for downloading, prerequisites, running the launcher script, and troubleshooting.",
+      "summary": "On button release (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately POST a reset payload {\"binary\":\"0000\"} exactly once and cancel/remove any delayed reset behavior.",
       "acceptanceCriteria": [
-        "A new documentation page is added (or an existing doc is extended) describing: required dependencies (e.g., DFX, Node/npm if applicable), how to run the packaged bundle, expected output (URL/ports), and how to stop/reset the local environment.",
-        "Documentation is written in English and includes copy-pasteable commands for typical Linux shells (bash)."
+        "Releasing a pressed button (pointer up/cancel/leave) sends a POST with body {\"binary\":\"0000\"} immediately.",
+        "Releasing a pressed button via keyboard (Enter/Space key-up) sends a POST with body {\"binary\":\"0000\"} immediately.",
+        "If a button loses focus while pressed (blur), the app sends the reset POST exactly once.",
+        "No extra delayed reset POST occurs after release (i.e., the previous 1s timeout-based reset behavior for buttons is removed or canceled)."
       ],
       "file_operations": [
         {
-          "path": "frontend/docs/linux-local-test-bundle.md",
-          "operation": "create",
-          "description": "Add English Linux documentation describing prerequisites, how to generate the archive with the packaging script, how to download/extract/run the included run.sh in bash, expected URL/ports, and how to stop/reset/troubleshoot common issues (dfx not found, ports in use, stale local state, permissions)."
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
+          "operation": "modify",
+          "description": "Revise button release handling to POST {\"binary\":\"0000\"} immediately on pointer up/cancel/leave, blur-while-pressed, and Enter/Space key-up; ensure the reset send is de-duplicated (sent exactly once per press) and remove/cancel the prior 1s timeout-based reset behavior for buttons so no later reset fires after release."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Ensure the Linux bundle includes existing Raspberry Pi helper scripts and their documentation and references their paths from within the extracted bundle.",
+      "summary": "Add non-crashing client-side error handling for GPIO POST failures with clear console logging including URL and binary value.",
       "acceptanceCriteria": [
-        "The distributable archive includes the existing Raspberry Pi scripts (frontend/scripts/rpi_event_runner.sh and frontend/scripts/rpi_pin_test.sh) and the related documentation (frontend/docs/rpi-bash-runner.md).",
-        "The included documentation in the bundle clearly points to the included scripts’ paths and how to execute them from the extracted directory."
+        "If http://localhost:3000/gpio is unreachable or returns a network error, the UI continues to function without crashing.",
+        "A console warning/error is written on failure that includes the endpoint URL and the attempted binary payload value."
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/package_linux_bundle.sh",
+          "path": "frontend/src/lib/gpioHttp.ts",
           "operation": "modify",
-          "description": "Update the packaging script to explicitly include frontend/scripts/rpi_event_runner.sh, frontend/scripts/rpi_pin_test.sh, and frontend/docs/rpi-bash-runner.md in the generated archive under predictable paths, and ensure file modes preserve executability for the .sh scripts."
+          "description": "Implement robust error handling in the GPIO POST helper: catch fetch/network errors and handle non-success HTTP responses without throwing into the UI event handler; log a clear console warning/error that includes the URL http://localhost:3000/gpio and the binary value that failed to send."
         },
         {
-          "path": "frontend/docs/rpi-bash-runner.md",
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Extend the Raspberry Pi runner documentation to include a short section for users running from the extracted Linux bundle, explicitly referencing the included script paths (as laid out by the bundle) and copy-pasteable bash commands to execute them."
-        },
-        {
-          "path": "frontend/docs/linux-local-test-bundle.md",
-          "operation": "modify",
-          "description": "Add a section that points to the included Raspberry Pi helper scripts and rpi-bash-runner.md inside the extracted bundle, including copy-pasteable bash commands to run rpi_pin_test.sh and rpi_event_runner.sh."
+          "description": "Call the GPIO POST helper from button press/release paths in a way that cannot crash rendering (e.g., fire-and-forget or safely handled async) while relying on the helper's console logging for failures."
         }
       ]
     }

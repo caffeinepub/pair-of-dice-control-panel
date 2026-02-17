@@ -50,6 +50,45 @@ print_header() {
     echo ""
 }
 
+# Simple run_step function for launcher (doesn't need full diagnostics helper)
+run_step() {
+    local step_name="$1"
+    shift
+    local cmd="$*"
+    
+    local log_file
+    log_file=$(mktemp)
+    
+    echo -e "${BLUE}[INFO]${NC} Running: $step_name"
+    
+    if eval "$cmd" > "$log_file" 2>&1; then
+        echo -e "${GREEN}[✓]${NC} $step_name completed successfully"
+        rm -f "$log_file"
+        return 0
+    else
+        local exit_code=$?
+        echo ""
+        echo -e "${RED}╔════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${RED}║  DEPLOYMENT STEP FAILED                                    ║${NC}"
+        echo -e "${RED}╚════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo -e "${BOLD}Step:${NC} $step_name"
+        echo -e "${BOLD}Command:${NC} $cmd"
+        echo -e "${BOLD}Exit Code:${NC} $exit_code"
+        echo ""
+        echo -e "${BOLD}Last 100 lines of output:${NC}"
+        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+        tail -100 "$log_file"
+        echo -e "${CYAN}────────────────────────────────────────────────────────────${NC}"
+        echo ""
+        echo -e "${YELLOW}[⚠]${NC} Check the output above for error details"
+        echo ""
+        
+        rm -f "$log_file"
+        return $exit_code
+    fi
+}
+
 # Detect bundle root (script is in bundle root as run.sh)
 BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -57,6 +96,7 @@ BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ ! -f "$BUNDLE_ROOT/dfx.json" ]]; then
     log_error "Could not find dfx.json in bundle root: $BUNDLE_ROOT"
     log_error "Please run this script from the extracted bundle directory"
+    log_instruction "Remediation: Extract the bundle archive and run ./run.sh from the extracted directory"
     exit 1
 fi
 
@@ -130,6 +170,44 @@ fi
 log_success "All dependencies found"
 echo ""
 
+# Validate bundle contents before attempting deployment
+log "Validating bundle contents..."
+VALIDATION_FAILED=0
+
+if [[ ! -f "$BUNDLE_ROOT/dfx.json" ]]; then
+    log_error "dfx.json not found in bundle"
+    log_instruction "Remediation: Re-extract the bundle archive or repackage the bundle"
+    VALIDATION_FAILED=1
+fi
+
+if [[ ! -d "$BUNDLE_ROOT/frontend/dist" ]]; then
+    log_error "Frontend dist directory not found: $BUNDLE_ROOT/frontend/dist"
+    log_instruction "Remediation: Repackage the bundle with 'bash frontend/scripts/package_linux_bundle.sh'"
+    VALIDATION_FAILED=1
+fi
+
+if [[ ! -d "$BUNDLE_ROOT/backend/backend" ]]; then
+    log_error "Backend artifacts directory not found: $BUNDLE_ROOT/backend/backend"
+    log_instruction "Remediation: Repackage the bundle with 'bash frontend/scripts/package_linux_bundle.sh'"
+    VALIDATION_FAILED=1
+fi
+
+BACKEND_WASM="$BUNDLE_ROOT/backend/backend/backend.wasm"
+if [[ ! -f "$BACKEND_WASM" ]]; then
+    log_error "Backend WASM file not found: $BACKEND_WASM"
+    log_instruction "Remediation: Repackage the bundle with 'bash frontend/scripts/package_linux_bundle.sh'"
+    VALIDATION_FAILED=1
+fi
+
+if [[ $VALIDATION_FAILED -eq 1 ]]; then
+    log_error "Bundle validation failed - cannot deploy"
+    log_error "Please fix the issues above and try again"
+    exit 1
+fi
+
+log_success "Bundle contents validated"
+echo ""
+
 # Change to bundle directory
 cd "$BUNDLE_ROOT"
 
@@ -142,13 +220,11 @@ else
     log "Starting local Internet Computer replica..."
     log_instruction "This may take a moment on first run..."
     
-    if ! dfx start --background --clean 2>&1 | grep -v "WARN" | tail -10; then
-        log_error "Failed to start local replica"
-        log_instruction "Try running: ./run.sh --clean"
+    if ! run_step "Start local replica" "dfx start --background --clean"; then
+        log_error "Failed to start local replica - see diagnostics above"
+        log_instruction "Remediation: Try running './run.sh --clean' and then './run.sh' again"
         exit 1
     fi
-    
-    log_success "Local replica started"
     
     # Wait for replica to be ready
     log "Waiting for replica to be ready..."
@@ -163,28 +239,18 @@ log "Deploying backend canister..."
 # Create canister if needed
 if ! dfx canister id backend 2>/dev/null; then
     log "Creating backend canister..."
-    if ! dfx canister create backend 2>&1 | grep -v "WARN"; then
-        log_error "Failed to create backend canister"
+    if ! run_step "Create backend canister" "dfx canister create backend"; then
+        log_error "Failed to create backend canister - see diagnostics above"
+        log_instruction "Remediation: Check that dfx is running correctly with 'dfx ping'"
         exit 1
     fi
 fi
 
 # Install the backend canister
 log "Installing backend canister..."
-if [[ -d "$BUNDLE_ROOT/backend/backend" ]]; then
-    BACKEND_WASM="$BUNDLE_ROOT/backend/backend/backend.wasm"
-    if [[ -f "$BACKEND_WASM" ]]; then
-        if ! dfx canister install backend --wasm "$BACKEND_WASM" --mode reinstall --yes 2>&1 | grep -v "WARN"; then
-            log_error "Failed to install backend canister"
-            exit 1
-        fi
-        log_success "Backend canister deployed"
-    else
-        log_error "Backend WASM file not found: $BACKEND_WASM"
-        exit 1
-    fi
-else
-    log_error "Backend artifacts not found in bundle"
+if ! run_step "Install backend canister" "dfx canister install backend --wasm '$BACKEND_WASM' --mode reinstall --yes"; then
+    log_error "Failed to install backend canister - see diagnostics above"
+    log_instruction "Remediation: Verify the WASM file exists at: $BACKEND_WASM"
     exit 1
 fi
 
@@ -212,7 +278,7 @@ log_success "Backend canister ID: ${BOLD}$BACKEND_CANISTER_ID${NC}"
 echo ""
 log_instruction "To access the application, you have two options:"
 echo ""
-echo "  ${BOLD}Option 1: Use dfx's built-in server${NC}"
+echo "  ${BOLD}Option 1: Use a simple HTTP server${NC}"
 echo "    Run in a new terminal:"
 echo "    ${CYAN}cd $BUNDLE_ROOT/frontend/dist && python3 -m http.server 8080${NC}"
 echo "    Then open: ${BOLD}http://localhost:8080?canisterId=$BACKEND_CANISTER_ID${NC}"

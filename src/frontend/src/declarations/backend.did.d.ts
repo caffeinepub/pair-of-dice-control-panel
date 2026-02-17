@@ -16,6 +16,8 @@ export interface Control {
   'controlType' : string,
   'radioOptions' : [] | [Array<string>],
   'radioGroupIsVertical' : [] | [boolean],
+  'dialIncreaseBinaryCode' : [] | [string],
+  'dialDecreaseBinaryCode' : [] | [string],
   'sliderIsVertical' : [] | [boolean],
   'binaryCode' : string,
 }
@@ -31,6 +33,10 @@ export interface Layout { 'controls' : Array<Control> }
 export type Time = bigint;
 export interface _SERVICE {
   'backendScaffoldPlaceholderFunction' : ActorMethod<[], string>,
+  'emitDialEvent' : ActorMethod<
+    [string, string, [] | [string], string],
+    undefined
+  >,
   'emitEvent' : ActorMethod<
     [string, string, [] | [string], string, string],
     undefined

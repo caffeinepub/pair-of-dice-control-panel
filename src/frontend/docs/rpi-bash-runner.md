@@ -12,11 +12,7 @@ The `rpi_event_runner.sh` script:
 - Supports dry-run mode for testing
 - Logs all operations with timestamps
 
-## Prerequisites
+## Event Format
 
-### 1. Raspberry Pi OS Setup
-
-Ensure you're running a recent version of Raspberry Pi OS (formerly Raspbian).
-
-### 2. Install Required Packages
+Events emitted by the control panel have the following structure:
 

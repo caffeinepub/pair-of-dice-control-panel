@@ -32,7 +32,7 @@ export function validateLayout(layout: any): ValidationError[] {
       ids.add(ctrl.id);
     }
 
-    if (!ctrl.controlType || !['button', 'toggle', 'slider', 'radio'].includes(ctrl.controlType)) {
+    if (!ctrl.controlType || !['button', 'toggle', 'slider', 'radio', 'dial'].includes(ctrl.controlType)) {
       errors.push({ field: `${prefix}.controlType`, message: 'Invalid control type' });
     }
 
@@ -70,6 +70,18 @@ export function validateLayout(layout: any): ValidationError[] {
             });
           }
         });
+      }
+    }
+
+    if (ctrl.controlType === 'dial') {
+      const increaseError = validateBinaryCode(ctrl.dialIncreaseBinaryCode || '');
+      if (increaseError) {
+        errors.push({ field: `${prefix}.dialIncreaseBinaryCode`, message: increaseError });
+      }
+      
+      const decreaseError = validateBinaryCode(ctrl.dialDecreaseBinaryCode || '');
+      if (decreaseError) {
+        errors.push({ field: `${prefix}.dialDecreaseBinaryCode`, message: decreaseError });
       }
     }
   });

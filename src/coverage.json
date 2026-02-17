@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T23:49:22.803Z",
+  "generatedAt": "2026-02-13T23:16:58.070Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,55 +12,50 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
+        "summary": "When a UI control of type \"button\" is pressed (pointer down or keyboard activation), send an HTTP POST request to http://localhost:3000/gpio with header Content-Type: application/json and a JSON body containing the pressed button’s 4-bit binary code in the form {\"binary\": \"XXXX\"}, where XXXX is the button’s binary code.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/package_linux_bundle.sh",
-          "frontend/scripts/linux_bundle_run.sh"
+          "frontend/src/lib/gpioHttp.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ],
         "matchedFiles": [
-          "frontend/scripts/package_linux_bundle.sh",
-          "frontend/scripts/linux_bundle_run.sh"
+          "frontend/src/lib/gpioHttp.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
+        "summary": "When the same \"button\" press is released (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately send an HTTP POST request to http://localhost:3000/gpio with Content-Type: application/json and JSON body {\"binary\":\"0000\"}. Ensure any previously scheduled delayed reset behavior for buttons does not cause an additional, later reset send.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/docs/linux-local-test-bundle.md"
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ],
         "matchedFiles": [
-          "frontend/docs/linux-local-test-bundle.md"
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+        "summary": "Implement basic client-side error handling for the GPIO HTTP POST requests: failures must not crash the UI; log a clear console warning/error that includes the endpoint and the binary value that failed to send.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/package_linux_bundle.sh",
-          "frontend/docs/rpi-bash-runner.md",
-          "frontend/docs/linux-local-test-bundle.md"
+          "frontend/src/lib/gpioHttp.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ],
         "matchedFiles": [
-          "frontend/scripts/package_linux_bundle.sh",
-          "frontend/docs/linux-local-test-bundle.md"
+          "frontend/src/lib/gpioHttp.ts",
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/docs/linux-local-test-bundle.md",
-    "frontend/docs/rpi-bash-runner.md.backup",
-    "frontend/scripts/linux_bundle_run.sh",
-    "frontend/scripts/package_linux_bundle.sh",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
+    "frontend/src/lib/gpioHttp.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

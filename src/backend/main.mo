@@ -2,9 +2,7 @@ import List "mo:core/List";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Char "mo:core/Char";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   type Event = {
     timestamp : Time.Time;
@@ -23,6 +21,8 @@ actor {
     radioOptions : ?[Text];
     radioGroupIsVertical : ?Bool;
     sliderIsVertical : ?Bool;
+    dialIncreaseBinaryCode : ?Text;
+    dialDecreaseBinaryCode : ?Text;
   };
 
   type Layout = {
@@ -72,6 +72,14 @@ actor {
     for (control in layout.controls.values()) {
       if (not isValidBinaryCode(control.binaryCode)) {
         return;
+      };
+      switch (control.dialIncreaseBinaryCode, control.dialDecreaseBinaryCode) {
+        case (?inc, ?dec) {
+          if (not isValidBinaryCode(inc) or not isValidBinaryCode(dec)) {
+            return;
+          };
+        };
+        case (_, _) {};
       };
     };
     currentLayout := layout;
@@ -127,13 +135,77 @@ actor {
     addEvent(event);
   };
 
+  public shared ({ caller }) func emitDialEvent(controlId : Text, controlType : Text, controlName : ?Text, direction : Text) : async () {
+    let controlOpt = currentLayout.controls.find(func(c) { c.id == controlId });
+    switch (controlOpt) {
+      case (null) { return };
+      case (?control) {
+        let binaryCode = switch (direction) {
+          case ("increase") { control.dialIncreaseBinaryCode };
+          case ("decrease") { control.dialDecreaseBinaryCode };
+          case (_) { return };
+        };
+
+        switch (binaryCode) {
+          case (null) { return };
+          case (?code) {
+            if (not isValidBinaryCode(code)) {
+              return;
+            };
+
+            let hatGpiosetCommand = convertToHatGpiosetCommand(code);
+
+            let event : Event = {
+              timestamp = Time.now();
+              controlId;
+              controlType;
+              controlName;
+              value = hatGpiosetCommand;
+              binaryCode = code;
+            };
+            addEvent(event);
+          };
+        };
+      };
+    };
+  };
+
+  func calculateTransitionDuration(lastState : Text, currentState : Text) : Nat {
+    var transitions = 0;
+    for (i in Nat.range(0, 4)) {
+      let lastChars = lastState.toArray();
+      let currentChars = currentState.toArray();
+
+      if (i < lastChars.size() and i < currentChars.size()) {
+        let lastChar = lastChars[i];
+        let currentChar = currentChars[i];
+        switch (lastChar, currentChar) {
+          case (
+            last,
+            current,
+          ) {
+            if (last != current) {
+              transitions += 1;
+            };
+          };
+        };
+      };
+    };
+
+    if (transitions > 0) {
+      4 / transitions;
+    } else {
+      4;
+    };
+  };
+
   func convertToHatGpiosetCommand(binaryCode : Text) : Text {
     var gpiosetCommand = "";
     var currentState = "0000";
+    var lastState = "0000";
 
     for (char in binaryCode.chars()) {
       var newState = "";
-      // Update only the current bit in the state
       for (i in Nat.range(0, 4)) {
         if (i == 3) {
           newState #= char.toText();
@@ -145,11 +217,18 @@ actor {
           };
         };
       };
+
       currentState := newState;
-      // Append the current command
-      gpiosetCommand #= "gpioset --mode=time 0 " # currentState # "\n";
+
+      let transitionDuration = calculateTransitionDuration(lastState, currentState);
+
+      gpiosetCommand #= "gpioset --mode=time 0 " # currentState # " --duration=" # transitionDuration.toText() # "ms\n";
+
+      lastState := currentState;
     };
-    gpiosetCommand;
+
+    // Ensure the final state is always set to "0000"
+    gpiosetCommand # "gpioset --mode=time 0 0000 --duration=4ms\n";
   };
 
   // <CODE_AREAS>

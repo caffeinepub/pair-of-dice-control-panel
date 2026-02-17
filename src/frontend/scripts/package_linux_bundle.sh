@@ -51,6 +51,10 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FRONTEND_DIR="$PROJECT_ROOT/frontend"
 BACKEND_DIR="$PROJECT_ROOT/backend"
 
+# Source diagnostics helper
+# shellcheck source=frontend/scripts/lib/script_diagnostics.sh
+source "$SCRIPT_DIR/lib/script_diagnostics.sh"
+
 # Check if we're in the right place
 if [[ ! -f "$PROJECT_ROOT/dfx.json" ]]; then
     log_error "Could not find dfx.json in project root: $PROJECT_ROOT"
@@ -71,16 +75,19 @@ MISSING_DEPS=0
 
 if ! command -v dfx &> /dev/null; then
     log_error "dfx not found - required for building canisters"
+    log_error "Install from: https://internetcomputer.org/docs/current/developer-docs/setup/install"
     MISSING_DEPS=1
 fi
 
 if ! command -v node &> /dev/null; then
     log_error "node not found - required for building frontend"
+    log_error "Install from: https://nodejs.org/"
     MISSING_DEPS=1
 fi
 
 if ! command -v npm &> /dev/null && ! command -v pnpm &> /dev/null; then
     log_error "npm or pnpm not found - required for building frontend"
+    log_error "Install Node.js from: https://nodejs.org/"
     MISSING_DEPS=1
 fi
 
@@ -106,35 +113,67 @@ log "Building frontend and backend..."
 cd "$PROJECT_ROOT"
 
 # Build backend canister
-log "Building backend canister..."
+log "Ensuring backend canister exists..."
 if ! dfx canister create backend --network local 2>/dev/null; then
     log_warning "Backend canister already exists or local replica not running - continuing..."
 fi
 
-if ! dfx build backend 2>&1 | grep -v "WARN"; then
-    log_error "Backend build failed"
+# Build backend with diagnostics
+if ! run_step "Backend build" "dfx build backend"; then
+    log_error "Backend build failed - see diagnostics above"
     rm -rf "$PROJECT_ROOT/.bundle_temp"
     exit 1
 fi
-log_success "Backend built"
 
-# Build frontend
-log "Building frontend..."
+# Build frontend with diagnostics
 cd "$FRONTEND_DIR"
 if command -v pnpm &> /dev/null; then
-    if ! pnpm run build:skip-bindings 2>&1 | tail -20; then
-        log_error "Frontend build failed"
+    if ! run_step "Frontend build" "pnpm run build:skip-bindings"; then
+        log_error "Frontend build failed - see diagnostics above"
         rm -rf "$PROJECT_ROOT/.bundle_temp"
         exit 1
     fi
 else
-    if ! npm run build:skip-bindings 2>&1 | tail -20; then
-        log_error "Frontend build failed"
+    if ! run_step "Frontend build" "npm run build:skip-bindings"; then
+        log_error "Frontend build failed - see diagnostics above"
         rm -rf "$PROJECT_ROOT/.bundle_temp"
         exit 1
     fi
 fi
-log_success "Frontend built"
+
+echo ""
+
+# Validate required artifacts before packaging
+log "Validating build artifacts..."
+VALIDATION_FAILED=0
+
+if [[ ! -d "$FRONTEND_DIR/dist" ]]; then
+    log_error "Frontend dist directory not found: $FRONTEND_DIR/dist"
+    log_error "Remediation: Ensure frontend build completed successfully"
+    VALIDATION_FAILED=1
+fi
+
+if [[ ! -d "$PROJECT_ROOT/.dfx/local/canisters/backend" ]]; then
+    log_error "Backend canister artifacts not found: $PROJECT_ROOT/.dfx/local/canisters/backend"
+    log_error "Remediation: Ensure dfx build backend completed successfully"
+    VALIDATION_FAILED=1
+fi
+
+BACKEND_WASM="$PROJECT_ROOT/.dfx/local/canisters/backend/backend.wasm"
+if [[ ! -f "$BACKEND_WASM" ]]; then
+    log_error "Backend WASM file not found: $BACKEND_WASM"
+    log_error "Remediation: Run 'dfx build backend' to generate the WASM file"
+    VALIDATION_FAILED=1
+fi
+
+if [[ $VALIDATION_FAILED -eq 1 ]]; then
+    log_error "Build artifact validation failed - cannot create bundle"
+    log_error "Please fix the issues above and try again"
+    rm -rf "$PROJECT_ROOT/.bundle_temp"
+    exit 1
+fi
+
+log_success "All required artifacts validated"
 echo ""
 
 # Copy built artifacts to bundle
@@ -149,12 +188,8 @@ log_success "    Frontend dist copied"
 # 2. Copy backend artifacts
 log "  → Copying backend artifacts..."
 mkdir -p "$TEMP_DIR/backend"
-if [[ -d "$PROJECT_ROOT/.dfx/local/canisters/backend" ]]; then
-    cp -r "$PROJECT_ROOT/.dfx/local/canisters/backend" "$TEMP_DIR/backend/"
-    log_success "    Backend canister artifacts copied"
-else
-    log_warning "    Backend canister artifacts not found in .dfx/local - bundle may require rebuild"
-fi
+cp -r "$PROJECT_ROOT/.dfx/local/canisters/backend" "$TEMP_DIR/backend/"
+log_success "    Backend canister artifacts copied"
 
 # 3. Copy dfx.json and canister_ids.json
 log "  → Copying configuration files..."

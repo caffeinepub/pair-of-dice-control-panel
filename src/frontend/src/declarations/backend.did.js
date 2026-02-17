@@ -23,6 +23,8 @@ export const Control = IDL.Record({
   'controlType' : IDL.Text,
   'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
   'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
+  'dialIncreaseBinaryCode' : IDL.Opt(IDL.Text),
+  'dialDecreaseBinaryCode' : IDL.Opt(IDL.Text),
   'sliderIsVertical' : IDL.Opt(IDL.Bool),
   'binaryCode' : IDL.Text,
 });
@@ -30,6 +32,11 @@ export const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
 
 export const idlService = IDL.Service({
   'backendScaffoldPlaceholderFunction' : IDL.Func([], [IDL.Text], ['query']),
+  'emitDialEvent' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+      [],
+      [],
+    ),
   'emitEvent' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
       [],
@@ -64,6 +71,8 @@ export const idlFactory = ({ IDL }) => {
     'controlType' : IDL.Text,
     'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
     'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
+    'dialIncreaseBinaryCode' : IDL.Opt(IDL.Text),
+    'dialDecreaseBinaryCode' : IDL.Opt(IDL.Text),
     'sliderIsVertical' : IDL.Opt(IDL.Bool),
     'binaryCode' : IDL.Text,
   });
@@ -71,6 +80,11 @@ export const idlFactory = ({ IDL }) => {
   
   return IDL.Service({
     'backendScaffoldPlaceholderFunction' : IDL.Func([], [IDL.Text], ['query']),
+    'emitDialEvent' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+        [],
+        [],
+      ),
     'emitEvent' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
         [],

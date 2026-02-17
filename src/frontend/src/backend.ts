@@ -96,6 +96,8 @@ export interface Control {
     controlType: string;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
+    dialIncreaseBinaryCode?: string;
+    dialDecreaseBinaryCode?: string;
     sliderIsVertical?: boolean;
     binaryCode: string;
 }
@@ -112,6 +114,7 @@ export interface Event {
 }
 export interface backendInterface {
     backendScaffoldPlaceholderFunction(): Promise<string>;
+    emitDialEvent(controlId: string, controlType: string, controlName: string | null, direction: string): Promise<void>;
     emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
     emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
@@ -133,6 +136,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.backendScaffoldPlaceholderFunction();
+            return result;
+        }
+    }
+    async emitDialEvent(arg0: string, arg1: string, arg2: string | null, arg3: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.emitDialEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.emitDialEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
             return result;
         }
     }
@@ -245,6 +262,8 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
     controlType: string;
     radioOptions: [] | [Array<string>];
     radioGroupIsVertical: [] | [boolean];
+    dialIncreaseBinaryCode: [] | [string];
+    dialDecreaseBinaryCode: [] | [string];
     sliderIsVertical: [] | [boolean];
     binaryCode: string;
 }): {
@@ -253,6 +272,8 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
     controlType: string;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
+    dialIncreaseBinaryCode?: string;
+    dialDecreaseBinaryCode?: string;
     sliderIsVertical?: boolean;
     binaryCode: string;
 } {
@@ -262,6 +283,8 @@ function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uin
         controlType: value.controlType,
         radioOptions: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.radioOptions)),
         radioGroupIsVertical: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.radioGroupIsVertical)),
+        dialIncreaseBinaryCode: record_opt_to_undefined(from_candid_opt_n5(_uploadFile, _downloadFile, value.dialIncreaseBinaryCode)),
+        dialDecreaseBinaryCode: record_opt_to_undefined(from_candid_opt_n5(_uploadFile, _downloadFile, value.dialDecreaseBinaryCode)),
         sliderIsVertical: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.sliderIsVertical)),
         binaryCode: value.binaryCode
     };
@@ -329,6 +352,8 @@ function to_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     controlType: string;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
+    dialIncreaseBinaryCode?: string;
+    dialDecreaseBinaryCode?: string;
     sliderIsVertical?: boolean;
     binaryCode: string;
 }): {
@@ -337,6 +362,8 @@ function to_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     controlType: string;
     radioOptions: [] | [Array<string>];
     radioGroupIsVertical: [] | [boolean];
+    dialIncreaseBinaryCode: [] | [string];
+    dialDecreaseBinaryCode: [] | [string];
     sliderIsVertical: [] | [boolean];
     binaryCode: string;
 } {
@@ -346,6 +373,8 @@ function to_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         controlType: value.controlType,
         radioOptions: value.radioOptions ? candid_some(value.radioOptions) : candid_none(),
         radioGroupIsVertical: value.radioGroupIsVertical ? candid_some(value.radioGroupIsVertical) : candid_none(),
+        dialIncreaseBinaryCode: value.dialIncreaseBinaryCode ? candid_some(value.dialIncreaseBinaryCode) : candid_none(),
+        dialDecreaseBinaryCode: value.dialDecreaseBinaryCode ? candid_some(value.dialDecreaseBinaryCode) : candid_none(),
         sliderIsVertical: value.sliderIsVertical ? candid_some(value.sliderIsVertical) : candid_none(),
         binaryCode: value.binaryCode
     };

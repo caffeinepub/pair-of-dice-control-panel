@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Provide a downloadable Linux bundle that lets users run and test the app locally with a single command.
+**Goal:** Send GPIO HTTP POST updates when a UI button is pressed and immediately reset to `0000` when the press is released.
 
 **Planned changes:**
-- Add a Linux packaging script (e.g., under `scripts/`) that builds the frontend, includes required local canister artifacts, and outputs a single distributable archive (e.g., `.tar.gz`).
-- Include a launcher script inside the archive (e.g., `run.sh`) that starts any required local services (e.g., replica) and deploys/serves the app for testing.
-- Add/extend Linux testing documentation covering prerequisites, download/extract steps, how to run the launcher script, expected local URL/ports, how to stop/reset, and troubleshooting (with copy-pasteable bash commands).
-- Ensure the bundle includes existing Raspberry Pi helper scripts and docs (`frontend/scripts/rpi_event_runner.sh`, `frontend/scripts/rpi_pin_test.sh`, `frontend/docs/rpi-bash-runner.md`) and that the documentation points to their included paths and usage.
+- On button press (pointer down or keyboard activation), POST to `http://localhost:3000/gpio` with `Content-Type: application/json` and body `{"binary":"XXXX"}` using the button’s 4-bit code (skip sending while in edit mode; keep existing invalid-code validation behavior).
+- On button release (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately POST `{"binary":"0000"}` exactly once and remove/cancel any prior delayed reset behavior that could trigger extra resets.
+- Add basic client-side error handling so failed POSTs don’t crash the UI and log a clear console warning/error including the endpoint and attempted binary value.
 
-**User-visible outcome:** A user can download and extract a single Linux archive, run one script to start the app locally for testing, and access clear Linux/Raspberry Pi testing instructions from the included documentation.
+**User-visible outcome:** Pressing a button sends its 4-bit binary value to the GPIO endpoint, and releasing it immediately sends `0000` without extra delayed resets; network failures won’t break the UI and will be logged to the console.

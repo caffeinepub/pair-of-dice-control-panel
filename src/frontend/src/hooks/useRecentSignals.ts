@@ -12,7 +12,7 @@ export function useRecentSignals() {
       return actor.getRecentEvents();
     },
     enabled: !!actor && !isActorFetching,
-    refetchInterval: 5000, // Poll every 5 seconds
+    refetchInterval: 2000, // Poll every 2 seconds (increased from 5 seconds)
     staleTime: 0, // Always consider data stale to ensure fresh fetches after invalidation
   });
 

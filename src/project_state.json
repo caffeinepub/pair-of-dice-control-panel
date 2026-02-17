@@ -1,30 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "Project to send GPIO-like button state via HTTP POST to a local server endpoint.",
+  "architectural_notes": [
+    "Button input events must trigger HTTP POST requests to a local endpoint (http://localhost:3000/gpio) with JSON payload representing a 4-bit binary code; release sends 0000."
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-create-a-downloadable-linux-bundle-that-lets-a-user-run-and-test-the-app-locally-on-a-linux-machine-with-a-single-command-including-the-built-frontend-assets-and-a-launcher-script",
-      "title": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
+      "id": "feature-when-a-ui-control-of-type-button-is-pressed-pointer-down-or-keyboard-activation-send-an-http-post-request-to-http-localhost-3000-gpio-with-header-content-type-application-json-and-a-json-body-containing-the-pressed-button-s-4-bit-binary-code-in-the-form-binary-xxxx-where-xxxx-is-the-button-s-binary-code",
+      "title": "When a UI control of type \"button\" is pressed (pointer down or keyboard activation), send an HTTP POST request to http://localhost:3000/gpio with header Content-Type: application/json and a JSON body containing the pressed button’s 4-bit binary code in the form {\"binary\": \"XXXX\"}, where XXXX is the button’s binary code.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-linux-specific-testing-documentation-that-explains-how-to-download-the-bundle-prerequisites-how-to-run-the-launcher-script-and-how-to-troubleshoot-common-issues",
-      "title": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
+      "id": "feature-when-the-same-button-press-is-released-pointer-up-cancel-leave-blur-while-pressed-or-keyboard-key-up-immediately-send-an-http-post-request-to-http-localhost-3000-gpio-with-content-type-application-json-and-json-body-binary-0000-ensure-any-previously-scheduled-delayed-reset-behavior-for-buttons-does-not-cause-an-additional-later-reset-send",
+      "title": "When the same \"button\" press is released (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately send an HTTP POST request to http://localhost:3000/gpio with Content-Type: application/json and JSON body {\"binary\":\"0000\"}. Ensure any previously scheduled delayed reset behavior for buttons does not cause an additional, later reset send.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-packaged-linux-bundle-includes-the-raspberry-pi-helper-scripts-and-documentation-already-present-in-the-project-so-the-user-can-test-both-the-ui-and-the-gpio-workflow-from-a-single-download",
-      "title": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+      "id": "feature-implement-basic-client-side-error-handling-for-the-gpio-http-post-requests-failures-must-not-crash-the-ui-log-a-clear-console-warning-error-that-includes-the-endpoint-and-the-binary-value-that-failed-to-send",
+      "title": "Implement basic client-side error handling for the GPIO HTTP POST requests: failures must not crash the UI; log a clear console warning/error that includes the endpoint and the binary value that failed to send.",
       "reqIds": [
         "REQ-3"
       ],
@@ -34,12 +36,13 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Package the project as a downloadable Linux app for user testing",
+      "summary": "On button press, send HTTP POST to http://localhost:3000/gpio with Content-Type: application/json body containing the button’s binary code (XXXX); on release send 0000.",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Package the project as a downloadable Linux testable app bundle",
+  "gameProjectType": "none",
+  "projectName": "Send GPIO HTTP POST on button press and reset to 0000 on release",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

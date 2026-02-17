@@ -38,6 +38,8 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
   ]);
   const [radioGroupIsVertical, setRadioGroupIsVertical] = useState(true);
+  const [dialIncreaseBinaryCode, setDialIncreaseBinaryCode] = useState('0001');
+  const [dialDecreaseBinaryCode, setDialDecreaseBinaryCode] = useState('0010');
 
   const resetForm = () => {
     const newId = `control_${Date.now()}`;
@@ -53,6 +55,8 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
     ]);
     setRadioGroupIsVertical(true);
+    setDialIncreaseBinaryCode('0001');
+    setDialDecreaseBinaryCode('0010');
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -85,6 +89,19 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       }
     }
 
+    if (controlType === 'dial') {
+      const increaseError = validateBinaryCode(dialIncreaseBinaryCode);
+      if (increaseError) {
+        toast.error(`Dial increase code: ${increaseError}`);
+        return;
+      }
+      const decreaseError = validateBinaryCode(dialDecreaseBinaryCode);
+      if (decreaseError) {
+        toast.error(`Dial decrease code: ${decreaseError}`);
+        return;
+      }
+    }
+
     const defaults = getControlDefaults(controlType);
     const config: any = {
       id,
@@ -107,6 +124,11 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     if (controlType === 'radio') {
       config.radioOptions = radioOptions;
       config.radioGroupIsVertical = radioGroupIsVertical;
+    }
+
+    if (controlType === 'dial') {
+      config.dialIncreaseBinaryCode = dialIncreaseBinaryCode;
+      config.dialDecreaseBinaryCode = dialDecreaseBinaryCode;
     }
 
     const success = createControlWithConfig(config);
@@ -169,6 +191,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                 <SelectItem value="toggle">Toggle</SelectItem>
                 <SelectItem value="slider">Slider</SelectItem>
                 <SelectItem value="radio">Radio Group</SelectItem>
+                <SelectItem value="dial">Dial</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -244,43 +267,66 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Radio Options</Label>
-                  <Button size="sm" variant="outline" onClick={handleAddRadioOption}>
+                  <Button type="button" size="sm" variant="outline" onClick={handleAddRadioOption}>
                     <Plus className="h-4 w-4 mr-1" />
-                    Add
+                    Add Option
                   </Button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {radioOptions.map((option) => (
-                    <Card key={option.key} className="p-3">
-                      <div className="space-y-2">
+                    <Card key={option.key} className="p-3 space-y-2">
+                      <div className="flex items-center gap-2">
                         <Input
                           placeholder="Label"
                           value={option.label}
                           onChange={(e) => handleUpdateRadioOption(option.key, { label: e.target.value })}
                         />
-                        <Input
-                          placeholder="Binary Code (4 bits)"
-                          value={option.binaryCode}
-                          onChange={(e) =>
-                            handleUpdateRadioOption(option.key, {
-                              binaryCode: sanitizeBinaryInput(e.target.value),
-                            })
-                          }
-                          maxLength={4}
-                        />
                         <Button
-                          size="sm"
-                          variant="destructive"
+                          type="button"
+                          size="icon"
+                          variant="ghost"
                           onClick={() => handleDeleteRadioOption(option.key)}
-                          className="w-full"
+                          disabled={radioOptions.length <= 1}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Remove
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+                      <Input
+                        placeholder="Binary Code (4 bits)"
+                        value={option.binaryCode}
+                        onChange={(e) =>
+                          handleUpdateRadioOption(option.key, { binaryCode: sanitizeBinaryInput(e.target.value) })
+                        }
+                        maxLength={4}
+                      />
                     </Card>
                   ))}
                 </div>
+              </div>
+            </>
+          )}
+
+          {controlType === 'dial' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="new-dialIncrease">Increase Binary Code (4 bits)</Label>
+                <Input
+                  id="new-dialIncrease"
+                  value={dialIncreaseBinaryCode}
+                  onChange={(e) => setDialIncreaseBinaryCode(sanitizeBinaryInput(e.target.value))}
+                  placeholder="e.g., 0001"
+                  maxLength={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-dialDecrease">Decrease Binary Code (4 bits)</Label>
+                <Input
+                  id="new-dialDecrease"
+                  value={dialDecreaseBinaryCode}
+                  onChange={(e) => setDialDecreaseBinaryCode(sanitizeBinaryInput(e.target.value))}
+                  placeholder="e.g., 0010"
+                  maxLength={4}
+                />
               </div>
             </>
           )}

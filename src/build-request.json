@@ -1,78 +1,78 @@
 {
   "kind": "build_request",
-  "title": "Package the project as a downloadable Linux testable app bundle",
+  "title": "Send GPIO HTTP POST on button press and reset to 0000 on release",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
-      "target": "both",
+      "text": "When a UI control of type \"button\" is pressed (pointer down or keyboard activation), send an HTTP POST request to http://localhost:3000/gpio with header Content-Type: application/json and a JSON body containing the pressed button’s 4-bit binary code in the form {\"binary\": \"XXXX\"}, where XXXX is the button’s binary code.",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "turn this into a Linux app so i can download it and test"
+          "When a button is pressed send a HTTP Post request to http://localhost:3000/gpio with the content of the post being application/json and the value of the body be {\"binary\", \"XXXX\"} where XXXX is the value of the binary code of the button."
         ]
       },
       "acceptanceCriteria": [
-        "A new packaging script exists in the repo (e.g., under a scripts/ directory) that produces a single distributable archive (e.g., .tar.gz) when run on Linux.",
-        "The distributable archive contains: (1) the built frontend assets, (2) the compiled canister artifacts needed for local deployment, and (3) a run script (e.g., run.sh) that starts a local replica (if needed) and deploys/serves the app for testing.",
-        "Running the included run script on Linux results in the app being accessible for testing (e.g., via a local URL) without requiring the user to manually execute multiple setup commands."
+        "Pressing a button control triggers a POST to http://localhost:3000/gpio.",
+        "The request includes header Content-Type: application/json.",
+        "The request body is valid JSON and includes the pressed code as {\"binary\":\"<4-bit code>\"}.",
+        "No POST is sent while in edit mode.",
+        "If the control’s binary code is invalid, no POST is sent and the existing validation behavior remains (warn/ignore)."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
+      "text": "When the same \"button\" press is released (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately send an HTTP POST request to http://localhost:3000/gpio with Content-Type: application/json and JSON body {\"binary\":\"0000\"}. Ensure any previously scheduled delayed reset behavior for buttons does not cause an additional, later reset send.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "turn this into a Linux app so i can download it and test"
+          "when the press is released send 0000"
         ]
       },
       "acceptanceCriteria": [
-        "A new documentation page is added (or an existing doc is extended) describing: required dependencies (e.g., DFX, Node/npm if applicable), how to run the packaged bundle, expected output (URL/ports), and how to stop/reset the local environment.",
-        "Documentation is written in English and includes copy-pasteable commands for typical Linux shells (bash)."
+        "Releasing a pressed button (pointer up/cancel/leave) sends a POST with body {\"binary\":\"0000\"} immediately.",
+        "Releasing a pressed button via keyboard (Enter/Space key-up) sends a POST with body {\"binary\":\"0000\"} immediately.",
+        "If a button loses focus while pressed (blur), the app sends the reset POST exactly once.",
+        "No extra delayed reset POST occurs after release (i.e., the previous 1s timeout-based reset behavior for buttons is removed or canceled)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+      "text": "Implement basic client-side error handling for the GPIO HTTP POST requests: failures must not crash the UI; log a clear console warning/error that includes the endpoint and the binary value that failed to send.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
-        ],
-        "quotes": [
-          "turn this into a Linux app so i can download it and test"
         ]
       },
       "acceptanceCriteria": [
-        "The distributable archive includes the existing Raspberry Pi scripts (frontend/scripts/rpi_event_runner.sh and frontend/scripts/rpi_pin_test.sh) and the related documentation (frontend/docs/rpi-bash-runner.md).",
-        "The included documentation in the bundle clearly points to the included scripts’ paths and how to execute them from the extracted directory."
+        "If http://localhost:3000/gpio is unreachable or returns a network error, the UI continues to function without crashing.",
+        "A console warning/error is written on failure that includes the endpoint URL and the attempted binary payload value."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything under frontend/src/components/ui (compose instead of editing).",
-    "Do not require third-party auth providers; Internet Identity remains the only supported auth method."
+    "Do not modify files under frontend/src/components/ui (read-only).",
+    "Do not modify frontend/src/hooks/useInternetIdentity.ts/tsx, frontend/src/hooks/useActor.ts, or frontend/src/main.tsx (immutable paths).",
+    "Keep the backend as a single Motoko actor; only change backend code if required (this request can be satisfied in the frontend)."
   ],
   "nonGoals": [
-    "Creating a true native desktop GUI application using Electron/Tauri or OS-specific installers (e.g., .deb/.rpm) unless explicitly requested later.",
-    "Adding new GPIO features beyond packaging and documentation inclusion."
+    "Do not add third-party auth providers or external database dependencies.",
+    "Do not implement WebSockets/real-time messaging for GPIO.",
+    "Do not change toggle/dial/radio reset behavior unless explicitly required by the button-press HTTP POST behavior."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
   },
   "userProfileUpdate": {
-    "goalsToAdd": [
-      "Download and run the project on Linux for local testing"
-    ],
+    "goalsToAdd": [],
     "goalsToRemove": [],
     "preferencesToAdd": [],
     "preferencesToRemove": [],

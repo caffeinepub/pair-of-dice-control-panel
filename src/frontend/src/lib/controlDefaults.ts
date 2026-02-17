@@ -45,6 +45,15 @@ export function getControlDefaults(type: ControlType): Omit<ControlConfig, 'id' 
         radioGroupIsVertical: true,
         height: 120,
       };
+    case 'dial':
+      return {
+        ...baseDefaults,
+        controlType: 'dial',
+        dialIncreaseBinaryCode: '0001',
+        dialDecreaseBinaryCode: '0010',
+        width: 120,
+        height: 120,
+      };
     default:
       return {
         ...baseDefaults,

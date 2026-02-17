@@ -10,7 +10,7 @@
 # Configuration via environment variables:
 #   CANISTER_ID       - Backend canister ID (required)
 #   NETWORK           - Network to use: "local" or "ic" (default: "ic")
-#   POLL_INTERVAL     - Seconds between polls (default: 5)
+#   POLL_INTERVAL     - Seconds between polls (default: 2)
 #   STATE_FILE        - Path to state file for tracking processed events (default: /tmp/rpi_event_runner_state)
 #   DRY_RUN           - Set to 1 to print commands without executing (default: 0)
 #   ALLOWED_PREFIX    - Command prefix whitelist (default: "gpioset")
@@ -21,7 +21,7 @@ set -euo pipefail
 # Configuration
 CANISTER_ID="${CANISTER_ID:-}"
 NETWORK="${NETWORK:-ic}"
-POLL_INTERVAL="${POLL_INTERVAL:-5}"
+POLL_INTERVAL="${POLL_INTERVAL:-2}"
 STATE_FILE="${STATE_FILE:-/tmp/rpi_event_runner_state}"
 DRY_RUN="${DRY_RUN:-0}"
 ALLOWED_PREFIX="${ALLOWED_PREFIX:-gpioset}"
@@ -167,10 +167,9 @@ execute_command() {
     else
         log "Executing: $cmd (from: $control_name, code: $binary_code)"
         if eval "$cmd" 2>&1; then
-            log_success "Command succeeded: $cmd"
+            log_success "Command executed successfully"
         else
-            log_error "Command failed: $cmd"
-            return 1
+            log_error "Command failed with exit code $?"
         fi
     fi
 }
@@ -184,12 +183,12 @@ main() {
     log "State file: $STATE_FILE"
     log "Dry run: $DRY_RUN"
     log "Allowed command prefix: $ALLOWED_PREFIX"
-    log "---"
+    log ""
     
     while true; do
         local last_timestamp=$(get_last_timestamp)
         
-        # Fetch events
+        # Fetch events from canister
         local events=$(fetch_events)
         if [[ $? -ne 0 ]]; then
             log_error "Failed to fetch events, retrying in ${POLL_INTERVAL}s..."
@@ -200,13 +199,11 @@ main() {
         # Process new events
         local new_events=$(process_events "$last_timestamp" "$events")
         
-        if [[ -z "$new_events" ]]; then
-            log "No new events (last timestamp: $last_timestamp)"
-        else
+        if [[ -n "$new_events" ]]; then
             local max_timestamp="$last_timestamp"
             
             while IFS='|' read -r timestamp control_name binary_code value; do
-                log "Processing event from '$control_name' (code: $binary_code, timestamp: $timestamp)"
+                log "Processing event from '$control_name' (code: $binary_code)"
                 
                 # Split value by newlines and execute each command
                 while IFS= read -r cmd; do
@@ -221,16 +218,19 @@ main() {
             
             # Save the latest timestamp
             save_last_timestamp "$max_timestamp"
-            log_success "Processed events up to timestamp: $max_timestamp"
         fi
         
         sleep "$POLL_INTERVAL"
     done
 }
 
-# Handle Ctrl+C gracefully
-trap 'log "Shutting down..."; exit 0' INT TERM
+# Handle cleanup on exit
+cleanup() {
+    log "Shutting down event runner..."
+    exit 0
+}
 
-# Run main loop
+trap cleanup SIGINT SIGTERM
+
+# Start the main loop
 main
-

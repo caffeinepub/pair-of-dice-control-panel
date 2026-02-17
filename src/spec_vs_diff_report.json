@@ -1,85 +1,25 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T23:49:22.800Z",
-  "summary": "Diff adds Linux bundle documentation and two shell scripts (packager + launcher), but evidence is incomplete/truncated for whether the produced archive contains all required contents (compiled canister artifacts, Raspberry Pi scripts/docs) and whether the launcher script is correctly included as `run.sh` in the bundle. Diff also introduces several unrelated backend/frontend behavior changes and adds an extra Motoko module, which appear outside the packaging/documentation scope and may violate constraints.",
+  "generatedAt": "2026-02-13T23:16:58.067Z",
+  "summary": "Frontend changes add a reusable HTTP POST helper and update button control interactions to POST the button’s 4-bit binary code on press and POST \"0000\" on release, with console warnings on failures. Most requirements appear implemented, but some release event coverage (pointer cancel/leave) cannot be fully verified from the truncated diff.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "Distributable archive contains (1) built frontend assets, (2) compiled canister artifacts needed for local deployment, and (3) a run script (e.g., run.sh) that starts a local replica (if needed) and deploys/serves the app for testing.",
-      "reason": "The packaging script is truncated before showing what backend artifacts and launcher script are copied into the bundle, and the launcher script present in-repo is named `linux_bundle_run.sh` (not `run.sh`). The doc references `run.sh`, but the diff summary does not show a `run.sh` file being added.",
-      "evidence": [
-        "frontend/scripts/package_linux_bundle.sh (truncated)",
-        "frontend/scripts/linux_bundle_run.sh (truncated)",
-        "frontend/docs/linux-local-test-bundle.md"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "Running the included run script on Linux results in the app being accessible for testing (e.g., via a local URL) without requiring the user to manually execute multiple setup commands.",
-      "reason": "The launcher script content is truncated mid-flow (e.g., waiting for replica), so there is not enough evidence it completes deploy/serve and outputs an access URL/port as required.",
-      "evidence": [
-        "frontend/scripts/linux_bundle_run.sh (truncated)"
-      ]
-    },
-    {
       "id": "REQ-2",
-      "requirement": "Documentation describes prerequisites, how to run the packaged bundle (launcher script), expected output (URL/ports), and how to stop/reset the local environment, with copy-pasteable bash commands.",
-      "reason": "The new documentation file is truncated at the start of the \"Running the Application\" section, so the diff summary does not provide evidence that expected URL/ports and stop/reset instructions are included.",
+      "requirement": "On button release, handle pointer up/cancel/leave and ensure reset POST is sent immediately exactly once, with no later delayed reset send.",
+      "reason": "The diff excerpt shows a release handler, keyboard key-up, and blur handling, but does not show the actual pointer event bindings for pointer cancel/leave (or pointer up) on the button element, nor explicit removal/cancellation of any prior button-specific delayed reset logic. The file summary claims these behaviors, but the truncated code does not provide direct evidence of the pointer cancel/leave bindings or any removed timeout.",
       "evidence": [
-        "frontend/docs/linux-local-test-bundle.md"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "The distributable archive includes the existing Raspberry Pi scripts (frontend/scripts/rpi_event_runner.sh and frontend/scripts/rpi_pin_test.sh) and related documentation (frontend/docs/rpi-bash-runner.md), and bundle docs point to their included paths.",
-      "reason": "The packaging script is truncated before showing it copies the Raspberry Pi scripts/docs into the bundle. Additionally, the diff shows a new `frontend/docs/rpi-bash-runner.md.backup` rather than confirming the original `frontend/docs/rpi-bash-runner.md` is packaged.",
-      "evidence": [
-        "frontend/scripts/package_linux_bundle.sh (truncated)",
-        "frontend/docs/rpi-bash-runner.md.backup"
+        "frontend/src/components/control-panel/ControlRenderer.tsx (truncated)",
+        "frontend-file-summaries.txt (ControlRenderer.tsx description)"
       ]
     }
   ],
-  "hallucinated_features": [
-    {
-      "description": "Backend state migration plumbing added via a new Motoko module and migration hook in the actor.",
-      "reason": "Build request is about Linux packaging/documentation; it also constrains backend to remain a single Motoko actor in `backend/main.mo` and not introduce additional backend services/files. Adding `backend/migration.mo` and wiring `(with migration = Migration.run)` is not requested and may violate the constraint.",
-      "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Backend API/logic changes unrelated to packaging (binary code validation behavior, event log filtering implementation, added `emitHatGpiosetEvent`, conversion to gpioset command sequences).",
-      "reason": "Non-goal explicitly says not to add new GPIO features beyond packaging/documentation inclusion; these are functional changes to GPIO/event handling rather than packaging.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Large set of frontend feature changes implied by `frontend-file-summaries.txt` (new/changed hooks, control behavior, fullscreen toggle, layout serialization validation changes, etc.).",
-      "reason": "Build request only asks for packaging and Linux testing documentation; the diff summary indicates many UI/runtime logic changes not requested and potentially conflicting with constraints about not modifying certain frontend files (cannot be verified from summaries alone).",
-      "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Added/updated project tracking metadata (`project_state.json`) with AR entries.",
-      "reason": "Not requested by the build requirements; repository metadata additions are outside packaging/doc scope.",
-      "evidence": [
-        "project_state.json"
-      ]
-    }
-  ],
-  "confidence": 0.66,
+  "hallucinated_features": [],
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/docs/linux-local-test-bundle.md",
-    "frontend/docs/rpi-bash-runner.md.backup",
-    "frontend/scripts/linux_bundle_run.sh",
-    "frontend/scripts/package_linux_bundle.sh",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
+    "frontend/src/lib/gpioHttp.ts",
     "project_state.json"
   ]
 }

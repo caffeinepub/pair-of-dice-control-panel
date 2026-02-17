@@ -14,6 +14,8 @@ export interface Control {
     controlType: string;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
+    dialIncreaseBinaryCode?: string;
+    dialDecreaseBinaryCode?: string;
     sliderIsVertical?: boolean;
     binaryCode: string;
 }
@@ -30,6 +32,7 @@ export interface Event {
 }
 export interface backendInterface {
     backendScaffoldPlaceholderFunction(): Promise<string>;
+    emitDialEvent(controlId: string, controlType: string, controlName: string | null, direction: string): Promise<void>;
     emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
     emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, binaryCode: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;

@@ -1,4 +1,4 @@
-export type ControlType = 'button' | 'toggle' | 'slider' | 'radio';
+export type ControlType = 'button' | 'toggle' | 'slider' | 'radio' | 'dial';
 
 export interface RadioOption {
   key: string;
@@ -25,6 +25,8 @@ export interface ControlConfig {
   radioOptions?: RadioOption[];
   radioSelected?: string;
   radioGroupIsVertical?: boolean;
+  dialIncreaseBinaryCode?: string;
+  dialDecreaseBinaryCode?: string;
 }
 
 export interface LayoutConfig {

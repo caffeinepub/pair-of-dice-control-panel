@@ -2,11 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-a-downloadable-linux-bundle-that-lets-a-user-run-and-test-the-app-locally-on-a-linux-machine-with-a-single-command-including-the-built-frontend-assets-and-a-launcher-script",
-      "featureTitle": "Create a downloadable Linux bundle that lets a user run and test the app locally on a Linux machine with a single command, including the built frontend assets and a launcher script.",
+      "featureId": "feature-when-a-ui-control-of-type-button-is-pressed-pointer-down-or-keyboard-activation-send-an-http-post-request-to-http-localhost-3000-gpio-with-header-content-type-application-json-and-a-json-body-containing-the-pressed-button-s-4-bit-binary-code-in-the-form-binary-xxxx-where-xxxx-is-the-button-s-binary-code",
+      "featureTitle": "When a UI control of type \"button\" is pressed (pointer down or keyboard activation), send an HTTP POST request to http://localhost:3000/gpio with header Content-Type: application/json and a JSON body containing the pressed button’s 4-bit binary code in the form {\"binary\": \"XXXX\"}, where XXXX is the button’s binary code.",
       "files": [
-        "frontend/scripts/linux_bundle_run.sh",
-        "frontend/scripts/package_linux_bundle.sh"
+        "frontend/src/components/control-panel/ControlRenderer.tsx",
+        "frontend/src/lib/gpioHttp.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -21,10 +21,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-linux-specific-testing-documentation-that-explains-how-to-download-the-bundle-prerequisites-how-to-run-the-launcher-script-and-how-to-troubleshoot-common-issues",
-      "featureTitle": "Add Linux-specific testing documentation that explains how to download the bundle, prerequisites, how to run the launcher script, and how to troubleshoot common issues.",
+      "featureId": "feature-when-the-same-button-press-is-released-pointer-up-cancel-leave-blur-while-pressed-or-keyboard-key-up-immediately-send-an-http-post-request-to-http-localhost-3000-gpio-with-content-type-application-json-and-json-body-binary-0000-ensure-any-previously-scheduled-delayed-reset-behavior-for-buttons-does-not-cause-an-additional-later-reset-send",
+      "featureTitle": "When the same \"button\" press is released (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately send an HTTP POST request to http://localhost:3000/gpio with Content-Type: application/json and JSON body {\"binary\":\"0000\"}. Ensure any previously scheduled delayed reset behavior for buttons does not cause an additional, later reset send.",
       "files": [
-        "frontend/docs/linux-local-test-bundle.md"
+        "frontend/src/components/control-panel/ControlRenderer.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -39,11 +39,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-packaged-linux-bundle-includes-the-raspberry-pi-helper-scripts-and-documentation-already-present-in-the-project-so-the-user-can-test-both-the-ui-and-the-gpio-workflow-from-a-single-download",
-      "featureTitle": "Ensure the packaged Linux bundle includes the Raspberry Pi helper scripts and documentation already present in the project so the user can test both the UI and the GPIO workflow from a single download.",
+      "featureId": "feature-implement-basic-client-side-error-handling-for-the-gpio-http-post-requests-failures-must-not-crash-the-ui-log-a-clear-console-warning-error-that-includes-the-endpoint-and-the-binary-value-that-failed-to-send",
+      "featureTitle": "Implement basic client-side error handling for the GPIO HTTP POST requests: failures must not crash the UI; log a clear console warning/error that includes the endpoint and the binary value that failed to send.",
       "files": [
-        "frontend/docs/linux-local-test-bundle.md",
-        "frontend/scripts/package_linux_bundle.sh"
+        "frontend/src/components/control-panel/ControlRenderer.tsx",
+        "frontend/src/lib/gpioHttp.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",

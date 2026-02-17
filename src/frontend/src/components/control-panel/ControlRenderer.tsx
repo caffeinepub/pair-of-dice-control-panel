@@ -4,6 +4,7 @@ import { useSignalEmitter } from '@/hooks/useSignalEmitter';
 import { cn } from '@/lib/utils';
 import { generateGpiosetCommandSequence } from '@/lib/gpiosetCommands';
 import { validateBinaryCode } from '@/lib/binaryCode';
+import { sendGpioPost } from '@/lib/gpioHttp';
 
 interface ControlRendererProps {
   control: ControlConfig;
@@ -17,6 +18,10 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   const [localSliderValue, setLocalSliderValue] = useState(control.sliderValue ?? 50);
   const [localRadioSelected, setLocalRadioSelected] = useState(control.radioSelected ?? '');
   const keyPressedRef = useRef(false);
+  const toggleResetTimeoutRef = useRef<number | null>(null);
+  const dialResetTimeoutRef = useRef<number | null>(null);
+  const radioResetTimeoutRef = useRef<number | null>(null);
+  const buttonResetSentRef = useRef(false);
 
   const handleButtonPress = () => {
     if (isEditMode) return;
@@ -29,6 +34,10 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     }
     
     setIsPressed(true);
+    buttonResetSentRef.current = false;
+    
+    // Send HTTP POST with button's binary code
+    sendGpioPost(control.binaryCode);
     
     // Generate gpioset command sequence for button press
     const gpiosetSequence = generateGpiosetCommandSequence(control.binaryCode);
@@ -37,19 +46,13 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
 
   const handleButtonRelease = () => {
     if (isEditMode) return;
-    
-    // Validate binary code before emitting
-    const validationError = validateBinaryCode(control.binaryCode);
-    if (validationError) {
-      console.warn(`Button release ignored: ${validationError}`);
-      return;
-    }
-    
     setIsPressed(false);
     
-    // Generate gpioset command sequence for button release
-    const gpiosetSequence = generateGpiosetCommandSequence(control.binaryCode);
-    emit(control.id, control.controlType, control.label || null, gpiosetSequence, control.binaryCode);
+    // Send reset POST immediately on release (only once per press)
+    if (!buttonResetSentRef.current) {
+      buttonResetSentRef.current = true;
+      sendGpioPost('0000');
+    }
   };
 
   const handleButtonKeyDown = (e: React.KeyboardEvent) => {
@@ -84,9 +87,35 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
 
   const handleToggle = () => {
     if (isEditMode) return;
+    
+    // Validate binary code before emitting
+    const validationError = validateBinaryCode(control.binaryCode);
+    if (validationError) {
+      console.warn(`Toggle ignored: ${validationError}`);
+      return;
+    }
+    
     const newState = !localToggleState;
     setLocalToggleState(newState);
-    emit(control.id, control.controlType, control.label || null, newState ? 'on' : 'off', control.binaryCode);
+    
+    // Generate and emit gpioset command sequence for the toggle's binary code
+    const gpiosetSequence = generateGpiosetCommandSequence(control.binaryCode);
+    emit(control.id, control.controlType, control.label || null, gpiosetSequence, control.binaryCode);
+    
+    // Clear any existing reset timeout for this toggle
+    if (toggleResetTimeoutRef.current !== null) {
+      window.clearTimeout(toggleResetTimeoutRef.current);
+    }
+    
+    // Only schedule reset if the emitted code is not already "0000"
+    if (control.binaryCode !== '0000') {
+      // Schedule a reset emission after 1 second (set all pins to 0)
+      toggleResetTimeoutRef.current = window.setTimeout(() => {
+        const resetSequence = generateGpiosetCommandSequence('0000');
+        emit(control.id, control.controlType, control.label || null, resetSequence, '0000');
+        toggleResetTimeoutRef.current = null;
+      }, 1000);
+    }
   };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,8 +129,82 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     if (isEditMode) return;
     const option = control.radioOptions?.find((opt) => opt.key === optionKey);
     if (!option) return;
+    
+    // Validate binary code before emitting
+    const validationError = validateBinaryCode(option.binaryCode);
+    if (validationError) {
+      console.warn(`Radio selection ignored: ${validationError}`);
+      return;
+    }
+    
     setLocalRadioSelected(optionKey);
-    emit(control.id, 'radio', control.label || null, option.label, option.binaryCode);
+    
+    // Generate and emit gpioset command sequence for the radio option's binary code
+    const gpiosetSequence = generateGpiosetCommandSequence(option.binaryCode);
+    emit(control.id, 'radio', control.label || null, gpiosetSequence, option.binaryCode);
+    
+    // Clear any existing reset timeout for this radio
+    if (radioResetTimeoutRef.current !== null) {
+      window.clearTimeout(radioResetTimeoutRef.current);
+    }
+    
+    // Only schedule reset if the emitted code is not already "0000"
+    if (option.binaryCode !== '0000') {
+      // Schedule a reset emission after 1 second (set all pins to 0000)
+      radioResetTimeoutRef.current = window.setTimeout(() => {
+        const resetSequence = generateGpiosetCommandSequence('0000');
+        emit(control.id, 'radio', control.label || null, resetSequence, '0000');
+        radioResetTimeoutRef.current = null;
+      }, 1000);
+    }
+  };
+
+  const handleDialStep = (direction: 'increase' | 'decrease') => {
+    if (isEditMode) return;
+
+    const binaryCode = direction === 'increase' ? control.dialIncreaseBinaryCode : control.dialDecreaseBinaryCode;
+    
+    if (!binaryCode) {
+      console.warn(`Dial ${direction} code not configured`);
+      return;
+    }
+
+    const validationError = validateBinaryCode(binaryCode);
+    if (validationError) {
+      console.warn(`Dial ${direction} ignored: ${validationError}`);
+      return;
+    }
+
+    // Generate and emit gpioset command sequence for the dial code
+    const gpiosetSequence = generateGpiosetCommandSequence(binaryCode);
+    emit(control.id, control.controlType, control.label || null, gpiosetSequence, binaryCode);
+
+    // Clear any existing reset timeout for this dial
+    if (dialResetTimeoutRef.current !== null) {
+      window.clearTimeout(dialResetTimeoutRef.current);
+    }
+
+    // Only schedule reset if the emitted code is not already "0000"
+    if (binaryCode !== '0000') {
+      // Schedule a reset emission after 1 second (set all pins to 0000)
+      dialResetTimeoutRef.current = window.setTimeout(() => {
+        const resetSequence = generateGpiosetCommandSequence('0000');
+        emit(control.id, control.controlType, control.label || null, resetSequence, '0000');
+        dialResetTimeoutRef.current = null;
+      }, 1000);
+    }
+  };
+
+  const handleDialWheel = (e: React.WheelEvent) => {
+    if (isEditMode) return;
+    e.preventDefault();
+    
+    // deltaY > 0 means scrolling down (decrease), deltaY < 0 means scrolling up (increase)
+    if (e.deltaY < 0) {
+      handleDialStep('increase');
+    } else if (e.deltaY > 0) {
+      handleDialStep('decrease');
+    }
   };
 
   const baseClasses = cn(
@@ -247,6 +350,28 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
             );
           })}
         </div>
+      </div>
+    );
+  }
+
+  if (control.controlType === 'dial') {
+    return (
+      <div
+        className={cn(
+          baseClasses,
+          'flex-col gap-2 p-4 cursor-pointer',
+          !isEditMode && 'hover:brightness-110'
+        )}
+        style={{ backgroundColor: control.color, borderColor: control.color }}
+        onWheel={handleDialWheel}
+      >
+        <span className="text-sm text-white font-semibold">{control.label}</span>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full border-4 border-white/30 flex items-center justify-center">
+            <div className="text-2xl text-white">⟲</div>
+          </div>
+        </div>
+        <div className="text-xs text-white/70">Scroll to control</div>
       </div>
     );
   }

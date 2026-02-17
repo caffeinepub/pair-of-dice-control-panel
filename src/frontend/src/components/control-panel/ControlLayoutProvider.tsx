@@ -66,6 +66,18 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
             }
           }
         }
+        
+        // Validate dial binary codes
+        if (control.controlType === 'dial') {
+          const increaseError = validateBinaryCode(control.dialIncreaseBinaryCode || '');
+          if (increaseError) {
+            throw new Error(`Control "${control.label}" dial increase code: ${increaseError}`);
+          }
+          const decreaseError = validateBinaryCode(control.dialDecreaseBinaryCode || '');
+          if (decreaseError) {
+            throw new Error(`Control "${control.label}" dial decrease code: ${decreaseError}`);
+          }
+        }
       }
       
       const backendLayout = serializeLayout(layout);
@@ -99,7 +111,7 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
   const createControlWithConfig = useCallback((config: {
     id: string;
     label: string;
-    controlType: 'button' | 'toggle' | 'slider' | 'radio';
+    controlType: 'button' | 'toggle' | 'slider' | 'radio' | 'dial';
     x: number;
     y: number;
     width: number;
@@ -111,6 +123,8 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
     sliderIsVertical?: boolean;
     radioOptions?: Array<{ key: string; label: string; binaryCode: string }>;
     radioGroupIsVertical?: boolean;
+    dialIncreaseBinaryCode?: string;
+    dialDecreaseBinaryCode?: string;
   }): boolean => {
     if (!isInitialized) {
       toast.error('Control layout not initialized. Please wait and try again.');
@@ -172,6 +186,20 @@ export function ControlLayoutProvider({ children }: { children: ReactNode }) {
           }
         }
       }
+      
+      // Validate dial binary codes
+      if (control.controlType === 'dial') {
+        const increaseError = validateBinaryCode(control.dialIncreaseBinaryCode || '');
+        if (increaseError) {
+          toast.error(`Cannot import: Control "${control.label}" dial increase code: ${increaseError}`);
+          return;
+        }
+        const decreaseError = validateBinaryCode(control.dialDecreaseBinaryCode || '');
+        if (decreaseError) {
+          toast.error(`Cannot import: Control "${control.label}" dial decrease code: ${decreaseError}`);
+          return;
+        }
+      }
     }
     
     setLocalControls(layout.controls);
@@ -221,6 +249,10 @@ function deserializeLayout(backendLayout: Layout): LayoutConfig {
     // Parse slider orientation (default to false/horizontal if not present for backward compatibility)
     const sliderIsVertical = ctrl.sliderIsVertical !== undefined ? ctrl.sliderIsVertical : false;
 
+    // Parse dial codes
+    const dialIncreaseBinaryCode = ctrl.dialIncreaseBinaryCode;
+    const dialDecreaseBinaryCode = ctrl.dialDecreaseBinaryCode;
+
     return {
       ...defaults,
       id: ctrl.id,
@@ -229,6 +261,8 @@ function deserializeLayout(backendLayout: Layout): LayoutConfig {
       radioOptions,
       radioGroupIsVertical,
       sliderIsVertical,
+      dialIncreaseBinaryCode,
+      dialDecreaseBinaryCode,
     };
   });
 
@@ -243,6 +277,8 @@ function serializeLayout(layout: LayoutConfig): Layout {
     radioOptions: ctrl.radioOptions?.map((opt) => opt.label),
     radioGroupIsVertical: ctrl.radioGroupIsVertical,
     sliderIsVertical: ctrl.sliderIsVertical,
+    dialIncreaseBinaryCode: ctrl.dialIncreaseBinaryCode,
+    dialDecreaseBinaryCode: ctrl.dialDecreaseBinaryCode,
   }));
 
   return { controls };
