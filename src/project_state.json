@@ -1,32 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project to send GPIO-like button state via HTTP POST to a local server endpoint.",
+  "summary": "Project to map button press/release events to GPIO output commands.",
   "architectural_notes": [
-    "Button input events must trigger HTTP POST requests to a local endpoint (http://localhost:3000/gpio) with JSON payload representing a 4-bit binary code; release sends 0000."
+    "Output command format: `gpioset -c gpiochip0 <button_id>=<state>`; <state>=1 when pressed, 0 when released."
   ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-when-a-ui-control-of-type-button-is-pressed-pointer-down-or-keyboard-activation-send-an-http-post-request-to-http-localhost-3000-gpio-with-header-content-type-application-json-and-a-json-body-containing-the-pressed-button-s-4-bit-binary-code-in-the-form-binary-xxxx-where-xxxx-is-the-button-s-binary-code",
-      "title": "When a UI control of type \"button\" is pressed (pointer down or keyboard activation), send an HTTP POST request to http://localhost:3000/gpio with header Content-Type: application/json and a JSON body containing the pressed button’s 4-bit binary code in the form {\"binary\": \"XXXX\"}, where XXXX is the button’s binary code.",
+      "id": "feature-change-button-interaction-event-emission-so-that-the-emitted-command-string-event-value-uses-the-format-gpioset-c-gpiochip0-where-is-the-button-s-numeric-code-1-16-and-is-1-when-pressed-and-0-when-released",
+      "title": "Change button interaction event emission so that the emitted command string (event.value) uses the format `gpioset -c gpiochip0 #=$`, where `#` is the button's numeric code (1–16) and `$` is `1` when pressed and `0` when released.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-when-the-same-button-press-is-released-pointer-up-cancel-leave-blur-while-pressed-or-keyboard-key-up-immediately-send-an-http-post-request-to-http-localhost-3000-gpio-with-content-type-application-json-and-json-body-binary-0000-ensure-any-previously-scheduled-delayed-reset-behavior-for-buttons-does-not-cause-an-additional-later-reset-send",
-      "title": "When the same \"button\" press is released (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately send an HTTP POST request to http://localhost:3000/gpio with Content-Type: application/json and JSON body {\"binary\":\"0000\"}. Ensure any previously scheduled delayed reset behavior for buttons does not cause an additional, later reset send.",
+      "id": "feature-derive-the-value-for-the-new-gpioset-command-from-the-existing-button-code-configuration-the-button-s-1-16-code-rather-than-the-control-s-textual-layout-id-and-ensure-the-command-is-only-emitted-when-the-derived-code-is-valid-1-16",
+      "title": "Derive the `#` value for the new gpioset command from the existing button code configuration (the button’s 1–16 code) rather than the control's textual layout id, and ensure the command is only emitted when the derived code is valid (1–16).",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-basic-client-side-error-handling-for-the-gpio-http-post-requests-failures-must-not-crash-the-ui-log-a-clear-console-warning-error-that-includes-the-endpoint-and-the-binary-value-that-failed-to-send",
-      "title": "Implement basic client-side error handling for the GPIO HTTP POST requests: failures must not crash the UI; log a clear console warning/error that includes the endpoint and the binary value that failed to send.",
+      "id": "feature-update-the-gpioset-command-generation-utility-so-it-can-generate-the-single-command-format-gpioset-c-gpiochip0-id-state-for-button-press-release-and-remove-or-stop-using-the-old-4-bit-to-multiple-pin-mapping-generator-for-button-events",
+      "title": "Update the gpioset command generation utility so it can generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release, and remove or stop using the old 4-bit-to-multiple-pin mapping generator for button events.",
       "reqIds": [
         "REQ-3"
       ],
@@ -36,13 +36,21 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "On button press, send HTTP POST to http://localhost:3000/gpio with Content-Type: application/json body containing the button’s binary code (XXXX); on release send 0000.",
+      "summary": "Change output signal to use `gpioset -c gpiochip0 <button_id>=<state>` where state is 1 on press and 0 on release.",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Update Raspberry Pi bash runner documentation to reflect that button events now emit single `gpioset -c gpiochip0 <id>=<state>` commands on press and release.",
+      "reqIds": [
+        "REQ-4"
+      ],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Send GPIO HTTP POST on button press and reset to 0000 on release",
+  "projectName": "GPIO Control Panel",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

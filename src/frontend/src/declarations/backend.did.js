@@ -21,12 +21,12 @@ export const Control = IDL.Record({
   'id' : IDL.Text,
   'controlName' : IDL.Opt(IDL.Text),
   'controlType' : IDL.Text,
+  'decimalCode' : IDL.Nat,
+  'dialIncreaseCode' : IDL.Opt(IDL.Nat),
   'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
   'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
-  'dialIncreaseBinaryCode' : IDL.Opt(IDL.Text),
-  'dialDecreaseBinaryCode' : IDL.Opt(IDL.Text),
+  'dialDecreaseCode' : IDL.Opt(IDL.Nat),
   'sliderIsVertical' : IDL.Opt(IDL.Bool),
-  'binaryCode' : IDL.Text,
 });
 export const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
 
@@ -38,12 +38,12 @@ export const idlService = IDL.Service({
       [],
     ),
   'emitEvent' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Nat],
       [],
       [],
     ),
   'emitHatGpiosetEvent' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Nat],
       [],
       [],
     ),
@@ -69,12 +69,12 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Text,
     'controlName' : IDL.Opt(IDL.Text),
     'controlType' : IDL.Text,
+    'decimalCode' : IDL.Nat,
+    'dialIncreaseCode' : IDL.Opt(IDL.Nat),
     'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
     'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
-    'dialIncreaseBinaryCode' : IDL.Opt(IDL.Text),
-    'dialDecreaseBinaryCode' : IDL.Opt(IDL.Text),
+    'dialDecreaseCode' : IDL.Opt(IDL.Nat),
     'sliderIsVertical' : IDL.Opt(IDL.Bool),
-    'binaryCode' : IDL.Text,
   });
   const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
   
@@ -86,12 +86,12 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'emitEvent' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Nat],
         [],
         [],
       ),
     'emitHatGpiosetEvent' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Nat],
         [],
         [],
       ),

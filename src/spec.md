@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Send GPIO HTTP POST updates when a UI button is pressed and immediately reset to `0000` when the press is released.
+**Goal:** Update button press/release event emission to output a single `gpioset -c gpiochip0 <id>=<state>` command using the button’s configured numeric code (1–16).
 
 **Planned changes:**
-- On button press (pointer down or keyboard activation), POST to `http://localhost:3000/gpio` with `Content-Type: application/json` and body `{"binary":"XXXX"}` using the button’s 4-bit code (skip sending while in edit mode; keep existing invalid-code validation behavior).
-- On button release (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately POST `{"binary":"0000"}` exactly once and remove/cancel any prior delayed reset behavior that could trigger extra resets.
-- Add basic client-side error handling so failed POSTs don’t crash the UI and log a clear console warning/error including the endpoint and attempted binary value.
+- Change button interact-mode press/release handlers to emit `gpioset -c gpiochip0 <N>=1` on press and `gpioset -c gpiochip0 <N>=0` on release across pointer and keyboard paths.
+- Derive `<N>` from the existing button code configuration (1–16) and emit only when valid; otherwise do not emit and log a console warning.
+- Add/update a reusable gpioset command helper to generate exactly `gpioset -c gpiochip0 <id>=<state>` and stop using the old 4-bit multi-pin mapping generator for button events.
+- Update `frontend/docs/rpi-bash-runner.md` to reflect the new single-command button press/release format and remove references to 4-line pin-mapping sequences for button events.
 
-**User-visible outcome:** Pressing a button sends its 4-bit binary value to the GPIO endpoint, and releasing it immediately sends `0000` without extra delayed resets; network failures won’t break the UI and will be logged to the console.
+**User-visible outcome:** In interact mode, pressing or releasing a button emits a single `gpioset -c gpiochip0 <id>=<state>` command (1 on press, 0 on release) using the button’s configured code (1–16).

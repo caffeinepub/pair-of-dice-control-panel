@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
+import { binaryToDecimal } from '@/lib/buttonCode';
 import { toast } from 'sonner';
 
 export function useSignalEmitter() {
@@ -27,7 +28,10 @@ export function useSignalEmitter() {
         `Control interaction: ${controlName || 'Unnamed'} (id: ${controlId}) - ${controlType} ${value} [${binaryCode}]`
       );
       
-      await actor.emitEvent(controlId, controlType, controlName, value, binaryCode);
+      // Convert binary code to decimal for backend
+      const decimalCode = BigInt(binaryToDecimal(binaryCode));
+      
+      await actor.emitEvent(controlId, controlType, controlName, value, decimalCode);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recentEvents'] });

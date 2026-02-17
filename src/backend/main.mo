@@ -1,7 +1,10 @@
 import List "mo:core/List";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
+import Nat "mo:core/Nat";
 import Char "mo:core/Char";
+
+
 
 actor {
   type Event = {
@@ -17,12 +20,12 @@ actor {
     id : Text;
     controlType : Text;
     controlName : ?Text;
-    binaryCode : Text;
+    decimalCode : Nat;
     radioOptions : ?[Text];
     radioGroupIsVertical : ?Bool;
     sliderIsVertical : ?Bool;
-    dialIncreaseBinaryCode : ?Text;
-    dialDecreaseBinaryCode : ?Text;
+    dialIncreaseCode : ?Nat;
+    dialDecreaseCode : ?Nat;
   };
 
   type Layout = {
@@ -53,6 +56,10 @@ actor {
     };
   };
 
+  func isValidDecimalCode(code : Nat) : Bool {
+    code >= 1 and code <= 16;
+  };
+
   func isValidBinaryCode(code : Text) : Bool {
     if (code.size() != 4) {
       return false;
@@ -64,18 +71,46 @@ actor {
     );
   };
 
+  func decimalToBinary(decimal : Nat) : Text {
+    let reversedBinary = decimalToBinaryStringHelper(decimal);
+
+    // Pad with extra zeros to ensure at least 4 characters
+    let paddedBinary = reversedBinary # "0000";
+
+    // Reverse the string to get the correct binary representation
+    let binaryArray = paddedBinary.toArray();
+    let reversedArray = Array.tabulate(
+      binaryArray.size(),
+      func(i) {
+        binaryArray[binaryArray.size() - 1 - i];
+      },
+    );
+
+    let trimmedArray = reversedArray.sliceToArray(0, 4);
+    Text.fromIter(trimmedArray.values());
+  };
+
+  func decimalToBinaryStringHelper(decimal : Nat) : Text {
+    if (decimal == 0) {
+      return "";
+    };
+    let remainder = decimal % 2;
+    let quotient = decimal / 2;
+    decimalToBinaryStringHelper(quotient) # remainder.toText();
+  };
+
   public query ({ caller }) func getLayout() : async Layout {
     currentLayout;
   };
 
   public shared ({ caller }) func saveLayout(layout : Layout) : async () {
     for (control in layout.controls.values()) {
-      if (not isValidBinaryCode(control.binaryCode)) {
+      if (not isValidDecimalCode(control.decimalCode)) {
         return;
       };
-      switch (control.dialIncreaseBinaryCode, control.dialDecreaseBinaryCode) {
+      switch (control.dialIncreaseCode, control.dialDecreaseCode) {
         case (?inc, ?dec) {
-          if (not isValidBinaryCode(inc) or not isValidBinaryCode(dec)) {
+          if (not isValidDecimalCode(inc) or not isValidDecimalCode(dec)) {
             return;
           };
         };
@@ -85,10 +120,12 @@ actor {
     currentLayout := layout;
   };
 
-  public shared ({ caller }) func emitEvent(controlId : Text, controlType : Text, controlName : ?Text, value : Text, binaryCode : Text) : async () {
-    if (not isValidBinaryCode(binaryCode)) {
+  public shared ({ caller }) func emitEvent(controlId : Text, controlType : Text, controlName : ?Text, value : Text, decimalCode : Nat) : async () {
+    if (not isValidDecimalCode(decimalCode)) {
       return;
     };
+
+    let binaryCode = decimalToBinary(decimalCode);
 
     let event : Event = {
       timestamp = Time.now();
@@ -117,11 +154,12 @@ actor {
     filteredEvents.toArray();
   };
 
-  public shared ({ caller }) func emitHatGpiosetEvent(controlId : Text, controlType : Text, controlName : ?Text, binaryCode : Text) : async () {
-    if (not isValidBinaryCode(binaryCode)) {
+  public shared ({ caller }) func emitHatGpiosetEvent(controlId : Text, controlType : Text, controlName : ?Text, decimalCode : Nat) : async () {
+    if (not isValidDecimalCode(decimalCode)) {
       return;
     };
 
+    let binaryCode = decimalToBinary(decimalCode);
     let hatGpiosetCommand = convertToHatGpiosetCommand(binaryCode);
 
     let event : Event = {
@@ -140,20 +178,21 @@ actor {
     switch (controlOpt) {
       case (null) { return };
       case (?control) {
-        let binaryCode = switch (direction) {
-          case ("increase") { control.dialIncreaseBinaryCode };
-          case ("decrease") { control.dialDecreaseBinaryCode };
+        let decimalCode = switch (direction) {
+          case ("increase") { control.dialIncreaseCode };
+          case ("decrease") { control.dialDecreaseCode };
           case (_) { return };
         };
 
-        switch (binaryCode) {
+        switch (decimalCode) {
           case (null) { return };
           case (?code) {
-            if (not isValidBinaryCode(code)) {
+            if (not isValidDecimalCode(code)) {
               return;
             };
 
-            let hatGpiosetCommand = convertToHatGpiosetCommand(code);
+            let binaryCode = decimalToBinary(code);
+            let hatGpiosetCommand = convertToHatGpiosetCommand(binaryCode);
 
             let event : Event = {
               timestamp = Time.now();
@@ -161,7 +200,7 @@ actor {
               controlType;
               controlName;
               value = hatGpiosetCommand;
-              binaryCode = code;
+              binaryCode;
             };
             addEvent(event);
           };
@@ -231,11 +270,9 @@ actor {
     gpiosetCommand # "gpioset --mode=time 0 0000 --duration=4ms\n";
   };
 
-  // <CODE_AREAS>
   // ===================== BACKEND SCAFFOLD (EDIT AT WILL) =====================
   public query ({ caller }) func backendScaffoldPlaceholderFunction() : async Text {
     "Backend scaffold placeholder for future user-defined logic";
   };
   // =================== END BACKEND SCAFFOLD (EDIT AT WILL) ===================
-  // </CODE_AREAS>
 };

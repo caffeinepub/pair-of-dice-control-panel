@@ -2,8 +2,9 @@ import { useState, useRef } from 'react';
 import type { ControlConfig } from '@/types/controlPanel';
 import { useSignalEmitter } from '@/hooks/useSignalEmitter';
 import { cn } from '@/lib/utils';
-import { generateGpiosetCommandSequence } from '@/lib/gpiosetCommands';
+import { generateGpiosetCommandSequence, generateButtonGpiosetCommand } from '@/lib/gpiosetCommands';
 import { validateBinaryCode } from '@/lib/binaryCode';
+import { deriveButtonIdFromBinaryCode } from '@/lib/buttonCode';
 import { sendGpioPost } from '@/lib/gpioHttp';
 
 interface ControlRendererProps {
@@ -26,10 +27,10 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   const handleButtonPress = () => {
     if (isEditMode) return;
     
-    // Validate binary code before emitting
-    const validationError = validateBinaryCode(control.binaryCode);
-    if (validationError) {
-      console.warn(`Button press ignored: ${validationError}`);
+    // Derive button ID from binary code
+    const buttonId = deriveButtonIdFromBinaryCode(control.binaryCode);
+    if (buttonId === null) {
+      console.warn(`Button press ignored: Invalid button code "${control.binaryCode}"`);
       return;
     }
     
@@ -39,19 +40,30 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     // Send HTTP POST with button's binary code
     sendGpioPost(control.binaryCode);
     
-    // Generate gpioset command sequence for button press
-    const gpiosetSequence = generateGpiosetCommandSequence(control.binaryCode);
-    emit(control.id, control.controlType, control.label || null, gpiosetSequence, control.binaryCode);
+    // Generate single gpioset command for button press (state=1)
+    const gpiosetCommand = generateButtonGpiosetCommand(buttonId, 1);
+    emit(control.id, control.controlType, control.label || null, gpiosetCommand, control.binaryCode);
   };
 
   const handleButtonRelease = () => {
     if (isEditMode) return;
     setIsPressed(false);
     
+    // Derive button ID from binary code
+    const buttonId = deriveButtonIdFromBinaryCode(control.binaryCode);
+    if (buttonId === null) {
+      console.warn(`Button release ignored: Invalid button code "${control.binaryCode}"`);
+      return;
+    }
+    
     // Send reset POST immediately on release (only once per press)
     if (!buttonResetSentRef.current) {
       buttonResetSentRef.current = true;
       sendGpioPost('0000');
+      
+      // Generate single gpioset command for button release (state=0)
+      const gpiosetCommand = generateButtonGpiosetCommand(buttonId, 0);
+      emit(control.id, control.controlType, control.label || null, gpiosetCommand, control.binaryCode);
     }
   };
 

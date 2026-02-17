@@ -1,65 +1,76 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "GPIO HTTP POST on button press and immediate reset on release",
+  "title": "GPIO Control Panel: Emit single gpioset command on button press/release",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Send GPIO HTTP POST with the pressed button's validated 4-bit binary code on button press (pointer down / keyboard activation), disabled in edit mode.",
+      "summary": "Emit `gpioset -c gpiochip0 <id>=<state>` on button press/release instead of 4-bit pin-mapped sequences.",
       "acceptanceCriteria": [
-        "Pressing a button control triggers a POST to http://localhost:3000/gpio.",
-        "The request includes header Content-Type: application/json.",
-        "The request body is valid JSON and includes the pressed code as {\"binary\":\"<4-bit code>\"}.",
-        "No POST is sent while in edit mode.",
-        "If the control’s binary code is invalid, no POST is sent and the existing validation behavior remains (warn/ignore)."
+        "When a button control is pressed in interact mode, the emitted event.value equals `gpioset -c gpiochip0 <N>=1` where <N> is that button’s code (derived from its configured 1–16 code).",
+        "When the same button is released (pointer up/cancel/leave and keyboard keyup/blur paths), the emitted event.value equals `gpioset -c gpiochip0 <N>=0` for the same <N>.",
+        "No `gpioset` command sequence based on 4-bit pin mappings is emitted for button press/release after this change."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/gpioHttp.ts",
-          "operation": "create",
-          "description": "Add a small fetch-based helper to POST JSON to http://localhost:3000/gpio with Content-Type: application/json and body {\"binary\":\"XXXX\"}, intended for button-press signaling."
-        },
-        {
           "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Update the button control interaction logic to call the new GPIO POST helper on press (pointer down and keyboard activation) only when not in edit mode and only when validateBinaryCode(control.binaryCode) passes; keep existing warn/ignore validation behavior unchanged."
+          "description": "Update button interaction handlers to emit a single gpioset command on press (state=1) and on release (state=0), and stop using the 4-bit pin-mapping command sequence generator for button events."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "On button release (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately POST a reset payload {\"binary\":\"0000\"} exactly once and cancel/remove any delayed reset behavior.",
+      "summary": "Derive gpioset `<id>` from the configured button code (1–16) and only emit when valid; otherwise warn and skip emission.",
       "acceptanceCriteria": [
-        "Releasing a pressed button (pointer up/cancel/leave) sends a POST with body {\"binary\":\"0000\"} immediately.",
-        "Releasing a pressed button via keyboard (Enter/Space key-up) sends a POST with body {\"binary\":\"0000\"} immediately.",
-        "If a button loses focus while pressed (blur), the app sends the reset POST exactly once.",
-        "No extra delayed reset POST occurs after release (i.e., the previous 1s timeout-based reset behavior for buttons is removed or canceled)."
+        "For button controls, the emitted command uses a numeric id between 1 and 16 (inclusive).",
+        "If a button’s configured code cannot be derived/validated as 1–16, the press/release does not emit a gpioset command and logs a warning to the console."
       ],
       "file_operations": [
         {
+          "path": "frontend/src/lib/buttonCode.ts",
+          "operation": "modify",
+          "description": "Add a small reusable helper to safely derive/validate a 1–16 decimal button code from the existing stored representation (e.g., from a control's stored 4-bit binary code), returning null/undefined when invalid."
+        },
+        {
           "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Revise button release handling to POST {\"binary\":\"0000\"} immediately on pointer up/cancel/leave, blur-while-pressed, and Enter/Space key-up; ensure the reset send is de-duplicated (sent exactly once per press) and remove/cancel the prior 1s timeout-based reset behavior for buttons so no later reset fires after release."
+          "description": "Use the button code derivation/validation helper to compute the gpioset <id> from the button’s configured code (not from layout/control textual id) and gate press/release command emission; log a console warning and skip emitting when invalid."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add non-crashing client-side error handling for GPIO POST failures with clear console logging including URL and binary value.",
+      "summary": "Add a reusable gpioset single-command helper and have button press/release use it.",
       "acceptanceCriteria": [
-        "If http://localhost:3000/gpio is unreachable or returns a network error, the UI continues to function without crashing.",
-        "A console warning/error is written on failure that includes the endpoint URL and the attempted binary payload value."
+        "There is a reusable helper that returns exactly `gpioset -c gpiochip0 <id>=<state>` (with a space after `gpioset`, and `-c gpiochip0` present).",
+        "ControlRenderer (button press/release paths) uses the new helper to build the emitted value."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/gpioHttp.ts",
+          "path": "frontend/src/lib/gpiosetCommands.ts",
           "operation": "modify",
-          "description": "Implement robust error handling in the GPIO POST helper: catch fetch/network errors and handle non-success HTTP responses without throwing into the UI event handler; log a clear console warning/error that includes the URL http://localhost:3000/gpio and the binary value that failed to send."
+          "description": "Introduce a helper to generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release flows, while keeping existing 4-bit mapping utilities available for non-button controls."
         },
         {
           "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Call the GPIO POST helper from button press/release paths in a way that cannot crash rendering (e.g., fire-and-forget or safely handled async) while relying on the helper's console logging for failures."
+          "description": "Wire ControlRenderer button press/release emissions to call the new single-command gpioset helper (instead of generateGpiosetCommandSequence) so event.value matches the required format."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Update Raspberry Pi bash runner documentation for the new single-command button event format.",
+      "acceptanceCriteria": [
+        "`frontend/docs/rpi-bash-runner.md` mentions the new emitted command format for button events, including that `state` is 1 on press and 0 on release.",
+        "The documentation does not claim button events emit 4-line pin-mapping sequences for 4-bit codes."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/docs/rpi-bash-runner.md",
+          "operation": "modify",
+          "description": "Update the documentation to state that button press/release events emit a single `gpioset -c gpiochip0 <id>=<state>` command (state=1 on press, state=0 on release) and remove any claims that button events emit multi-line 4-bit pin-mapping sequences."
         }
       ]
     }

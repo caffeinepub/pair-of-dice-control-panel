@@ -12,12 +12,12 @@ export interface Control {
     id: string;
     controlName?: string;
     controlType: string;
+    decimalCode: bigint;
+    dialIncreaseCode?: bigint;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
-    dialIncreaseBinaryCode?: string;
-    dialDecreaseBinaryCode?: string;
+    dialDecreaseCode?: bigint;
     sliderIsVertical?: boolean;
-    binaryCode: string;
 }
 export interface Layout {
     controls: Array<Control>;
@@ -33,8 +33,8 @@ export interface Event {
 export interface backendInterface {
     backendScaffoldPlaceholderFunction(): Promise<string>;
     emitDialEvent(controlId: string, controlType: string, controlName: string | null, direction: string): Promise<void>;
-    emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, binaryCode: string): Promise<void>;
-    emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, binaryCode: string): Promise<void>;
+    emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, decimalCode: bigint): Promise<void>;
+    emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, decimalCode: bigint): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
     getRecentEvents(): Promise<Array<Event>>;

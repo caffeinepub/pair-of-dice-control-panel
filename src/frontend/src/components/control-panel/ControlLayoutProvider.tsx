@@ -6,6 +6,7 @@ import type { ControlConfig, LayoutConfig } from '@/types/controlPanel';
 import type { Layout, Control } from '@/backend';
 import { getControlDefaults } from '@/lib/controlDefaults';
 import { generateDefaultBinaryCode, validateBinaryCode } from '@/lib/binaryCode';
+import { binaryToDecimal, decimalToBinary } from '@/lib/buttonCode';
 import { toast } from 'sonner';
 
 export function ControlLayoutProvider({ children }: { children: ReactNode }) {
@@ -233,6 +234,9 @@ function deserializeLayout(backendLayout: Layout): LayoutConfig {
   const controls: ControlConfig[] = backendLayout.controls.map((ctrl) => {
     const defaults = getControlDefaults(ctrl.controlType as any);
     
+    // Convert decimal code to binary for frontend use
+    const binaryCode = decimalToBinary(Number(ctrl.decimalCode));
+    
     // Parse radio options if present
     let radioOptions = defaults.radioOptions;
     if (ctrl.radioOptions && ctrl.radioOptions.length > 0) {
@@ -249,15 +253,20 @@ function deserializeLayout(backendLayout: Layout): LayoutConfig {
     // Parse slider orientation (default to false/horizontal if not present for backward compatibility)
     const sliderIsVertical = ctrl.sliderIsVertical !== undefined ? ctrl.sliderIsVertical : false;
 
-    // Parse dial codes
-    const dialIncreaseBinaryCode = ctrl.dialIncreaseBinaryCode;
-    const dialDecreaseBinaryCode = ctrl.dialDecreaseBinaryCode;
+    // Convert dial decimal codes to binary for frontend use
+    const dialIncreaseBinaryCode = ctrl.dialIncreaseCode !== undefined 
+      ? decimalToBinary(Number(ctrl.dialIncreaseCode))
+      : undefined;
+    const dialDecreaseBinaryCode = ctrl.dialDecreaseCode !== undefined 
+      ? decimalToBinary(Number(ctrl.dialDecreaseCode))
+      : undefined;
 
     return {
       ...defaults,
       id: ctrl.id,
       controlType: ctrl.controlType as any,
-      binaryCode: ctrl.binaryCode,
+      label: ctrl.controlName || defaults.label,
+      binaryCode,
       radioOptions,
       radioGroupIsVertical,
       sliderIsVertical,
@@ -273,12 +282,17 @@ function serializeLayout(layout: LayoutConfig): Layout {
   const controls: Control[] = layout.controls.map((ctrl) => ({
     id: ctrl.id,
     controlType: ctrl.controlType,
-    binaryCode: ctrl.binaryCode,
+    controlName: ctrl.label,
+    decimalCode: BigInt(binaryToDecimal(ctrl.binaryCode)),
     radioOptions: ctrl.radioOptions?.map((opt) => opt.label),
     radioGroupIsVertical: ctrl.radioGroupIsVertical,
     sliderIsVertical: ctrl.sliderIsVertical,
-    dialIncreaseBinaryCode: ctrl.dialIncreaseBinaryCode,
-    dialDecreaseBinaryCode: ctrl.dialDecreaseBinaryCode,
+    dialIncreaseCode: ctrl.dialIncreaseBinaryCode 
+      ? BigInt(binaryToDecimal(ctrl.dialIncreaseBinaryCode))
+      : undefined,
+    dialDecreaseCode: ctrl.dialDecreaseBinaryCode 
+      ? BigInt(binaryToDecimal(ctrl.dialDecreaseBinaryCode))
+      : undefined,
   }));
 
   return { controls };

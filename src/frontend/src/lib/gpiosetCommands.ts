@@ -32,3 +32,15 @@ export function generateGpiosetCommandSequence(binaryCode: string): string {
   const commands = generateGpiosetCommands(binaryCode);
   return commands.join('\n');
 }
+
+/**
+ * Generate a single gpioset command for button press/release events.
+ * Format: gpioset -c gpiochip0 <id>=<state>
+ * 
+ * @param id - Button ID (1-16)
+ * @param state - Button state (0 for released, 1 for pressed)
+ * @returns Single gpioset command string
+ */
+export function generateButtonGpiosetCommand(id: number, state: 0 | 1): string {
+  return `gpioset -c gpiochip0 ${id}=${state}`;
+}

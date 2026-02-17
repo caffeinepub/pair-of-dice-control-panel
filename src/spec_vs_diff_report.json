@@ -1,25 +1,33 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-13T23:16:58.067Z",
-  "summary": "Frontend changes add a reusable HTTP POST helper and update button control interactions to POST the button’s 4-bit binary code on press and POST \"0000\" on release, with console warnings on failures. Most requirements appear implemented, but some release event coverage (pointer cancel/leave) cannot be fully verified from the truncated diff.",
+  "generatedAt": "2026-02-17T22:43:34.445Z",
+  "summary": "Button press/release paths were updated to emit a single `gpioset -c gpiochip0 <id>=<state>` command derived from the control’s configured code with validation and console warnings, but the Raspberry Pi runner documentation update is not evidenced in the diff. The diff also introduces HTTP POST side-effects not requested.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "On button release, handle pointer up/cancel/leave and ensure reset POST is sent immediately exactly once, with no later delayed reset send.",
-      "reason": "The diff excerpt shows a release handler, keyboard key-up, and blur handling, but does not show the actual pointer event bindings for pointer cancel/leave (or pointer up) on the button element, nor explicit removal/cancellation of any prior button-specific delayed reset logic. The file summary claims these behaviors, but the truncated code does not provide direct evidence of the pointer cancel/leave bindings or any removed timeout.",
+      "id": "REQ-4",
+      "requirement": "Update Raspberry Pi bash runner documentation to reflect that button events now emit single `gpioset -c gpiochip0 <id>=<state>` commands on press and release (state=1 press, state=0 release) and no longer emit 4-line pin-mapping sequences.",
+      "reason": "No changes to `frontend/docs/rpi-bash-runner.md` are shown in the diff summary; only 5 files were modified and that doc file is not among them.",
       "evidence": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx (truncated)",
-        "frontend-file-summaries.txt (ControlRenderer.tsx description)"
+        "File diff summary: modified files list does not include frontend/docs/rpi-bash-runner.md"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.62,
+  "hallucinated_features": [
+    {
+      "description": "Send HTTP POST requests on button press (`sendGpioPost(control.binaryCode)`) and on release reset (`sendGpioPost('0000')`), with a once-per-press guard.",
+      "reason": "BuildRequest focuses on emitted event.value command string changes and helper updates; it does not request adding HTTP POST side-effects for button interactions.",
+      "evidence": [
+        "frontend/src/components/control-panel/ControlRenderer.tsx (imports sendGpioPost; calls sendGpioPost(control.binaryCode) on press; sendGpioPost('0000') on release)"
+      ]
+    }
+  ],
+  "confidence": 0.74,
   "changed_files": [
     "frontend-file-summaries.txt",
     "frontend/src/components/control-panel/ControlRenderer.tsx",
-    "frontend/src/lib/gpioHttp.ts",
+    "frontend/src/lib/buttonCode.ts",
+    "frontend/src/lib/gpiosetCommands.ts",
     "project_state.json"
   ]
 }

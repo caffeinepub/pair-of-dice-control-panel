@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-when-a-ui-control-of-type-button-is-pressed-pointer-down-or-keyboard-activation-send-an-http-post-request-to-http-localhost-3000-gpio-with-header-content-type-application-json-and-a-json-body-containing-the-pressed-button-s-4-bit-binary-code-in-the-form-binary-xxxx-where-xxxx-is-the-button-s-binary-code",
-      "featureTitle": "When a UI control of type \"button\" is pressed (pointer down or keyboard activation), send an HTTP POST request to http://localhost:3000/gpio with header Content-Type: application/json and a JSON body containing the pressed button’s 4-bit binary code in the form {\"binary\": \"XXXX\"}, where XXXX is the button’s binary code.",
+      "featureId": "feature-change-button-interaction-event-emission-so-that-the-emitted-command-string-event-value-uses-the-format-gpioset-c-gpiochip0-where-is-the-button-s-numeric-code-1-16-and-is-1-when-pressed-and-0-when-released",
+      "featureTitle": "Change button interaction event emission so that the emitted command string (event.value) uses the format `gpioset -c gpiochip0 #=$`, where `#` is the button's numeric code (1–16) and `$` is `1` when pressed and `0` when released.",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx",
-        "frontend/src/lib/gpioHttp.ts"
+        "frontend/src/components/control-panel/ControlRenderer.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -21,10 +20,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-when-the-same-button-press-is-released-pointer-up-cancel-leave-blur-while-pressed-or-keyboard-key-up-immediately-send-an-http-post-request-to-http-localhost-3000-gpio-with-content-type-application-json-and-json-body-binary-0000-ensure-any-previously-scheduled-delayed-reset-behavior-for-buttons-does-not-cause-an-additional-later-reset-send",
-      "featureTitle": "When the same \"button\" press is released (pointer up/cancel/leave, blur while pressed, or keyboard key-up), immediately send an HTTP POST request to http://localhost:3000/gpio with Content-Type: application/json and JSON body {\"binary\":\"0000\"}. Ensure any previously scheduled delayed reset behavior for buttons does not cause an additional, later reset send.",
+      "featureId": "feature-derive-the-value-for-the-new-gpioset-command-from-the-existing-button-code-configuration-the-button-s-1-16-code-rather-than-the-control-s-textual-layout-id-and-ensure-the-command-is-only-emitted-when-the-derived-code-is-valid-1-16",
+      "featureTitle": "Derive the `#` value for the new gpioset command from the existing button code configuration (the button’s 1–16 code) rather than the control's textual layout id, and ensure the command is only emitted when the derived code is valid (1–16).",
       "files": [
-        "frontend/src/components/control-panel/ControlRenderer.tsx"
+        "frontend/src/components/control-panel/ControlRenderer.tsx",
+        "frontend/src/lib/buttonCode.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -39,11 +39,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-basic-client-side-error-handling-for-the-gpio-http-post-requests-failures-must-not-crash-the-ui-log-a-clear-console-warning-error-that-includes-the-endpoint-and-the-binary-value-that-failed-to-send",
-      "featureTitle": "Implement basic client-side error handling for the GPIO HTTP POST requests: failures must not crash the UI; log a clear console warning/error that includes the endpoint and the binary value that failed to send.",
+      "featureId": "feature-update-the-gpioset-command-generation-utility-so-it-can-generate-the-single-command-format-gpioset-c-gpiochip0-id-state-for-button-press-release-and-remove-or-stop-using-the-old-4-bit-to-multiple-pin-mapping-generator-for-button-events",
+      "featureTitle": "Update the gpioset command generation utility so it can generate the single-command format `gpioset -c gpiochip0 <id>=<state>` for button press/release, and remove or stop using the old 4-bit-to-multiple-pin mapping generator for button events.",
       "files": [
         "frontend/src/components/control-panel/ControlRenderer.tsx",
-        "frontend/src/lib/gpioHttp.ts"
+        "frontend/src/lib/gpiosetCommands.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",

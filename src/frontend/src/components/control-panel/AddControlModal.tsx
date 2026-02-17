@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useControlLayout } from '@/hooks/useControlLayout';
 import { validateBinaryCode, generateDefaultBinaryCode } from '@/lib/binaryCode';
+import { decimalToBinary, validateDecimalCode, binaryToDecimal } from '@/lib/buttonCode';
 import { getControlDefaults } from '@/lib/controlDefaults';
 import type { ControlType, RadioOption } from '@/types/controlPanel';
 import { toast } from 'sonner';
@@ -30,6 +31,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
   const [id, setId] = useState('');
   const [label, setLabel] = useState('');
   const [binaryCode, setBinaryCode] = useState('');
+  const [buttonDecimalCode, setButtonDecimalCode] = useState('1');
   const [sliderMin, setSliderMin] = useState(0);
   const [sliderMax, setSliderMax] = useState(100);
   const [sliderIsVertical, setSliderIsVertical] = useState(false);
@@ -46,6 +48,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     setId(newId);
     setLabel('New Control');
     setBinaryCode(generateDefaultBinaryCode(newId));
+    setButtonDecimalCode('1');
     setControlType('button');
     setSliderMin(0);
     setSliderMax(100);
@@ -73,10 +76,27 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       return;
     }
 
-    const binaryError = validateBinaryCode(binaryCode);
-    if (binaryError) {
-      toast.error(binaryError);
-      return;
+    // For button controls, validate decimal code and convert to binary
+    let finalBinaryCode = binaryCode;
+    if (controlType === 'button') {
+      const decimalError = validateDecimalCode(buttonDecimalCode);
+      if (decimalError) {
+        toast.error(decimalError);
+        return;
+      }
+      try {
+        finalBinaryCode = decimalToBinary(parseInt(buttonDecimalCode, 10));
+      } catch (error) {
+        toast.error('Invalid button code');
+        return;
+      }
+    } else {
+      // For non-button controls, validate binary code
+      const binaryError = validateBinaryCode(binaryCode);
+      if (binaryError) {
+        toast.error(binaryError);
+        return;
+      }
     }
 
     if (controlType === 'radio') {
@@ -112,7 +132,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       width: defaults.width,
       height: defaults.height,
       color: defaults.color,
-      binaryCode,
+      binaryCode: finalBinaryCode,
     };
 
     if (controlType === 'slider') {
@@ -162,6 +182,13 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     return value.replace(/[^01]/g, '').slice(0, 4);
   };
 
+  const sanitizeDecimalInput = (value: string): string => {
+    // Only allow digits
+    return value.replace(/[^0-9]/g, '');
+  };
+
+  const decimalCodeError = controlType === 'button' ? validateDecimalCode(buttonDecimalCode) : null;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
@@ -196,16 +223,34 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="new-binaryCode">Binary Code (4 bits)</Label>
-            <Input
-              id="new-binaryCode"
-              value={binaryCode}
-              onChange={(e) => setBinaryCode(sanitizeBinaryInput(e.target.value))}
-              placeholder="e.g., 1010"
-              maxLength={4}
-            />
-          </div>
+          {controlType === 'button' ? (
+            <div className="space-y-2">
+              <Label htmlFor="new-buttonCode">Code (1–16)</Label>
+              <Input
+                id="new-buttonCode"
+                type="number"
+                min="1"
+                max="16"
+                value={buttonDecimalCode}
+                onChange={(e) => setButtonDecimalCode(sanitizeDecimalInput(e.target.value))}
+                placeholder="e.g., 1"
+              />
+              {decimalCodeError && (
+                <p className="text-sm text-destructive">{decimalCodeError}</p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="new-binaryCode">Binary Code (4 bits)</Label>
+              <Input
+                id="new-binaryCode"
+                value={binaryCode}
+                onChange={(e) => setBinaryCode(sanitizeBinaryInput(e.target.value))}
+                placeholder="e.g., 1010"
+                maxLength={4}
+              />
+            </div>
+          )}
 
           {controlType === 'slider' && (
             <>
@@ -336,7 +381,9 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate}>Create</Button>
+          <Button onClick={handleCreate} disabled={controlType === 'button' && !!decimalCodeError}>
+            Create
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

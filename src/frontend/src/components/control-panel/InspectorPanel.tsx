@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trash2, Plus } from 'lucide-react';
 import type { ControlType, RadioOption } from '@/types/controlPanel';
 import { validateBinaryCode, generateDefaultBinaryCode } from '@/lib/binaryCode';
+import { decimalToBinary, binaryToDecimal, validateDecimalCode } from '@/lib/buttonCode';
 import { toast } from 'sonner';
 
 export function InspectorPanel() {
@@ -16,6 +17,7 @@ export function InspectorPanel() {
   const [localId, setLocalId] = useState('');
   const [localLabel, setLocalLabel] = useState('');
   const [localBinaryCode, setLocalBinaryCode] = useState('');
+  const [localButtonDecimalCode, setLocalButtonDecimalCode] = useState('1');
   const [localX, setLocalX] = useState(0);
   const [localY, setLocalY] = useState(0);
   const [localWidth, setLocalWidth] = useState(0);
@@ -35,6 +37,17 @@ export function InspectorPanel() {
       setLocalId(selectedControl.id);
       setLocalLabel(selectedControl.label);
       setLocalBinaryCode(selectedControl.binaryCode);
+      
+      // Convert binary to decimal for button controls
+      if (selectedControl.controlType === 'button') {
+        try {
+          const decimal = binaryToDecimal(selectedControl.binaryCode);
+          setLocalButtonDecimalCode(decimal.toString());
+        } catch {
+          setLocalButtonDecimalCode('1');
+        }
+      }
+      
       setLocalX(selectedControl.x);
       setLocalY(selectedControl.y);
       setLocalWidth(selectedControl.width);
@@ -112,11 +125,32 @@ export function InspectorPanel() {
     return value.replace(/[^01]/g, '').slice(0, 4);
   };
 
-  const binaryCodeError = validateBinaryCode(localBinaryCode);
+  const sanitizeDecimalInput = (value: string): string => {
+    return value.replace(/[^0-9]/g, '');
+  };
+
+  const handleButtonDecimalCodeChange = (value: string) => {
+    const sanitized = sanitizeDecimalInput(value);
+    setLocalButtonDecimalCode(sanitized);
+    
+    const error = validateDecimalCode(sanitized);
+    if (!error && sanitized) {
+      try {
+        const binary = decimalToBinary(parseInt(sanitized, 10));
+        setLocalBinaryCode(binary);
+        handleUpdate('binaryCode', binary);
+      } catch {
+        // Invalid conversion, don't update
+      }
+    }
+  };
+
+  const binaryCodeError = localControlType !== 'button' ? validateBinaryCode(localBinaryCode) : null;
+  const buttonDecimalCodeError = localControlType === 'button' ? validateDecimalCode(localButtonDecimalCode) : null;
   const dialIncreaseError = localControlType === 'dial' ? validateBinaryCode(localDialIncreaseBinaryCode) : null;
   const dialDecreaseError = localControlType === 'dial' ? validateBinaryCode(localDialDecreaseBinaryCode) : null;
   const radioOptionErrors = localRadioOptions.map((opt) => validateBinaryCode(opt.binaryCode));
-  const hasAnyError = !!(binaryCodeError || dialIncreaseError || dialDecreaseError || radioOptionErrors.some((err) => err));
+  const hasAnyError = !!(binaryCodeError || buttonDecimalCodeError || dialIncreaseError || dialDecreaseError || radioOptionErrors.some((err) => err));
 
   return (
     <Card className="h-full flex flex-col">
@@ -141,43 +175,104 @@ export function InspectorPanel() {
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="inspector-type">Control Type</Label>
-          <Select
-            value={localControlType}
-            onValueChange={(value) => {
-              setLocalControlType(value as ControlType);
-              handleUpdate('controlType', value);
-            }}
-          >
-            <SelectTrigger id="inspector-type">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="button">Button</SelectItem>
-              <SelectItem value="toggle">Toggle</SelectItem>
-              <SelectItem value="slider">Slider</SelectItem>
-              <SelectItem value="radio">Radio Group</SelectItem>
-              <SelectItem value="dial">Dial</SelectItem>
-            </SelectContent>
-          </Select>
+        {localControlType === 'button' ? (
+          <div className="space-y-2">
+            <Label htmlFor="inspector-buttonCode">Code (1–16)</Label>
+            <Input
+              id="inspector-buttonCode"
+              type="number"
+              min="1"
+              max="16"
+              value={localButtonDecimalCode}
+              onChange={(e) => handleButtonDecimalCodeChange(e.target.value)}
+            />
+            {buttonDecimalCodeError && (
+              <p className="text-sm text-destructive">{buttonDecimalCodeError}</p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label htmlFor="inspector-binaryCode">Binary Code (4 bits)</Label>
+            <Input
+              id="inspector-binaryCode"
+              value={localBinaryCode}
+              onChange={(e) => {
+                const sanitized = sanitizeBinaryInput(e.target.value);
+                setLocalBinaryCode(sanitized);
+                handleUpdate('binaryCode', sanitized);
+              }}
+              maxLength={4}
+            />
+            {binaryCodeError && (
+              <p className="text-sm text-destructive">{binaryCodeError}</p>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="inspector-x">X</Label>
+            <Input
+              id="inspector-x"
+              type="number"
+              value={localX}
+              onChange={(e) => {
+                setLocalX(Number(e.target.value));
+                handleUpdate('x', Number(e.target.value));
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="inspector-y">Y</Label>
+            <Input
+              id="inspector-y"
+              type="number"
+              value={localY}
+              onChange={(e) => {
+                setLocalY(Number(e.target.value));
+                handleUpdate('y', Number(e.target.value));
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="inspector-width">Width</Label>
+            <Input
+              id="inspector-width"
+              type="number"
+              value={localWidth}
+              onChange={(e) => {
+                setLocalWidth(Number(e.target.value));
+                handleUpdate('width', Number(e.target.value));
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="inspector-height">Height</Label>
+            <Input
+              id="inspector-height"
+              type="number"
+              value={localHeight}
+              onChange={(e) => {
+                setLocalHeight(Number(e.target.value));
+                handleUpdate('height', Number(e.target.value));
+              }}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="inspector-binaryCode">Binary Code (4 bits)</Label>
+          <Label htmlFor="inspector-color">Color</Label>
           <Input
-            id="inspector-binaryCode"
-            value={localBinaryCode}
+            id="inspector-color"
+            value={localColor}
             onChange={(e) => {
-              const sanitized = sanitizeBinaryInput(e.target.value);
-              setLocalBinaryCode(sanitized);
-              handleUpdate('binaryCode', sanitized);
+              setLocalColor(e.target.value);
+              handleUpdate('color', e.target.value);
             }}
-            placeholder="e.g., 1010"
-            maxLength={4}
-            className={binaryCodeError ? 'border-destructive' : ''}
           />
-          {binaryCodeError && <p className="text-xs text-destructive">{binaryCodeError}</p>}
         </div>
 
         {localControlType === 'slider' && (
@@ -209,9 +304,8 @@ export function InspectorPanel() {
                   type="number"
                   value={localSliderMin}
                   onChange={(e) => {
-                    const value = Number(e.target.value);
-                    setLocalSliderMin(value);
-                    handleUpdate('sliderMin', value);
+                    setLocalSliderMin(Number(e.target.value));
+                    handleUpdate('sliderMin', Number(e.target.value));
                   }}
                 />
               </div>
@@ -222,9 +316,8 @@ export function InspectorPanel() {
                   type="number"
                   value={localSliderMax}
                   onChange={(e) => {
-                    const value = Number(e.target.value);
-                    setLocalSliderMax(value);
-                    handleUpdate('sliderMax', value);
+                    setLocalSliderMax(Number(e.target.value));
+                    handleUpdate('sliderMax', Number(e.target.value));
                   }}
                 />
               </div>
@@ -262,26 +355,25 @@ export function InspectorPanel() {
                 </Button>
               </div>
               <div className="space-y-2">
-                {localRadioOptions.map((option, idx) => {
-                  const optionError = radioOptionErrors[idx];
-                  return (
-                    <Card key={option.key} className="p-3 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="Label"
-                          value={option.label}
-                          onChange={(e) => handleUpdateRadioOption(option.key, { label: e.target.value })}
-                        />
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDeleteRadioOption(option.key)}
-                          disabled={localRadioOptions.length <= 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {localRadioOptions.map((option, idx) => (
+                  <Card key={option.key} className="p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Label"
+                        value={option.label}
+                        onChange={(e) => handleUpdateRadioOption(option.key, { label: e.target.value })}
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDeleteRadioOption(option.key)}
+                        disabled={localRadioOptions.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="space-y-1">
                       <Input
                         placeholder="Binary Code (4 bits)"
                         value={option.binaryCode}
@@ -289,12 +381,13 @@ export function InspectorPanel() {
                           handleUpdateRadioOption(option.key, { binaryCode: sanitizeBinaryInput(e.target.value) })
                         }
                         maxLength={4}
-                        className={optionError ? 'border-destructive' : ''}
                       />
-                      {optionError && <p className="text-xs text-destructive">{optionError}</p>}
-                    </Card>
-                  );
-                })}
+                      {radioOptionErrors[idx] && (
+                        <p className="text-xs text-destructive">{radioOptionErrors[idx]}</p>
+                      )}
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
           </>
@@ -312,11 +405,11 @@ export function InspectorPanel() {
                   setLocalDialIncreaseBinaryCode(sanitized);
                   handleUpdate('dialIncreaseBinaryCode', sanitized);
                 }}
-                placeholder="e.g., 0001"
                 maxLength={4}
-                className={dialIncreaseError ? 'border-destructive' : ''}
               />
-              {dialIncreaseError && <p className="text-xs text-destructive">{dialIncreaseError}</p>}
+              {dialIncreaseError && (
+                <p className="text-sm text-destructive">{dialIncreaseError}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="inspector-dialDecrease">Decrease Binary Code (4 bits)</Label>
@@ -328,96 +421,14 @@ export function InspectorPanel() {
                   setLocalDialDecreaseBinaryCode(sanitized);
                   handleUpdate('dialDecreaseBinaryCode', sanitized);
                 }}
-                placeholder="e.g., 0010"
                 maxLength={4}
-                className={dialDecreaseError ? 'border-destructive' : ''}
               />
-              {dialDecreaseError && <p className="text-xs text-destructive">{dialDecreaseError}</p>}
+              {dialDecreaseError && (
+                <p className="text-sm text-destructive">{dialDecreaseError}</p>
+              )}
             </div>
           </>
         )}
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="inspector-x">X</Label>
-            <Input
-              id="inspector-x"
-              type="number"
-              value={localX}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setLocalX(value);
-                handleUpdate('x', value);
-              }}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="inspector-y">Y</Label>
-            <Input
-              id="inspector-y"
-              type="number"
-              value={localY}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setLocalY(value);
-                handleUpdate('y', value);
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="inspector-width">Width</Label>
-            <Input
-              id="inspector-width"
-              type="number"
-              value={localWidth}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setLocalWidth(value);
-                handleUpdate('width', value);
-              }}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="inspector-height">Height</Label>
-            <Input
-              id="inspector-height"
-              type="number"
-              value={localHeight}
-              onChange={(e) => {
-                const value = Number(e.target.value);
-                setLocalHeight(value);
-                handleUpdate('height', value);
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="inspector-color">Color</Label>
-          <div className="flex gap-2">
-            <Input
-              id="inspector-color"
-              type="color"
-              value={localColor}
-              onChange={(e) => {
-                setLocalColor(e.target.value);
-                handleUpdate('color', e.target.value);
-              }}
-              className="w-20 h-10"
-            />
-            <Input
-              value={localColor}
-              onChange={(e) => {
-                setLocalColor(e.target.value);
-                handleUpdate('color', e.target.value);
-              }}
-              placeholder="#000000"
-            />
-          </div>
-        </div>
 
         <div className="pt-4 space-y-2">
           <Button
@@ -425,15 +436,9 @@ export function InspectorPanel() {
             disabled={isSaving || hasAnyError}
             className="w-full"
           >
-            {isSaving ? 'Saving...' : 'Save Layout'}
+            {isSaving ? 'Saving...' : hasAnyError ? 'Fix validation errors' : 'Save Layout'}
           </Button>
-          {hasAnyError && (
-            <p className="text-xs text-destructive text-center">
-              Fix validation errors before saving
-            </p>
-          )}
           <Button onClick={handleDelete} variant="destructive" className="w-full">
-            <Trash2 className="h-4 w-4 mr-2" />
             Delete Control
           </Button>
         </div>

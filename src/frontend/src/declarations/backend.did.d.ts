@@ -14,12 +14,12 @@ export interface Control {
   'id' : string,
   'controlName' : [] | [string],
   'controlType' : string,
+  'decimalCode' : bigint,
+  'dialIncreaseCode' : [] | [bigint],
   'radioOptions' : [] | [Array<string>],
   'radioGroupIsVertical' : [] | [boolean],
-  'dialIncreaseBinaryCode' : [] | [string],
-  'dialDecreaseBinaryCode' : [] | [string],
+  'dialDecreaseCode' : [] | [bigint],
   'sliderIsVertical' : [] | [boolean],
-  'binaryCode' : string,
 }
 export interface Event {
   'controlName' : [] | [string],
@@ -38,11 +38,11 @@ export interface _SERVICE {
     undefined
   >,
   'emitEvent' : ActorMethod<
-    [string, string, [] | [string], string, string],
+    [string, string, [] | [string], string, bigint],
     undefined
   >,
   'emitHatGpiosetEvent' : ActorMethod<
-    [string, string, [] | [string], string],
+    [string, string, [] | [string], bigint],
     undefined
   >,
   'getEventsByControlId' : ActorMethod<[string], Array<Event>>,
