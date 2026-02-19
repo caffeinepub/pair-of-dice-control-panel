@@ -10,14 +10,18 @@ export type Option<T> = Some<T> | None;
 export type Time = bigint;
 export interface Control {
     id: string;
+    decimalCodeLeft?: bigint;
     controlName?: string;
     controlType: string;
     decimalCode: bigint;
-    dialIncreaseCode?: bigint;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
-    dialDecreaseCode?: bigint;
+    decimalCodeRight?: bigint;
     sliderIsVertical?: boolean;
+    decimalCodeOn?: bigint;
+    decimalCodeUp?: bigint;
+    decimalCodeOff?: bigint;
+    decimalCodeDown?: bigint;
 }
 export interface Layout {
     controls: Array<Control>;
@@ -25,16 +29,16 @@ export interface Layout {
 export interface Event {
     controlName?: string;
     controlType: string;
+    decimalCode: bigint;
     value: string;
+    commandStr: string;
+    codeType: string;
     controlId: string;
     timestamp: Time;
-    binaryCode: string;
 }
 export interface backendInterface {
     backendScaffoldPlaceholderFunction(): Promise<string>;
-    emitDialEvent(controlId: string, controlType: string, controlName: string | null, direction: string): Promise<void>;
-    emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, decimalCode: bigint): Promise<void>;
-    emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, decimalCode: bigint): Promise<void>;
+    emitButtonEvent(controlId: string, controlType: string, controlName: string | null, value: string, codeType: string, decimalCode: bigint, commandStr: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
     getRecentEvents(): Promise<Array<Event>>;

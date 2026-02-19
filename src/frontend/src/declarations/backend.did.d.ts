@@ -12,37 +12,35 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Control {
   'id' : string,
+  'decimalCodeLeft' : [] | [bigint],
   'controlName' : [] | [string],
   'controlType' : string,
   'decimalCode' : bigint,
-  'dialIncreaseCode' : [] | [bigint],
   'radioOptions' : [] | [Array<string>],
   'radioGroupIsVertical' : [] | [boolean],
-  'dialDecreaseCode' : [] | [bigint],
+  'decimalCodeRight' : [] | [bigint],
   'sliderIsVertical' : [] | [boolean],
+  'decimalCodeOn' : [] | [bigint],
+  'decimalCodeUp' : [] | [bigint],
+  'decimalCodeOff' : [] | [bigint],
+  'decimalCodeDown' : [] | [bigint],
 }
 export interface Event {
   'controlName' : [] | [string],
   'controlType' : string,
+  'decimalCode' : bigint,
   'value' : string,
+  'commandStr' : string,
+  'codeType' : string,
   'controlId' : string,
   'timestamp' : Time,
-  'binaryCode' : string,
 }
 export interface Layout { 'controls' : Array<Control> }
 export type Time = bigint;
 export interface _SERVICE {
   'backendScaffoldPlaceholderFunction' : ActorMethod<[], string>,
-  'emitDialEvent' : ActorMethod<
-    [string, string, [] | [string], string],
-    undefined
-  >,
-  'emitEvent' : ActorMethod<
-    [string, string, [] | [string], string, bigint],
-    undefined
-  >,
-  'emitHatGpiosetEvent' : ActorMethod<
-    [string, string, [] | [string], bigint],
+  'emitButtonEvent' : ActorMethod<
+    [string, string, [] | [string], string, string, bigint, string],
     undefined
   >,
   'getEventsByControlId' : ActorMethod<[string], Array<Event>>,

@@ -1,91 +1,15 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T23:03:20.906Z",
-  "summary": "Diff adds Linux/Raspberry Pi bundle packaging and runtime scripts plus GPIO event runner env/service examples and docs, but the provided excerpts are truncated and do not conclusively show that the bundle contents/launcher behaviors meet all acceptance criteria. Diff also includes substantial unrelated frontend control-panel feature changes not requested by the BuildRequest.",
-  "missing_requirements": [
-    {
-      "id": "REQ-1",
-      "requirement": "Packaging workflow produces a self-contained .tar.gz bundle including frontend build output, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
-      "reason": "A packaging script was added/modified, but the diff excerpt is truncated before showing the steps that copy frontend build output, include backend canister artifacts (WASM/candid), include the launcher/helper scripts, and actually create the final .tar.gz archive.",
-      "evidence": [
-        "frontend/scripts/package_linux_bundle.sh (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "From extracted bundle, single launcher command starts/reuses local replica, installs backend canister from bundled WASM, and prints backend canister ID and example URLs/commands; supports explicit stop and clean actions with help text.",
-      "reason": "The launcher script shows implemented --stop/--clean/--help handling, but the excerpt is truncated before demonstrating the 'start' path: starting/reusing replica, installing from bundled WASM, and printing canister ID + example URLs/commands.",
-      "evidence": [
-        "frontend/scripts/linux_bundle_run.sh (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Bundle documentation explains how to run the Raspberry Pi event runner with CANISTER_ID + network selection, DRY_RUN mode, and lists required Linux packages/tools and installation guidance.",
-      "reason": "Docs were modified/added but the provided content is truncated right after headings/intro sections, so the required runnable commands and package installation instructions cannot be verified from the diff summary.",
-      "evidence": [
-        "frontend/docs/rpi-bash-runner.md (truncated)",
-        "frontend/docs/linux-local-test-bundle.md (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Bundle includes documented systemd unit example for event runner including where to set CANISTER_ID/NETWORK and how to enable/disable/start/stop; optional and doesn’t break manual execution.",
-      "reason": "A systemd unit example file is added, but the documentation showing enable/disable/start/stop commands and configuration guidance is not visible in the truncated docs excerpt.",
-      "evidence": [
-        "frontend/scripts/rpi_event_runner.service.example",
-        "frontend/docs/rpi-bash-runner.md (truncated)"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Large set of control-panel UI and behavior changes (edit/interact mode synchronization, fullscreen handling, new sections, selection/drag behavior changes).",
-      "reason": "BuildRequest focuses on Linux/Raspberry Pi bundling, launcher, GPIO runner guidance, and systemd example; it does not request new control panel UI features.",
-      "evidence": [
-        "frontend-file-summaries.txt (truncated) - entries for frontend/src/screens/ControlPanelScreen.tsx, frontend/src/hooks/usePanelMode.ts, frontend/src/components/control-panel/Workspace.tsx, frontend/src/components/control-panel/DragController.tsx"
-      ]
-    },
-    {
-      "description": "New/changed control types and strict binary code validation plus dial increase/decrease codes, layout import/export validation changes.",
-      "reason": "Not requested by Raspberry Pi distribution requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (truncated) - entries for frontend/src/types/controlPanel.ts, frontend/src/lib/binaryCode.ts, frontend/src/lib/layoutSerialization.ts, frontend/src/lib/controlDefaults.ts"
-      ]
-    },
-    {
-      "description": "Backend signal emission changes and conversion of binary codes to decimal; recent signals polling interval changed (5s to 2s) and staleTime adjustments.",
-      "reason": "Not requested by the bundling/launcher/GPIO-runner/systemd requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (truncated) - entries for frontend/src/hooks/useSignalEmitter.ts, frontend/src/hooks/useRecentSignals.ts"
-      ]
-    },
-    {
-      "description": "Button controls emitting gpioset command strings directly from the UI (press/release commands) and inspector changes to display/edit codes as decimal.",
-      "reason": "BuildRequest asks for distribution scripts and GPIO runner guidance, not a redesign of how UI emits GPIO commands.",
-      "evidence": [
-        "frontend-file-summaries.txt (truncated) - entries for frontend/src/components/control-panel/ControlRenderer.tsx, frontend/src/components/control-panel/InspectorPanel.tsx"
-      ]
-    },
-    {
-      "description": "Addition/modification of project tracking metadata in project_state.json with new_feature_requests AR-1..AR-5 marked pending.",
-      "reason": "BuildRequest does not request adding/updating project management state files.",
-      "evidence": [
-        "project_state.json"
-      ]
-    }
-  ],
-  "confidence": 0.62,
+  "generatedAt": "2026-02-19T23:22:56.859Z",
+  "summary": "All requirements are fully implemented. The diff shows that ControlRenderer now sends HTTP POST requests to localhost:3000/gpio with decimal code and on/off state for button press/release events, and gpioHttp.ts has been updated to support the required payload structure. No missing requirements or hallucinated features detected.",
+  "missing_requirements": [],
+  "hallucinated_features": [],
+  "confidence": 0.95,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/docs/linux-local-test-bundle.md",
-    "frontend/docs/rpi-bash-runner.md",
-    "frontend/scripts/linux_bundle_run.sh",
-    "frontend/scripts/package_linux_bundle.sh",
-    "frontend/scripts/rpi_event_runner.env.example",
-    "frontend/scripts/rpi_event_runner.service.example",
-    "frontend/scripts/rpi_event_runner.sh",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
+    "frontend/src/lib/gpioHttp.ts",
     "project_state.json"
   ]
 }

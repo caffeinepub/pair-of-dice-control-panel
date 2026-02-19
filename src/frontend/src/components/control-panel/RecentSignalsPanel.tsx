@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRecentSignals } from '@/hooks/useRecentSignals';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function RecentSignalsPanel() {
-  const { events, isLoading, refetch } = useRecentSignals();
+  const { events, isLoading, error, refetch } = useRecentSignals();
 
   const formatTimestamp = (timestamp: bigint) => {
     const date = new Date(Number(timestamp) / 1_000_000);
@@ -23,24 +24,44 @@ export function RecentSignalsPanel() {
         </div>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to fetch events. Check backend connection.
+            </AlertDescription>
+          </Alert>
+        )}
         <ScrollArea className="h-[300px]">
           {events.length === 0 ? (
             <p className="text-sm text-muted-foreground">No signals emitted yet</p>
           ) : (
             <div className="space-y-2">
-              {events.map((event, idx) => (
-                <div key={idx} className="rounded-lg border border-border bg-card p-3 text-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-destructive">{event.binaryCode}</span>
-                      {event.controlName && (
-                        <span className="text-xs font-semibold text-foreground">"{event.controlName}"</span>
+              {events.map((event, index) => (
+                <div
+                  key={`${event.controlId}-${event.timestamp}-${index}`}
+                  className="rounded-lg border bg-card p-3 text-sm"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium">
+                        {event.controlName || 'Unnamed Control'}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Type: {event.controlType} • Value: {event.value}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Code: {Number(event.decimalCode)} • {event.codeType}
+                      </div>
+                      {event.commandStr && (
+                        <div className="text-xs font-mono text-muted-foreground mt-1 bg-muted/50 p-1 rounded">
+                          {event.commandStr}
+                        </div>
                       )}
                     </div>
-                    <span className="text-xs text-muted-foreground">{formatTimestamp(event.timestamp)}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    <span className="font-semibold">{event.controlId}</span> • {event.controlType} • {event.value}
+                    <div className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                      {formatTimestamp(event.timestamp)}
+                    </div>
                   </div>
                 </div>
               ))}

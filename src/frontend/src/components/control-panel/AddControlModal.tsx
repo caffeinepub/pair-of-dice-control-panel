@@ -11,9 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useControlLayout } from '@/hooks/useControlLayout';
-import { validateBinaryCode, generateDefaultBinaryCode } from '@/lib/binaryCode';
-import { decimalToBinary, validateDecimalCode, binaryToDecimal } from '@/lib/buttonCode';
-import { getControlDefaults } from '@/lib/controlDefaults';
+import { validateDecimalCode, generateDecimalCodeFromSeed } from '@/lib/buttonCode';
+import { getControlDefaults, generateDualCodesForControl } from '@/lib/controlDefaults';
 import type { ControlType, RadioOption } from '@/types/controlPanel';
 import { toast } from 'sonner';
 import { Plus, Trash2 } from 'lucide-react';
@@ -30,36 +29,58 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
   const [controlType, setControlType] = useState<ControlType>('button');
   const [id, setId] = useState('');
   const [label, setLabel] = useState('');
-  const [binaryCode, setBinaryCode] = useState('');
-  const [buttonDecimalCode, setButtonDecimalCode] = useState('1');
+  const [decimalCode, setDecimalCode] = useState('1');
+  
+  // Toggle dual codes
+  const [decimalCodeOn, setDecimalCodeOn] = useState('');
+  const [decimalCodeOff, setDecimalCodeOff] = useState('');
+  
+  // Slider config and dual codes
   const [sliderMin, setSliderMin] = useState(0);
   const [sliderMax, setSliderMax] = useState(100);
   const [sliderIsVertical, setSliderIsVertical] = useState(false);
+  const [decimalCodeUp, setDecimalCodeUp] = useState('');
+  const [decimalCodeDown, setDecimalCodeDown] = useState('');
+  
+  // Radio config
   const [radioOptions, setRadioOptions] = useState<RadioOption[]>([
-    { key: 'option_1', label: 'Option 1', binaryCode: '0001' },
-    { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
+    { key: 'option_1', label: 'Option 1', decimalCode: 1 },
+    { key: 'option_2', label: 'Option 2', decimalCode: 2 },
   ]);
   const [radioGroupIsVertical, setRadioGroupIsVertical] = useState(true);
-  const [dialIncreaseBinaryCode, setDialIncreaseBinaryCode] = useState('0001');
-  const [dialDecreaseBinaryCode, setDialDecreaseBinaryCode] = useState('0010');
+  
+  // Dial dual codes
+  const [decimalCodeLeft, setDecimalCodeLeft] = useState('');
+  const [decimalCodeRight, setDecimalCodeRight] = useState('');
 
   const resetForm = () => {
     const newId = `control_${Date.now()}`;
     setId(newId);
     setLabel('New Control');
-    setBinaryCode(generateDefaultBinaryCode(newId));
-    setButtonDecimalCode('1');
+    setDecimalCode('1');
     setControlType('button');
+    
+    // Reset toggle codes
+    setDecimalCodeOn('');
+    setDecimalCodeOff('');
+    
+    // Reset slider
     setSliderMin(0);
     setSliderMax(100);
     setSliderIsVertical(false);
+    setDecimalCodeUp('');
+    setDecimalCodeDown('');
+    
+    // Reset radio
     setRadioOptions([
-      { key: 'option_1', label: 'Option 1', binaryCode: '0001' },
-      { key: 'option_2', label: 'Option 2', binaryCode: '0010' },
+      { key: 'option_1', label: 'Option 1', decimalCode: 1 },
+      { key: 'option_2', label: 'Option 2', decimalCode: 2 },
     ]);
     setRadioGroupIsVertical(true);
-    setDialIncreaseBinaryCode('0001');
-    setDialDecreaseBinaryCode('0010');
+    
+    // Reset dial
+    setDecimalCodeLeft('');
+    setDecimalCodeRight('');
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -69,6 +90,32 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     onOpenChange(newOpen);
   };
 
+  const handleControlTypeChange = (newType: ControlType) => {
+    setControlType(newType);
+    
+    // Generate dual codes for the new control type
+    const dualCodes = generateDualCodesForControl(id, newType);
+    
+    if (newType === 'toggle') {
+      setDecimalCodeOn((dualCodes.decimalCodeOn || 1).toString());
+      setDecimalCodeOff((dualCodes.decimalCodeOff || 2).toString());
+    } else if (newType === 'slider') {
+      setDecimalCodeUp((dualCodes.decimalCodeUp || 1).toString());
+      setDecimalCodeDown((dualCodes.decimalCodeDown || 2).toString());
+    } else if (newType === 'dial') {
+      setDecimalCodeLeft((dualCodes.decimalCodeLeft || 1).toString());
+      setDecimalCodeRight((dualCodes.decimalCodeRight || 2).toString());
+    } else if (newType === 'radio') {
+      // Reset radio options with sequential decimal codes
+      setRadioOptions([
+        { key: 'option_1', label: 'Option 1', decimalCode: 1 },
+        { key: 'option_2', label: 'Option 2', decimalCode: 2 },
+      ]);
+    } else {
+      setDecimalCode((dualCodes.decimalCode || 1).toString());
+    }
+  };
+
   const handleCreate = () => {
     const idError = validateId(id);
     if (idError) {
@@ -76,48 +123,61 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       return;
     }
 
-    // For button controls, validate decimal code and convert to binary
-    let finalBinaryCode = binaryCode;
+    // Validate decimal codes based on control type
     if (controlType === 'button') {
-      const decimalError = validateDecimalCode(buttonDecimalCode);
-      if (decimalError) {
-        toast.error(decimalError);
-        return;
-      }
-      try {
-        finalBinaryCode = decimalToBinary(parseInt(buttonDecimalCode, 10));
-      } catch (error) {
-        toast.error('Invalid button code');
-        return;
-      }
-    } else {
-      // For non-button controls, validate binary code
-      const binaryError = validateBinaryCode(binaryCode);
-      if (binaryError) {
-        toast.error(binaryError);
+      const error = validateDecimalCode(decimalCode);
+      if (error) {
+        toast.error(error);
         return;
       }
     }
 
     if (controlType === 'radio') {
+      // Validate all radio option decimal codes
       for (const option of radioOptions) {
-        const optionError = validateBinaryCode(option.binaryCode);
-        if (optionError) {
-          toast.error(`Radio option "${option.label}": ${optionError}`);
+        const error = validateDecimalCode(option.decimalCode.toString());
+        if (error) {
+          toast.error(`Radio option "${option.label}": ${error}`);
           return;
         }
       }
     }
 
-    if (controlType === 'dial') {
-      const increaseError = validateBinaryCode(dialIncreaseBinaryCode);
-      if (increaseError) {
-        toast.error(`Dial increase code: ${increaseError}`);
+    if (controlType === 'toggle') {
+      const onError = validateDecimalCode(decimalCodeOn);
+      if (onError) {
+        toast.error(`Toggle ON code: ${onError}`);
         return;
       }
-      const decreaseError = validateBinaryCode(dialDecreaseBinaryCode);
-      if (decreaseError) {
-        toast.error(`Dial decrease code: ${decreaseError}`);
+      const offError = validateDecimalCode(decimalCodeOff);
+      if (offError) {
+        toast.error(`Toggle OFF code: ${offError}`);
+        return;
+      }
+    }
+
+    if (controlType === 'slider') {
+      const upError = validateDecimalCode(decimalCodeUp);
+      if (upError) {
+        toast.error(`Slider UP code: ${upError}`);
+        return;
+      }
+      const downError = validateDecimalCode(decimalCodeDown);
+      if (downError) {
+        toast.error(`Slider DOWN code: ${downError}`);
+        return;
+      }
+    }
+
+    if (controlType === 'dial') {
+      const leftError = validateDecimalCode(decimalCodeLeft);
+      if (leftError) {
+        toast.error(`Dial LEFT code: ${leftError}`);
+        return;
+      }
+      const rightError = validateDecimalCode(decimalCodeRight);
+      if (rightError) {
+        toast.error(`Dial RIGHT code: ${rightError}`);
         return;
       }
     }
@@ -132,13 +192,23 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       width: defaults.width,
       height: defaults.height,
       color: defaults.color,
-      binaryCode: finalBinaryCode,
     };
+
+    if (controlType === 'button') {
+      config.decimalCode = parseInt(decimalCode, 10);
+    }
+
+    if (controlType === 'toggle') {
+      config.decimalCodeOn = parseInt(decimalCodeOn, 10);
+      config.decimalCodeOff = parseInt(decimalCodeOff, 10);
+    }
 
     if (controlType === 'slider') {
       config.sliderMin = sliderMin;
       config.sliderMax = sliderMax;
       config.sliderIsVertical = sliderIsVertical;
+      config.decimalCodeUp = parseInt(decimalCodeUp, 10);
+      config.decimalCodeDown = parseInt(decimalCodeDown, 10);
     }
 
     if (controlType === 'radio') {
@@ -147,8 +217,8 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     }
 
     if (controlType === 'dial') {
-      config.dialIncreaseBinaryCode = dialIncreaseBinaryCode;
-      config.dialDecreaseBinaryCode = dialDecreaseBinaryCode;
+      config.decimalCodeLeft = parseInt(decimalCodeLeft, 10);
+      config.decimalCodeRight = parseInt(decimalCodeRight, 10);
     }
 
     const success = createControlWithConfig(config);
@@ -159,12 +229,15 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
 
   const handleAddRadioOption = () => {
     const newKey = `option_${Date.now()}`;
+    const nextCode = radioOptions.length > 0 
+      ? Math.min(16, Math.max(...radioOptions.map(o => o.decimalCode)) + 1)
+      : 1;
     setRadioOptions([
       ...radioOptions,
       {
         key: newKey,
         label: 'New Option',
-        binaryCode: generateDefaultBinaryCode(newKey),
+        decimalCode: nextCode,
       },
     ]);
   };
@@ -177,17 +250,11 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     setRadioOptions(radioOptions.filter((opt) => opt.key !== key));
   };
 
-  const sanitizeBinaryInput = (value: string): string => {
-    // Only allow 0 and 1, max 4 characters
-    return value.replace(/[^01]/g, '').slice(0, 4);
-  };
-
   const sanitizeDecimalInput = (value: string): string => {
-    // Only allow digits
     return value.replace(/[^0-9]/g, '');
   };
 
-  const decimalCodeError = controlType === 'button' ? validateDecimalCode(buttonDecimalCode) : null;
+  const decimalCodeError = controlType === 'button' ? validateDecimalCode(decimalCode) : null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -209,7 +276,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
 
           <div className="space-y-2">
             <Label htmlFor="new-type">Control Type</Label>
-            <Select value={controlType} onValueChange={(value) => setControlType(value as ControlType)}>
+            <Select value={controlType} onValueChange={(value) => handleControlTypeChange(value as ControlType)}>
               <SelectTrigger id="new-type">
                 <SelectValue />
               </SelectTrigger>
@@ -223,33 +290,51 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
             </Select>
           </div>
 
-          {controlType === 'button' ? (
+          {controlType === 'button' && (
             <div className="space-y-2">
-              <Label htmlFor="new-buttonCode">Code (1–16)</Label>
+              <Label htmlFor="new-decimalCode">Decimal Code (1–16)</Label>
               <Input
-                id="new-buttonCode"
+                id="new-decimalCode"
                 type="number"
                 min="1"
                 max="16"
-                value={buttonDecimalCode}
-                onChange={(e) => setButtonDecimalCode(sanitizeDecimalInput(e.target.value))}
+                value={decimalCode}
+                onChange={(e) => setDecimalCode(sanitizeDecimalInput(e.target.value))}
                 placeholder="e.g., 1"
               />
               {decimalCodeError && (
                 <p className="text-sm text-destructive">{decimalCodeError}</p>
               )}
             </div>
-          ) : (
-            <div className="space-y-2">
-              <Label htmlFor="new-binaryCode">Binary Code (4 bits)</Label>
-              <Input
-                id="new-binaryCode"
-                value={binaryCode}
-                onChange={(e) => setBinaryCode(sanitizeBinaryInput(e.target.value))}
-                placeholder="e.g., 1010"
-                maxLength={4}
-              />
-            </div>
+          )}
+
+          {controlType === 'toggle' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="new-toggleOn">ON Code (1–16)</Label>
+                <Input
+                  id="new-toggleOn"
+                  type="number"
+                  min="1"
+                  max="16"
+                  value={decimalCodeOn}
+                  onChange={(e) => setDecimalCodeOn(sanitizeDecimalInput(e.target.value))}
+                  placeholder="e.g., 1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-toggleOff">OFF Code (1–16)</Label>
+                <Input
+                  id="new-toggleOff"
+                  type="number"
+                  min="1"
+                  max="16"
+                  value={decimalCodeOff}
+                  onChange={(e) => setDecimalCodeOff(sanitizeDecimalInput(e.target.value))}
+                  placeholder="e.g., 2"
+                />
+              </div>
+            </>
           )}
 
           {controlType === 'slider' && (
@@ -288,6 +373,30 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                     onChange={(e) => setSliderMax(Number(e.target.value))}
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-sliderUp">UP Code (1–16)</Label>
+                <Input
+                  id="new-sliderUp"
+                  type="number"
+                  min="1"
+                  max="16"
+                  value={decimalCodeUp}
+                  onChange={(e) => setDecimalCodeUp(sanitizeDecimalInput(e.target.value))}
+                  placeholder="e.g., 1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-sliderDown">DOWN Code (1–16)</Label>
+                <Input
+                  id="new-sliderDown"
+                  type="number"
+                  min="1"
+                  max="16"
+                  value={decimalCodeDown}
+                  onChange={(e) => setDecimalCodeDown(sanitizeDecimalInput(e.target.value))}
+                  placeholder="e.g., 2"
+                />
               </div>
             </>
           )}
@@ -336,14 +445,19 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      <Input
-                        placeholder="Binary Code (4 bits)"
-                        value={option.binaryCode}
-                        onChange={(e) =>
-                          handleUpdateRadioOption(option.key, { binaryCode: sanitizeBinaryInput(e.target.value) })
-                        }
-                        maxLength={4}
-                      />
+                      <div className="space-y-1">
+                        <Label className="text-xs">Decimal Code (1–16)</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="16"
+                          placeholder="Decimal Code (1-16)"
+                          value={option.decimalCode}
+                          onChange={(e) =>
+                            handleUpdateRadioOption(option.key, { decimalCode: parseInt(e.target.value, 10) || 1 })
+                          }
+                        />
+                      </div>
                     </Card>
                   ))}
                 </div>
@@ -354,23 +468,27 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
           {controlType === 'dial' && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="new-dialIncrease">Increase Binary Code (4 bits)</Label>
+                <Label htmlFor="new-dialLeft">LEFT (Counterclockwise) Code (1–16)</Label>
                 <Input
-                  id="new-dialIncrease"
-                  value={dialIncreaseBinaryCode}
-                  onChange={(e) => setDialIncreaseBinaryCode(sanitizeBinaryInput(e.target.value))}
-                  placeholder="e.g., 0001"
-                  maxLength={4}
+                  id="new-dialLeft"
+                  type="number"
+                  min="1"
+                  max="16"
+                  value={decimalCodeLeft}
+                  onChange={(e) => setDecimalCodeLeft(sanitizeDecimalInput(e.target.value))}
+                  placeholder="e.g., 1"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-dialDecrease">Decrease Binary Code (4 bits)</Label>
+                <Label htmlFor="new-dialRight">RIGHT (Clockwise) Code (1–16)</Label>
                 <Input
-                  id="new-dialDecrease"
-                  value={dialDecreaseBinaryCode}
-                  onChange={(e) => setDialDecreaseBinaryCode(sanitizeBinaryInput(e.target.value))}
-                  placeholder="e.g., 0010"
-                  maxLength={4}
+                  id="new-dialRight"
+                  type="number"
+                  min="1"
+                  max="16"
+                  value={decimalCodeRight}
+                  onChange={(e) => setDecimalCodeRight(sanitizeDecimalInput(e.target.value))}
+                  placeholder="e.g., 2"
                 />
               </div>
             </>

@@ -2,13 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-provide-a-raspberry-pi-linux-friendly-distribution-workflow-that-produces-a-self-contained-linux-bundle-archive-for-running-the-app-on-a-raspberry-pi-linux-os-including-the-built-frontend-backend-canister-artifacts-launcher-script-and-raspberry-pi-helper-scripts",
-      "featureTitle": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
+      "featureId": "feature-replace-the-gpioset-command-execution-in-controlrenderer-with-http-post-requests-to-http-localhost-3000-gpio-the-request-payload-must-include-the-button-decimal-code-and-a-value-of-on-when-the-button-is-pressed-and-off-when-the-button-is-released",
+      "featureTitle": "Replace the gpioset command execution in ControlRenderer with HTTP POST requests to http://localhost:3000/gpio. The request payload must include the button decimal code and a value of \"on\" when the button is pressed and \"off\" when the button is released.",
       "files": [
-        "frontend/docs/linux-local-test-bundle.md",
-        "frontend/scripts/package_linux_bundle.sh",
-        "frontend/scripts/rpi_event_runner.env.example",
-        "frontend/scripts/rpi_event_runner.service.example"
+        "frontend/src/components/control-panel/ControlRenderer.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -23,11 +20,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-extracted-linux-bundle-can-be-started-with-a-single-command-and-provides-clear-copy-paste-able-output-showing-how-to-access-the-ui-locally-and-how-to-stop-clean-the-local-replica",
-      "featureTitle": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
+      "featureId": "feature-update-the-gpiohttp-ts-utility-module-to-support-sending-both-the-decimal-code-and-the-on-off-state-value-in-the-post-request-payload-to-http-localhost-3000-gpio",
+      "featureTitle": "Update the gpioHttp.ts utility module to support sending both the decimal code and the on/off state value in the POST request payload to http://localhost:3000/gpio.",
       "files": [
-        "frontend/docs/linux-local-test-bundle.md",
-        "frontend/scripts/linux_bundle_run.sh"
+        "frontend/src/lib/gpioHttp.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -38,45 +34,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-raspberry-pi-guidance-and-runnable-commands-for-gpio-execution-via-the-included-raspberry-pi-event-runner-script-including-required-environment-variables-and-a-safe-dry-run-mode",
-      "featureTitle": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
-      "files": [
-        "frontend/docs/rpi-bash-runner.md",
-        "frontend/scripts/rpi_event_runner.sh"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-an-optional-raspberry-pi-run-at-boot-setup-path-by-providing-a-systemd-service-example-and-any-small-helper-script-if-needed-that-starts-the-raspberry-pi-event-runner-automatically-with-user-provided-configuration",
-      "featureTitle": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
-      "files": [
-        "frontend/docs/rpi-bash-runner.md",
-        "frontend/scripts/package_linux_bundle.sh",
-        "frontend/scripts/rpi_event_runner.service.example"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

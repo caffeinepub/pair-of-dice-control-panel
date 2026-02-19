@@ -1,40 +1,26 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Build an application that runs on Raspberry Pi using Linux.",
-  "architectural_notes": [],
+  "summary": "New project",
+  "architectural_notes": [
+    "GPIO button events trigger HTTP POST to localhost:3000/gpio instead of shell commands"
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-provide-a-raspberry-pi-linux-friendly-distribution-workflow-that-produces-a-self-contained-linux-bundle-archive-for-running-the-app-on-a-raspberry-pi-linux-os-including-the-built-frontend-backend-canister-artifacts-launcher-script-and-raspberry-pi-helper-scripts",
-      "title": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
+      "id": "feature-replace-the-gpioset-command-execution-in-controlrenderer-with-http-post-requests-to-http-localhost-3000-gpio-the-request-payload-must-include-the-button-decimal-code-and-a-value-of-on-when-the-button-is-pressed-and-off-when-the-button-is-released",
+      "title": "Replace the gpioset command execution in ControlRenderer with HTTP POST requests to http://localhost:3000/gpio. The request payload must include the button decimal code and a value of \"on\" when the button is pressed and \"off\" when the button is released.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-ensure-the-extracted-linux-bundle-can-be-started-with-a-single-command-and-provides-clear-copy-paste-able-output-showing-how-to-access-the-ui-locally-and-how-to-stop-clean-the-local-replica",
-      "title": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
+      "id": "feature-update-the-gpiohttp-ts-utility-module-to-support-sending-both-the-decimal-code-and-the-on-off-state-value-in-the-post-request-payload-to-http-localhost-3000-gpio",
+      "title": "Update the gpioHttp.ts utility module to support sending both the decimal code and the on/off state value in the POST request payload to http://localhost:3000/gpio.",
       "reqIds": [
         "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-raspberry-pi-guidance-and-runnable-commands-for-gpio-execution-via-the-included-raspberry-pi-event-runner-script-including-required-environment-variables-and-a-safe-dry-run-mode",
-      "title": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-optional-raspberry-pi-run-at-boot-setup-path-by-providing-a-systemd-service-example-and-any-small-helper-script-if-needed-that-starts-the-raspberry-pi-event-runner-automatically-with-user-provided-configuration",
-      "title": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -42,13 +28,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Create a Linux application that runs on Raspberry Pi (Linux OS).",
+      "summary": "Replace GPIO command with HTTP POST to localhost:3000/gpio with button code and on/off value",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "GPIO Control Panel",
+  "projectName": "Replace GPIO command execution with HTTP POST requests",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

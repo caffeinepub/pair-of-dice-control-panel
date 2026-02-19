@@ -1,5 +1,5 @@
 import type { LayoutConfig, ControlConfig } from '@/types/controlPanel';
-import { validateBinaryCode } from './binaryCode';
+import { isValidDecimalCode } from './buttonCode';
 
 export interface ValidationError {
   field: string;
@@ -36,9 +36,32 @@ export function validateLayout(layout: any): ValidationError[] {
       errors.push({ field: `${prefix}.controlType`, message: 'Invalid control type' });
     }
 
-    const binaryError = validateBinaryCode(ctrl.binaryCode || '');
-    if (binaryError) {
-      errors.push({ field: `${prefix}.binaryCode`, message: binaryError });
+    // Validate decimal codes based on control type
+    if (ctrl.controlType === 'toggle') {
+      if (ctrl.decimalCodeOn !== undefined && !isValidDecimalCode(ctrl.decimalCodeOn)) {
+        errors.push({ field: `${prefix}.decimalCodeOn`, message: 'Decimal code ON must be between 1 and 16' });
+      }
+      if (ctrl.decimalCodeOff !== undefined && !isValidDecimalCode(ctrl.decimalCodeOff)) {
+        errors.push({ field: `${prefix}.decimalCodeOff`, message: 'Decimal code OFF must be between 1 and 16' });
+      }
+    } else if (ctrl.controlType === 'slider') {
+      if (ctrl.decimalCodeUp !== undefined && !isValidDecimalCode(ctrl.decimalCodeUp)) {
+        errors.push({ field: `${prefix}.decimalCodeUp`, message: 'Decimal code UP must be between 1 and 16' });
+      }
+      if (ctrl.decimalCodeDown !== undefined && !isValidDecimalCode(ctrl.decimalCodeDown)) {
+        errors.push({ field: `${prefix}.decimalCodeDown`, message: 'Decimal code DOWN must be between 1 and 16' });
+      }
+    } else if (ctrl.controlType === 'dial') {
+      if (ctrl.decimalCodeLeft !== undefined && !isValidDecimalCode(ctrl.decimalCodeLeft)) {
+        errors.push({ field: `${prefix}.decimalCodeLeft`, message: 'Decimal code LEFT must be between 1 and 16' });
+      }
+      if (ctrl.decimalCodeRight !== undefined && !isValidDecimalCode(ctrl.decimalCodeRight)) {
+        errors.push({ field: `${prefix}.decimalCodeRight`, message: 'Decimal code RIGHT must be between 1 and 16' });
+      }
+    } else {
+      if (ctrl.decimalCode !== undefined && !isValidDecimalCode(ctrl.decimalCode)) {
+        errors.push({ field: `${prefix}.decimalCode`, message: 'Decimal code must be between 1 and 16' });
+      }
     }
 
     if (typeof ctrl.x !== 'number' || typeof ctrl.y !== 'number') {
@@ -47,42 +70,6 @@ export function validateLayout(layout: any): ValidationError[] {
 
     if (typeof ctrl.width !== 'number' || typeof ctrl.height !== 'number' || ctrl.width <= 0 || ctrl.height <= 0) {
       errors.push({ field: `${prefix}.size`, message: 'Width and height must be positive numbers' });
-    }
-
-    if (ctrl.controlType === 'slider') {
-      if (ctrl.sliderIsVertical !== undefined && typeof ctrl.sliderIsVertical !== 'boolean') {
-        errors.push({ field: `${prefix}.sliderIsVertical`, message: 'sliderIsVertical must be a boolean' });
-      }
-    }
-
-    if (ctrl.controlType === 'radio') {
-      if (ctrl.radioGroupIsVertical !== undefined && typeof ctrl.radioGroupIsVertical !== 'boolean') {
-        errors.push({ field: `${prefix}.radioGroupIsVertical`, message: 'radioGroupIsVertical must be a boolean' });
-      }
-      
-      if (Array.isArray(ctrl.radioOptions)) {
-        ctrl.radioOptions.forEach((opt: any, optIdx: number) => {
-          const optError = validateBinaryCode(opt.binaryCode || '');
-          if (optError) {
-            errors.push({
-              field: `${prefix}.radioOptions[${optIdx}].binaryCode`,
-              message: optError,
-            });
-          }
-        });
-      }
-    }
-
-    if (ctrl.controlType === 'dial') {
-      const increaseError = validateBinaryCode(ctrl.dialIncreaseBinaryCode || '');
-      if (increaseError) {
-        errors.push({ field: `${prefix}.dialIncreaseBinaryCode`, message: increaseError });
-      }
-      
-      const decreaseError = validateBinaryCode(ctrl.dialDecreaseBinaryCode || '');
-      if (decreaseError) {
-        errors.push({ field: `${prefix}.dialDecreaseBinaryCode`, message: decreaseError });
-      }
     }
   });
 

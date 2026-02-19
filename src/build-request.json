@@ -1,99 +1,55 @@
 {
   "kind": "build_request",
-  "title": "Raspberry Pi (Linux) runnable distribution",
-  "projectName": "GPIO Control Panel",
+  "title": "Replace GPIO command execution with HTTP POST requests",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
+      "text": "Replace the gpioset command execution in ControlRenderer with HTTP POST requests to http://localhost:3000/gpio. The request payload must include the button decimal code and a value of \"on\" when the button is pressed and \"off\" when the button is released.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "an app that runs on a raspberry PI using a Linux os"
+          "instead of running the gpio command do a post to http://localhost:3000/gpio and make the request payload the button decimal code and value \"on\" when it is pressed and \"off\" when it is released"
         ]
       },
       "acceptanceCriteria": [
-        "Running the packaging script produces a .tar.gz bundle that includes: frontend build output, backend canister artifacts, run launcher script, and Raspberry Pi helper scripts.",
-        "The bundle can be extracted on a Raspberry Pi (Linux) and contains clear entrypoints for starting the app and running GPIO helpers."
+        "Button press events send POST request to http://localhost:3000/gpio with payload containing decimal code and value \"on\"",
+        "Button release events send POST request to http://localhost:3000/gpio with payload containing decimal code and value \"off\"",
+        "The gpioset command execution is completely removed from ControlRenderer",
+        "HTTP requests are made using the existing fetch API or similar mechanism"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
+      "text": "Update the gpioHttp.ts utility module to support sending both the decimal code and the on/off state value in the POST request payload to http://localhost:3000/gpio.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
-        ],
-        "quotes": [
-          "an app that runs on a raspberry PI using a Linux os"
+          "msg-4"
         ]
       },
       "acceptanceCriteria": [
-        "From the extracted bundle directory, running the launcher script starts (or reuses) a local replica, installs the backend canister from the bundled WASM, and prints the backend canister ID and example URLs/commands to open the UI.",
-        "The launcher script supports explicit stop and clean actions and prints user-facing help text for these options."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-10"
-        ],
-        "quotes": [
-          "an app that runs on a raspberry PI using a Linux os"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Documentation in the bundle explains how to run the Raspberry Pi event runner with the required CANISTER_ID and network selection, and how to run in DRY_RUN mode.",
-        "Documentation states required Linux packages/tools for GPIO execution on Raspberry Pi (e.g., jq and libgpiod/gpioset) and how to install them on common Raspberry Pi Linux distributions."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-10"
-        ],
-        "quotes": [
-          "an app that runs on a raspberry PI using a Linux os"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Bundle includes a documented systemd unit example for the Raspberry Pi event runner, including where to set CANISTER_ID/NETWORK and how to enable/disable/start/stop the service.",
-        "The systemd setup path is optional and does not break manual execution of the scripts."
+        "The POST request payload includes both the decimal code (1-16) and the state value (\"on\" or \"off\")",
+        "The function accepts parameters for both decimal code and state",
+        "Error handling is preserved for failed HTTP requests"
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo only if persistent state upgrades are required.",
-    "Do not modify files under frontend/src/components/ui or other immutable paths listed in SYSTEM_CONTEXT; compose or wrap these components instead."
+    "Do not modify backend files",
+    "Preserve existing error handling and toast notifications",
+    "Maintain the existing control interaction behavior and state management"
   ],
   "nonGoals": [
-    "Building a native Raspberry Pi desktop binary (e.g., Electron, .deb/.rpm installer)",
-    "Adding third-party authentication providers (only Internet Identity is supported)",
-    "Adding external databases or cloud hosting dependencies"
+    "Implementing the HTTP server at localhost:3000/gpio",
+    "Modifying the gpioset command generation logic (can remain for logging purposes)",
+    "Changing how decimal codes are calculated or assigned to controls"
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

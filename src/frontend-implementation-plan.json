@@ -1,100 +1,38 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "GPIO Control Panel — Raspberry Pi/Linux bundle workflow",
+  "title": "Replace GPIO command execution with HTTP POST requests",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Provide a Raspberry Pi/Linux-friendly packaging workflow that outputs a self-contained .tar.gz bundle with built frontend, backend artifacts, launcher, and Pi helper scripts.",
+      "summary": "Replace gpioset command execution in ControlRenderer with HTTP POST requests to localhost:3000/gpio, sending decimal code and on/off state",
       "acceptanceCriteria": [
-        "Running the packaging script produces a .tar.gz bundle that includes: frontend build output, backend canister artifacts, run launcher script, and Raspberry Pi helper scripts.",
-        "The bundle can be extracted on a Raspberry Pi (Linux) and contains clear entrypoints for starting the app and running GPIO helpers."
+        "Button press events send POST request to http://localhost:3000/gpio with payload containing decimal code and value \"on\"",
+        "Button release events send POST request to http://localhost:3000/gpio with payload containing decimal code and value \"off\"",
+        "The gpioset command execution is completely removed from ControlRenderer",
+        "HTTP requests are made using the existing fetch API or similar mechanism"
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/package_linux_bundle.sh",
+          "path": "frontend/src/components/control-panel/ControlRenderer.tsx",
           "operation": "modify",
-          "description": "Extend the packager to include additional Raspberry Pi boot/run assets (systemd unit example + optional env/example config) and ensure they are placed into well-named bundle subfolders under scripts/ and/or docs/ alongside existing launcher, helper scripts, and artifacts."
-        },
-        {
-          "path": "frontend/scripts/rpi_event_runner.service.example",
-          "operation": "create",
-          "description": "Add a documented systemd unit example file intended to be shipped inside the Linux bundle, referencing the bundled Raspberry Pi event runner and an EnvironmentFile for user-provided configuration."
-        },
-        {
-          "path": "frontend/scripts/rpi_event_runner.env.example",
-          "operation": "create",
-          "description": "Add an example environment file for systemd/manual usage that documents required variables (e.g., CANISTER_ID, NETWORK) and optional ones (DRY_RUN, POLL_INTERVAL, STATE_FILE, ALLOWED_PREFIX)."
-        },
-        {
-          "path": "frontend/docs/linux-local-test-bundle.md",
-          "operation": "modify",
-          "description": "Update the bundle guide to explicitly list the packaged contents (including new systemd examples), and to describe the bundle’s entrypoints (run.sh and Raspberry Pi helper scripts) in a Raspberry Pi-friendly way."
+          "description": "Replace gpioset command execution logic with HTTP POST requests to http://localhost:3000/gpio. For button press events, call the updated gpioHttp utility with the control's decimal code and state \"on\". For button release events, call it with state \"off\". Remove any command execution code while preserving existing error handling, toast notifications, and control interaction behavior."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Ensure the extracted Linux bundle starts with a single command and prints copy/paste-able access, stop, and clean instructions.",
+      "summary": "Update gpioHttp.ts utility to send both decimal code and on/off state in POST request payload",
       "acceptanceCriteria": [
-        "From the extracted bundle directory, running the launcher script starts (or reuses) a local replica, installs the backend canister from the bundled WASM, and prints the backend canister ID and example URLs/commands to open the UI.",
-        "The launcher script supports explicit stop and clean actions and prints user-facing help text for these options."
+        "The POST request payload includes both the decimal code (1-16) and the state value (\"on\" or \"off\")",
+        "The function accepts parameters for both decimal code and state",
+        "Error handling is preserved for failed HTTP requests"
       ],
       "file_operations": [
         {
-          "path": "frontend/scripts/linux_bundle_run.sh",
+          "path": "frontend/src/lib/gpioHttp.ts",
           "operation": "modify",
-          "description": "Adjust launcher behavior/output to (1) reuse an already-running replica without forcing a clean start, (2) keep clean as an explicit action, and (3) print clear copy/paste commands for: starting, serving the built frontend locally, the URL to open with canisterId, stopping the replica, and cleaning local state; ensure --help output documents stop/clean usage."
-        },
-        {
-          "path": "frontend/docs/linux-local-test-bundle.md",
-          "operation": "modify",
-          "description": "Add/complete documentation steps showing the single-command start from the extracted bundle directory, what output to expect (UI URL, canister ID), and copy/paste-able stop/clean commands matching run.sh behavior."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the bundled event runner, including env vars and safe dry-run mode.",
-      "acceptanceCriteria": [
-        "Documentation in the bundle explains how to run the Raspberry Pi event runner with the required CANISTER_ID and network selection, and how to run in DRY_RUN mode.",
-        "Documentation states required Linux packages/tools for GPIO execution on Raspberry Pi (e.g., jq and libgpiod/gpioset) and how to install them on common Raspberry Pi Linux distributions."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/scripts/rpi_event_runner.sh",
-          "operation": "modify",
-          "description": "Add a user-facing --help/-h mode (and/or clearer startup banner text) that prints required environment variables, supported NETWORK values, a DRY_RUN example, and prerequisite tool checks, without changing the script’s existing safe execution model."
-        },
-        {
-          "path": "frontend/docs/rpi-bash-runner.md",
-          "operation": "modify",
-          "description": "Expand the Raspberry Pi runner documentation with explicit copy/paste commands for running the runner (local vs ic network), required env vars (CANISTER_ID, NETWORK), DRY_RUN mode usage, and Raspberry Pi package prerequisites/installation steps for jq and libgpiod/gpioset on common distributions."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Provide an optional 'run at boot' path using a systemd service example to auto-start the Raspberry Pi event runner.",
-      "acceptanceCriteria": [
-        "Bundle includes a documented systemd unit example for the Raspberry Pi event runner, including where to set CANISTER_ID/NETWORK and how to enable/disable/start/stop the service.",
-        "The systemd setup path is optional and does not break manual execution of the scripts."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/scripts/rpi_event_runner.service.example",
-          "operation": "modify",
-          "description": "Ensure the systemd unit example is suitable for 'optional run at boot' usage (clear WorkingDirectory, ExecStart pointing at the bundled runner, and EnvironmentFile usage), and includes inline comments for where CANISTER_ID/NETWORK are configured."
-        },
-        {
-          "path": "frontend/docs/rpi-bash-runner.md",
-          "operation": "modify",
-          "description": "Add a 'Run at boot (systemd)' section documenting: where to place the unit file and env file, how to edit CANISTER_ID/NETWORK, and the exact enable/disable/start/stop/status commands; explicitly state this is optional and manual execution still works."
-        },
-        {
-          "path": "frontend/scripts/package_linux_bundle.sh",
-          "operation": "modify",
-          "description": "Update the packager to copy the systemd service example and env example into the bundle (e.g., scripts/systemd/ or scripts/), and mention them in the generated bundle README so users can discover the optional boot setup."
+          "description": "Update the HTTP POST function to accept both a decimal code parameter and a state parameter (\"on\" or \"off\"). Modify the request payload structure to include both values when sending to http://localhost:3000/gpio. Maintain existing error handling for failed HTTP requests."
         }
       ]
     }

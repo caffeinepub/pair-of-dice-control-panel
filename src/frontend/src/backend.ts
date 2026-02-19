@@ -92,14 +92,18 @@ export class ExternalBlob {
 export type Time = bigint;
 export interface Control {
     id: string;
+    decimalCodeLeft?: bigint;
     controlName?: string;
     controlType: string;
     decimalCode: bigint;
-    dialIncreaseCode?: bigint;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
-    dialDecreaseCode?: bigint;
+    decimalCodeRight?: bigint;
     sliderIsVertical?: boolean;
+    decimalCodeOn?: bigint;
+    decimalCodeUp?: bigint;
+    decimalCodeOff?: bigint;
+    decimalCodeDown?: bigint;
 }
 export interface Layout {
     controls: Array<Control>;
@@ -107,16 +111,16 @@ export interface Layout {
 export interface Event {
     controlName?: string;
     controlType: string;
+    decimalCode: bigint;
     value: string;
+    commandStr: string;
+    codeType: string;
     controlId: string;
     timestamp: Time;
-    binaryCode: string;
 }
 export interface backendInterface {
     backendScaffoldPlaceholderFunction(): Promise<string>;
-    emitDialEvent(controlId: string, controlType: string, controlName: string | null, direction: string): Promise<void>;
-    emitEvent(controlId: string, controlType: string, controlName: string | null, value: string, decimalCode: bigint): Promise<void>;
-    emitHatGpiosetEvent(controlId: string, controlType: string, controlName: string | null, decimalCode: bigint): Promise<void>;
+    emitButtonEvent(controlId: string, controlType: string, controlName: string | null, value: string, codeType: string, decimalCode: bigint, commandStr: string): Promise<void>;
     getEventsByControlId(controlId: string): Promise<Array<Event>>;
     getLayout(): Promise<Layout>;
     getRecentEvents(): Promise<Array<Event>>;
@@ -139,45 +143,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async emitDialEvent(arg0: string, arg1: string, arg2: string | null, arg3: string): Promise<void> {
+    async emitButtonEvent(arg0: string, arg1: string, arg2: string | null, arg3: string, arg4: string, arg5: bigint, arg6: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.emitDialEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
+                const result = await this.actor.emitButtonEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3, arg4, arg5, arg6);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.emitDialEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
-            return result;
-        }
-    }
-    async emitEvent(arg0: string, arg1: string, arg2: string | null, arg3: string, arg4: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.emitEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.emitEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3, arg4);
-            return result;
-        }
-    }
-    async emitHatGpiosetEvent(arg0: string, arg1: string, arg2: string | null, arg3: bigint): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.emitHatGpiosetEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.emitHatGpiosetEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3);
+            const result = await this.actor.emitButtonEvent(arg0, arg1, to_candid_opt_n1(this._uploadFile, this._downloadFile, arg2), arg3, arg4, arg5, arg6);
             return result;
         }
     }
@@ -261,59 +237,77 @@ function from_candid_opt_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Ar
 }
 function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
+    decimalCodeLeft: [] | [bigint];
     controlName: [] | [string];
     controlType: string;
     decimalCode: bigint;
-    dialIncreaseCode: [] | [bigint];
     radioOptions: [] | [Array<string>];
     radioGroupIsVertical: [] | [boolean];
-    dialDecreaseCode: [] | [bigint];
+    decimalCodeRight: [] | [bigint];
     sliderIsVertical: [] | [boolean];
+    decimalCodeOn: [] | [bigint];
+    decimalCodeUp: [] | [bigint];
+    decimalCodeOff: [] | [bigint];
+    decimalCodeDown: [] | [bigint];
 }): {
     id: string;
+    decimalCodeLeft?: bigint;
     controlName?: string;
     controlType: string;
     decimalCode: bigint;
-    dialIncreaseCode?: bigint;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
-    dialDecreaseCode?: bigint;
+    decimalCodeRight?: bigint;
     sliderIsVertical?: boolean;
+    decimalCodeOn?: bigint;
+    decimalCodeUp?: bigint;
+    decimalCodeOff?: bigint;
+    decimalCodeDown?: bigint;
 } {
     return {
         id: value.id,
+        decimalCodeLeft: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.decimalCodeLeft)),
         controlName: record_opt_to_undefined(from_candid_opt_n5(_uploadFile, _downloadFile, value.controlName)),
         controlType: value.controlType,
         decimalCode: value.decimalCode,
-        dialIncreaseCode: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.dialIncreaseCode)),
         radioOptions: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.radioOptions)),
         radioGroupIsVertical: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.radioGroupIsVertical)),
-        dialDecreaseCode: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.dialDecreaseCode)),
-        sliderIsVertical: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.sliderIsVertical))
+        decimalCodeRight: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.decimalCodeRight)),
+        sliderIsVertical: record_opt_to_undefined(from_candid_opt_n13(_uploadFile, _downloadFile, value.sliderIsVertical)),
+        decimalCodeOn: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.decimalCodeOn)),
+        decimalCodeUp: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.decimalCodeUp)),
+        decimalCodeOff: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.decimalCodeOff)),
+        decimalCodeDown: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.decimalCodeDown))
     };
 }
 function from_candid_record_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     controlName: [] | [string];
     controlType: string;
+    decimalCode: bigint;
     value: string;
+    commandStr: string;
+    codeType: string;
     controlId: string;
     timestamp: _Time;
-    binaryCode: string;
 }): {
     controlName?: string;
     controlType: string;
+    decimalCode: bigint;
     value: string;
+    commandStr: string;
+    codeType: string;
     controlId: string;
     timestamp: Time;
-    binaryCode: string;
 } {
     return {
         controlName: record_opt_to_undefined(from_candid_opt_n5(_uploadFile, _downloadFile, value.controlName)),
         controlType: value.controlType,
+        decimalCode: value.decimalCode,
         value: value.value,
+        commandStr: value.commandStr,
+        codeType: value.codeType,
         controlId: value.controlId,
-        timestamp: value.timestamp,
-        binaryCode: value.binaryCode
+        timestamp: value.timestamp
     };
 }
 function from_candid_record_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -351,35 +345,47 @@ function to_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8
 }
 function to_candid_record_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
+    decimalCodeLeft?: bigint;
     controlName?: string;
     controlType: string;
     decimalCode: bigint;
-    dialIncreaseCode?: bigint;
     radioOptions?: Array<string>;
     radioGroupIsVertical?: boolean;
-    dialDecreaseCode?: bigint;
+    decimalCodeRight?: bigint;
     sliderIsVertical?: boolean;
+    decimalCodeOn?: bigint;
+    decimalCodeUp?: bigint;
+    decimalCodeOff?: bigint;
+    decimalCodeDown?: bigint;
 }): {
     id: string;
+    decimalCodeLeft: [] | [bigint];
     controlName: [] | [string];
     controlType: string;
     decimalCode: bigint;
-    dialIncreaseCode: [] | [bigint];
     radioOptions: [] | [Array<string>];
     radioGroupIsVertical: [] | [boolean];
-    dialDecreaseCode: [] | [bigint];
+    decimalCodeRight: [] | [bigint];
     sliderIsVertical: [] | [boolean];
+    decimalCodeOn: [] | [bigint];
+    decimalCodeUp: [] | [bigint];
+    decimalCodeOff: [] | [bigint];
+    decimalCodeDown: [] | [bigint];
 } {
     return {
         id: value.id,
+        decimalCodeLeft: value.decimalCodeLeft ? candid_some(value.decimalCodeLeft) : candid_none(),
         controlName: value.controlName ? candid_some(value.controlName) : candid_none(),
         controlType: value.controlType,
         decimalCode: value.decimalCode,
-        dialIncreaseCode: value.dialIncreaseCode ? candid_some(value.dialIncreaseCode) : candid_none(),
         radioOptions: value.radioOptions ? candid_some(value.radioOptions) : candid_none(),
         radioGroupIsVertical: value.radioGroupIsVertical ? candid_some(value.radioGroupIsVertical) : candid_none(),
-        dialDecreaseCode: value.dialDecreaseCode ? candid_some(value.dialDecreaseCode) : candid_none(),
-        sliderIsVertical: value.sliderIsVertical ? candid_some(value.sliderIsVertical) : candid_none()
+        decimalCodeRight: value.decimalCodeRight ? candid_some(value.decimalCodeRight) : candid_none(),
+        sliderIsVertical: value.sliderIsVertical ? candid_some(value.sliderIsVertical) : candid_none(),
+        decimalCodeOn: value.decimalCodeOn ? candid_some(value.decimalCodeOn) : candid_none(),
+        decimalCodeUp: value.decimalCodeUp ? candid_some(value.decimalCodeUp) : candid_none(),
+        decimalCodeOff: value.decimalCodeOff ? candid_some(value.decimalCodeOff) : candid_none(),
+        decimalCodeDown: value.decimalCodeDown ? candid_some(value.decimalCodeDown) : candid_none()
     };
 }
 function to_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<Control>): Array<_Control> {

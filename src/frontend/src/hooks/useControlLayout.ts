@@ -7,22 +7,7 @@ export interface ControlLayoutContextValue {
   selectedControl: ControlConfig | undefined;
   setSelectedControlId: (id: string | null) => void;
   createControl: () => void;
-  createControlWithConfig: (config: {
-    id: string;
-    label: string;
-    controlType: 'button' | 'toggle' | 'slider' | 'radio';
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    color: string;
-    binaryCode: string;
-    sliderMin?: number;
-    sliderMax?: number;
-    sliderIsVertical?: boolean;
-    radioOptions?: Array<{ key: string; label: string; binaryCode: string }>;
-    radioGroupIsVertical?: boolean;
-  }) => boolean;
+  createControlWithConfig: (config: Partial<ControlConfig> & { id: string; controlType: string }) => boolean;
   updateControl: (id: string, updates: Partial<ControlConfig>) => void;
   deleteControl: (id: string) => void;
   validateId: (id: string, currentId?: string) => string | null;

@@ -12,38 +12,42 @@ export const Time = IDL.Int;
 export const Event = IDL.Record({
   'controlName' : IDL.Opt(IDL.Text),
   'controlType' : IDL.Text,
+  'decimalCode' : IDL.Nat,
   'value' : IDL.Text,
+  'commandStr' : IDL.Text,
+  'codeType' : IDL.Text,
   'controlId' : IDL.Text,
   'timestamp' : Time,
-  'binaryCode' : IDL.Text,
 });
 export const Control = IDL.Record({
   'id' : IDL.Text,
+  'decimalCodeLeft' : IDL.Opt(IDL.Nat),
   'controlName' : IDL.Opt(IDL.Text),
   'controlType' : IDL.Text,
   'decimalCode' : IDL.Nat,
-  'dialIncreaseCode' : IDL.Opt(IDL.Nat),
   'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
   'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
-  'dialDecreaseCode' : IDL.Opt(IDL.Nat),
+  'decimalCodeRight' : IDL.Opt(IDL.Nat),
   'sliderIsVertical' : IDL.Opt(IDL.Bool),
+  'decimalCodeOn' : IDL.Opt(IDL.Nat),
+  'decimalCodeUp' : IDL.Opt(IDL.Nat),
+  'decimalCodeOff' : IDL.Opt(IDL.Nat),
+  'decimalCodeDown' : IDL.Opt(IDL.Nat),
 });
 export const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
 
 export const idlService = IDL.Service({
   'backendScaffoldPlaceholderFunction' : IDL.Func([], [IDL.Text], ['query']),
-  'emitDialEvent' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
-      [],
-      [],
-    ),
-  'emitEvent' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Nat],
-      [],
-      [],
-    ),
-  'emitHatGpiosetEvent' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Nat],
+  'emitButtonEvent' : IDL.Func(
+      [
+        IDL.Text,
+        IDL.Text,
+        IDL.Opt(IDL.Text),
+        IDL.Text,
+        IDL.Text,
+        IDL.Nat,
+        IDL.Text,
+      ],
       [],
       [],
     ),
@@ -60,38 +64,42 @@ export const idlFactory = ({ IDL }) => {
   const Event = IDL.Record({
     'controlName' : IDL.Opt(IDL.Text),
     'controlType' : IDL.Text,
+    'decimalCode' : IDL.Nat,
     'value' : IDL.Text,
+    'commandStr' : IDL.Text,
+    'codeType' : IDL.Text,
     'controlId' : IDL.Text,
     'timestamp' : Time,
-    'binaryCode' : IDL.Text,
   });
   const Control = IDL.Record({
     'id' : IDL.Text,
+    'decimalCodeLeft' : IDL.Opt(IDL.Nat),
     'controlName' : IDL.Opt(IDL.Text),
     'controlType' : IDL.Text,
     'decimalCode' : IDL.Nat,
-    'dialIncreaseCode' : IDL.Opt(IDL.Nat),
     'radioOptions' : IDL.Opt(IDL.Vec(IDL.Text)),
     'radioGroupIsVertical' : IDL.Opt(IDL.Bool),
-    'dialDecreaseCode' : IDL.Opt(IDL.Nat),
+    'decimalCodeRight' : IDL.Opt(IDL.Nat),
     'sliderIsVertical' : IDL.Opt(IDL.Bool),
+    'decimalCodeOn' : IDL.Opt(IDL.Nat),
+    'decimalCodeUp' : IDL.Opt(IDL.Nat),
+    'decimalCodeOff' : IDL.Opt(IDL.Nat),
+    'decimalCodeDown' : IDL.Opt(IDL.Nat),
   });
   const Layout = IDL.Record({ 'controls' : IDL.Vec(Control) });
   
   return IDL.Service({
     'backendScaffoldPlaceholderFunction' : IDL.Func([], [IDL.Text], ['query']),
-    'emitDialEvent' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text],
-        [],
-        [],
-      ),
-    'emitEvent' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Text, IDL.Nat],
-        [],
-        [],
-      ),
-    'emitHatGpiosetEvent' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text), IDL.Nat],
+    'emitButtonEvent' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Opt(IDL.Text),
+          IDL.Text,
+          IDL.Text,
+          IDL.Nat,
+          IDL.Text,
+        ],
         [],
         [],
       ),

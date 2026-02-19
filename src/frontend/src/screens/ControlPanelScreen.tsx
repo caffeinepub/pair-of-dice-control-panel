@@ -3,7 +3,6 @@ import { Separator } from '@/components/ui/separator';
 import { Workspace } from '@/components/control-panel/Workspace';
 import { InspectorPanel } from '@/components/control-panel/InspectorPanel';
 import { RecentSignalsPanel } from '@/components/control-panel/RecentSignalsPanel';
-import { ImportExportPanel } from '@/components/control-panel/ImportExportPanel';
 import { UserExtensionsSection } from '@/components/control-panel/UserExtensionsSection';
 import { ModeToggle } from '@/components/control-panel/ModeToggle';
 import { FullscreenToggleButton } from '@/components/control-panel/FullscreenToggleButton';
@@ -47,10 +46,14 @@ export function ControlPanelScreen() {
 
         {/* Main Content */}
         <main className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar - Terminal Editor (Edit mode only) */}
+          {/* Left Sidebar - Inspector with Import/Export and User Extensions (Edit mode only) */}
           {mode === 'edit' && (
             <aside className="w-80 border-r border-border bg-card overflow-y-auto">
-              <InspectorPanel />
+              <div className="flex flex-col p-4 space-y-4">
+                <InspectorPanel />
+                <Separator />
+                <UserExtensionsSection />
+              </div>
             </aside>
           )}
 
@@ -64,20 +67,14 @@ export function ControlPanelScreen() {
             <Workspace />
           </div>
 
-          {/* Right Sidebar - Signals & Import/Export & User Extensions */}
-          <aside className="w-96 border-l border-border bg-card overflow-y-auto">
-            <div className="flex flex-col gap-4 p-4">
-              <RecentSignalsPanel />
-              {mode === 'edit' && (
-                <>
-                  <Separator />
-                  <ImportExportPanel />
-                </>
-              )}
-              <Separator />
-              <UserExtensionsSection />
-            </div>
-          </aside>
+          {/* Right Sidebar - Signals (Interact mode only) */}
+          {mode === 'interact' && (
+            <aside className="w-96 border-l border-border bg-card overflow-y-auto">
+              <div className="flex flex-col gap-4 p-4">
+                <RecentSignalsPanel />
+              </div>
+            </aside>
+          )}
         </main>
 
         {/* Footer */}

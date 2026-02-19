@@ -1,12 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add a Raspberry Pi (Linux) runnable distribution workflow that packages the app into a self-contained bundle with clear scripts and documentation for running locally and executing GPIO helpers.
+**Goal:** Replace GPIO command execution with HTTP POST requests to a local endpoint.
 
 **Planned changes:**
-- Add a packaging workflow/script that produces a single `.tar.gz` Linux bundle containing the built frontend output, bundled backend canister artifacts (WASM), a launcher script, and Raspberry Pi helper scripts.
-- Add a single-command launcher script in the bundle that starts/reuses a local replica, installs the backend from the bundled artifacts, prints the canister ID and local UI access instructions, and supports `stop` and `clean` actions with help text.
-- Add bundle documentation for Raspberry Pi GPIO execution via an included event runner script, including required environment variables, network selection, and a safe `DRY_RUN` mode.
-- Include an optional “run at boot” setup path by providing a documented `systemd` service unit example (and small helper script if needed) for automatically starting the Raspberry Pi event runner.
+- Replace gpioset command execution in ControlRenderer with HTTP POST requests to http://localhost:3000/gpio
+- Send button decimal code and "on" value when button is pressed
+- Send button decimal code and "off" value when button is released
+- Update gpioHttp.ts utility to support sending both decimal code and state value in POST payload
 
-**User-visible outcome:** The user can generate a `.tar.gz` bundle, extract it on a Raspberry Pi (Linux), start the app with one command (with printed local access info), run GPIO event helpers with documented commands (including dry-run), and optionally set the GPIO runner to start at boot via a provided systemd example.
+**User-visible outcome:** Button interactions will send HTTP requests instead of executing GPIO commands, enabling remote control without changing the UI behavior.

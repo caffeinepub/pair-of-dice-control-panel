@@ -1,71 +1,35 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T23:03:20.909Z",
+  "generatedAt": "2026-02-19T23:22:56.862Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Provide a Raspberry Pi / Linux-friendly distribution workflow that produces a self-contained Linux bundle archive for running the app on a Raspberry Pi (Linux OS), including the built frontend, backend canister artifacts, launcher script, and Raspberry Pi helper scripts.",
+        "summary": "Replace the gpioset command execution in ControlRenderer with HTTP POST requests to http://localhost:3000/gpio. The request payload must include the button decimal code and a value of \"on\" when the button is pressed and \"off\" when the button is released.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/package_linux_bundle.sh",
-          "frontend/scripts/rpi_event_runner.service.example",
-          "frontend/scripts/rpi_event_runner.env.example",
-          "frontend/docs/linux-local-test-bundle.md"
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ],
         "matchedFiles": [
-          "frontend/scripts/package_linux_bundle.sh",
-          "frontend/scripts/rpi_event_runner.service.example",
-          "frontend/scripts/rpi_event_runner.env.example",
-          "frontend/docs/linux-local-test-bundle.md"
+          "frontend/src/components/control-panel/ControlRenderer.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Ensure the extracted Linux bundle can be started with a single command and provides clear, copy/paste-able output showing how to access the UI locally and how to stop/clean the local replica.",
+        "summary": "Update the gpioHttp.ts utility module to support sending both the decimal code and the on/off state value in the POST request payload to http://localhost:3000/gpio.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/scripts/linux_bundle_run.sh",
-          "frontend/docs/linux-local-test-bundle.md"
+          "frontend/src/lib/gpioHttp.ts"
         ],
         "matchedFiles": [
-          "frontend/scripts/linux_bundle_run.sh",
-          "frontend/docs/linux-local-test-bundle.md"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Add Raspberry Pi guidance and runnable commands for GPIO execution via the included Raspberry Pi event runner script, including required environment variables and a safe dry-run mode.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/scripts/rpi_event_runner.sh",
-          "frontend/docs/rpi-bash-runner.md"
-        ],
-        "matchedFiles": [
-          "frontend/scripts/rpi_event_runner.sh",
-          "frontend/docs/rpi-bash-runner.md"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Add an optional Raspberry Pi \"run at boot\" setup path by providing a systemd service example (and any small helper script if needed) that starts the Raspberry Pi event runner automatically with user-provided configuration.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/scripts/rpi_event_runner.service.example",
-          "frontend/docs/rpi-bash-runner.md",
-          "frontend/scripts/package_linux_bundle.sh"
-        ],
-        "matchedFiles": [
-          "frontend/scripts/rpi_event_runner.service.example",
-          "frontend/docs/rpi-bash-runner.md",
-          "frontend/scripts/package_linux_bundle.sh"
+          "frontend/src/lib/gpioHttp.ts"
         ]
       }
     ]
@@ -75,13 +39,8 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/docs/linux-local-test-bundle.md",
-    "frontend/docs/rpi-bash-runner.md",
-    "frontend/scripts/linux_bundle_run.sh",
-    "frontend/scripts/package_linux_bundle.sh",
-    "frontend/scripts/rpi_event_runner.env.example",
-    "frontend/scripts/rpi_event_runner.service.example",
-    "frontend/scripts/rpi_event_runner.sh",
+    "frontend/src/components/control-panel/ControlRenderer.tsx",
+    "frontend/src/lib/gpioHttp.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
