@@ -1,0 +1,46 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Fix failing fetch requests for GPIO HTTP POST",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably with proper error handling and user feedback",
+      "acceptanceCriteria": [
+        "GPIO button controls successfully POST to localhost:3000/gpio without fetch errors in the console",
+        "The DebugHttpPanel send button successfully POST to localhost:3000/gpio and shows a success result",
+        "Network errors (e.g., server unreachable) surface a clear error message in the UI rather than silently failing",
+        "Fetch failures are reported via toast notifications so the user is aware of connection issues"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/lib/gpioHttp.ts",
+          "operation": "modify",
+          "description": "Replace the no-cors fetch mode with 'cors' mode to enable proper response inspection and error detection. Update the fetch configuration to include appropriate headers (Content-Type: application/json). Improve error handling to capture and return meaningful error messages including network failures, HTTP error status codes, and response parsing issues. Remove or update console logging to reflect the new error handling approach. Ensure the function returns a Promise that resolves on success and rejects with descriptive error messages on failure."
+        },
+        {
+          "path": "frontend/src/hooks/useSignalEmitter.ts",
+          "operation": "modify",
+          "description": "Update the mutation's onError handler to display toast notifications for HTTP GPIO signal failures using the Sonner toast library. Ensure that both backend actor errors and HTTP fetch errors from gpioHttp.ts trigger user-visible error toasts with clear messages (e.g., 'Failed to send GPIO signal via HTTP: <reason>'). Preserve the existing success toast notification behavior."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request and displays success or failure results in the panel UI",
+      "acceptanceCriteria": [
+        "Clicking the DebugHttpPanel send button triggers a POST request to localhost:3000/gpio",
+        "The panel displays a visible success message when the request completes successfully",
+        "The panel displays a visible error message when the request fails, including the reason",
+        "The button is not permanently disabled or stuck in a loading state after a failed request"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/control-panel/DebugHttpPanel.tsx",
+          "operation": "modify",
+          "description": "Fix the send button's onClick handler to properly invoke the sendGpioSignal function from gpioHttp.ts with the configured button number and state values. Wrap the async call in proper try-catch error handling. Update the component state to display success messages (including any response data) when the request succeeds, and error messages (including the caught error's message) when it fails. Ensure the loading state is correctly reset after both success and failure cases so the button remains usable. Consider adding a result display area or status text below the button to show the last request outcome."
+        }
+      ]
+    }
+  ]
+}

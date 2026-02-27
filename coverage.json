@@ -1,0 +1,52 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-27T00:20:09.535Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 2,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably. Investigate and resolve any issues with the fetch configuration (e.g., no-cors mode preventing response inspection, incorrect headers, request body serialization, or error handling that masks the real failure). Ensure errors are surfaced with meaningful messages.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/lib/gpioHttp.ts",
+          "frontend/src/hooks/useSignalEmitter.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/lib/gpioHttp.ts",
+          "frontend/src/hooks/useSignalEmitter.ts"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request to localhost:3000/gpio and displays the success or failure result in the panel UI.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/control-panel/DebugHttpPanel.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/control-panel/DebugHttpPanel.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/components/control-panel/DebugHttpPanel.tsx",
+    "frontend/src/hooks/useSignalEmitter.ts",
+    "frontend/src/lib/gpioHttp.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

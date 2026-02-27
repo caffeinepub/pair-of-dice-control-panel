@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Fetch requests are failing consistently (GPIO buttons and debug panel send button not posting)"
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-fix-the-gpio-http-post-fetch-calls-in-gpiohttp-ts-so-that-requests-to-localhost-3000-gpio-succeed-reliably-investigate-and-resolve-any-issues-with-the-fetch-configuration-e-g-no-cors-mode-preventing-response-inspection-incorrect-headers-request-body-serialization-or-error-handling-that-masks-the-real-failure-ensure-errors-are-surfaced-with-meaningful-messages",
+      "title": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably. Investigate and resolve any issues with the fetch configuration (e.g., no-cors mode preventing response inspection, incorrect headers, request body serialization, or error handling that masks the real failure). Ensure errors are surfaced with meaningful messages.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-debughttppanel-component-so-its-manual-send-button-correctly-fires-the-http-post-request-to-localhost-3000-gpio-and-displays-the-success-or-failure-result-in-the-panel-ui",
+      "title": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request to localhost:3000/gpio and displays the success or failure result in the panel UI.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [],
+  "projectName": "Fix failing fetch requests for GPIO HTTP POST",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

@@ -1,0 +1,24 @@
+[Unit]
+Description=GPIO Control Panel Event Runner
+Documentation=file:///path/to/bundle/docs/rpi-bash-runner.md
+After=network.target
+
+[Service]
+Type=simple
+# IMPORTANT: Update WorkingDirectory to point to your extracted bundle location
+WorkingDirectory=/home/pi/control-panel-linux-bundle
+# IMPORTANT: Update EnvironmentFile path to match your setup
+EnvironmentFile=/home/pi/control-panel-linux-bundle/scripts/rpi_event_runner.env
+ExecStart=/home/pi/control-panel-linux-bundle/scripts/rpi_event_runner.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rpi-event-runner
+
+# Security hardening (optional)
+# NoNewPrivileges=true
+# PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

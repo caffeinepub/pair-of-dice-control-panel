@@ -1,0 +1,16 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-27T00:20:09.532Z",
+  "summary": "The diff implements fixes for both REQ-1 (gpioHttp.ts fetch configuration) and REQ-2 (DebugHttpPanel send button behavior). REQ-1 is addressed by removing no-cors mode, adding proper Content-Type headers, improving error handling with meaningful messages, and surfacing failures via toast notifications in useSignalEmitter.ts. REQ-2 is addressed by rewriting DebugHttpPanel.tsx to correctly call sendGpioSignal, display success/failure results, and properly manage loading state. All acceptance criteria appear to be covered.",
+  "missing_requirements": [],
+  "hallucinated_features": [],
+  "confidence": 0.92,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/src/components/control-panel/DebugHttpPanel.tsx",
+    "frontend/src/hooks/useSignalEmitter.ts",
+    "frontend/src/lib/gpioHttp.ts",
+    "project_state.json"
+  ]
+}
