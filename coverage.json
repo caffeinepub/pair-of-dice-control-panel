@@ -1,37 +1,57 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T00:20:09.535Z",
+  "generatedAt": "2026-03-02T22:14:40.125Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
+    "total": 4,
     "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably. Investigate and resolve any issues with the fetch configuration (e.g., no-cors mode preventing response inspection, incorrect headers, request body serialization, or error handling that masks the real failure). Ensure errors are surfaced with meaningful messages.",
-        "status": "implemented",
+        "summary": "Configure the Vite build to use a relative base path (`./`) so that all asset references in the built static bundle work correctly when served from any directory on a local Linux Apache or file server.",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/lib/gpioHttp.ts",
-          "frontend/src/hooks/useSignalEmitter.ts"
+          "frontend/vite.config.ts"
         ],
-        "matchedFiles": [
-          "frontend/src/lib/gpioHttp.ts",
-          "frontend/src/hooks/useSignalEmitter.ts"
-        ]
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request to localhost:3000/gpio and displays the success or failure result in the panel UI.",
+        "summary": "Update the GPIO HTTP endpoint in `gpioHttp.ts` to use plain `http://localhost:3000` (not HTTPS) so that the frontend can reach the local GPIO server when deployed on Linux without TLS configuration.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/src/lib/gpioHttp.ts"
+        ],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Update the `linux_bundle_run.sh` and `package_linux_bundle.sh` scripts to include all necessary deployment artifacts (built frontend `dist/`, backend canister WASM, `dfx.json`, Apache vhost config example, and the `rpi_event_runner.sh` script) in a single timestamped `.tar.gz` bundle that a user can extract and run on a fresh Linux machine with `dfx` and Apache installed.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/control-panel/DebugHttpPanel.tsx"
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/scripts/linux_bundle_run.sh",
+          "frontend/INSTALL.md"
         ],
         "matchedFiles": [
-          "frontend/src/components/control-panel/DebugHttpPanel.tsx"
+          "frontend/scripts/package_linux_bundle.sh",
+          "frontend/scripts/linux_bundle_run.sh",
+          "frontend/INSTALL.md"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Create or update a Linux installation guide (`frontend/docs/linux-local-test-bundle.md`) that covers: prerequisites (Node.js, dfx, Apache), building the bundle, deploying the local ICP replica, configuring Apache to serve the `dist/` folder, starting the GPIO server on port 3000, and verifying the full stack is operational.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/docs/linux-local-test-bundle.md"
+        ],
+        "matchedFiles": [
+          "frontend/docs/linux-local-test-bundle.md"
         ]
       }
     ]
@@ -41,9 +61,10 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/control-panel/DebugHttpPanel.tsx",
-    "frontend/src/hooks/useSignalEmitter.ts",
-    "frontend/src/lib/gpioHttp.ts",
+    "frontend/INSTALL.md",
+    "frontend/docs/linux-local-test-bundle.md",
+    "frontend/scripts/linux_bundle_run.sh",
+    "frontend/scripts/package_linux_bundle.sh",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -2,11 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-gpio-http-post-fetch-calls-in-gpiohttp-ts-so-that-requests-to-localhost-3000-gpio-succeed-reliably-investigate-and-resolve-any-issues-with-the-fetch-configuration-e-g-no-cors-mode-preventing-response-inspection-incorrect-headers-request-body-serialization-or-error-handling-that-masks-the-real-failure-ensure-errors-are-surfaced-with-meaningful-messages",
-      "featureTitle": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably. Investigate and resolve any issues with the fetch configuration (e.g., no-cors mode preventing response inspection, incorrect headers, request body serialization, or error handling that masks the real failure). Ensure errors are surfaced with meaningful messages.",
+      "featureId": "feature-update-the-linux-bundle-run-sh-and-package-linux-bundle-sh-scripts-to-include-all-necessary-deployment-artifacts-built-frontend-dist-backend-canister-wasm-dfx-json-apache-vhost-config-example-and-the-rpi-event-runner-sh-script-in-a-single-timestamped-tar-gz-bundle-that-a-user-can-extract-and-run-on-a-fresh-linux-machine-with-dfx-and-apache-installed",
+      "featureTitle": "Update the `linux_bundle_run.sh` and `package_linux_bundle.sh` scripts to include all necessary deployment artifacts (built frontend `dist/`, backend canister WASM, `dfx.json`, Apache vhost config example, and the `rpi_event_runner.sh` script) in a single timestamped `.tar.gz` bundle that a user can extract and run on a fresh Linux machine with `dfx` and Apache installed.",
       "files": [
-        "frontend/src/hooks/useSignalEmitter.ts",
-        "frontend/src/lib/gpioHttp.ts"
+        "frontend/INSTALL.md",
+        "frontend/scripts/linux_bundle_run.sh",
+        "frontend/scripts/package_linux_bundle.sh"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -16,15 +17,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-3"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-the-debughttppanel-component-so-its-manual-send-button-correctly-fires-the-http-post-request-to-localhost-3000-gpio-and-displays-the-success-or-failure-result-in-the-panel-ui",
-      "featureTitle": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request to localhost:3000/gpio and displays the success or failure result in the panel UI.",
+      "featureId": "feature-create-or-update-a-linux-installation-guide-frontend-docs-linux-local-test-bundle-md-that-covers-prerequisites-node-js-dfx-apache-building-the-bundle-deploying-the-local-icp-replica-configuring-apache-to-serve-the-dist-folder-starting-the-gpio-server-on-port-3000-and-verifying-the-full-stack-is-operational",
+      "featureTitle": "Create or update a Linux installation guide (`frontend/docs/linux-local-test-bundle.md`) that covers: prerequisites (Node.js, dfx, Apache), building the bundle, deploying the local ICP replica, configuring Apache to serve the `dist/` folder, starting the GPIO server on port 3000, and verifying the full stack is operational.",
       "files": [
-        "frontend/src/components/control-panel/DebugHttpPanel.tsx"
+        "frontend/docs/linux-local-test-bundle.md"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -34,7 +35,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-2"
+        "REQ-4"
       ],
       "confidence": "high"
     }

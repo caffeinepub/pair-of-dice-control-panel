@@ -1,56 +1,92 @@
 {
   "kind": "build_request",
-  "title": "Fix failing fetch requests for GPIO HTTP POST",
-  "priority": "high",
+  "title": "Package GPIO Control Panel as Linux-runnable app bundle",
+  "projectName": "GPIO Control Panel",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably. Investigate and resolve any issues with the fetch configuration (e.g., no-cors mode preventing response inspection, incorrect headers, request body serialization, or error handling that masks the real failure). Ensure errors are surfaced with meaningful messages.",
+      "text": "Configure the Vite build to use a relative base path (`./`) so that all asset references in the built static bundle work correctly when served from any directory on a local Linux Apache or file server.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-8"
         ],
         "quotes": [
-          "it keeps failing to fetch"
+          "make this into an app that runs on Linux"
         ]
       },
       "acceptanceCriteria": [
-        "GPIO button controls successfully POST to localhost:3000/gpio without fetch errors in the console",
-        "The DebugHttpPanel send button successfully POST to localhost:3000/gpio and shows a success result",
-        "Network errors (e.g., server unreachable) surface a clear error message in the UI rather than silently failing",
-        "Fetch failures are reported via toast notifications so the user is aware of connection issues"
+        "Running `npm run build` produces a `dist/` folder where all JS, CSS, and asset URLs are relative (start with `./`).",
+        "The built `index.html` loads correctly when opened from a local Apache server at any virtual host path.",
+        "No absolute `/assets/` paths appear in the compiled output."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request to localhost:3000/gpio and displays the success or failure result in the panel UI.",
+      "text": "Update the GPIO HTTP endpoint in `gpioHttp.ts` to use plain `http://localhost:3000` (not HTTPS) so that the frontend can reach the local GPIO server when deployed on Linux without TLS configuration.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-8"
         ],
         "quotes": [
-          "it keeps failing to fetch"
+          "make this into an app that runs on Linux"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking the DebugHttpPanel send button triggers a POST request to localhost:3000/gpio",
-        "The panel displays a visible success message when the request completes successfully",
-        "The panel displays a visible error message when the request fails, including the reason",
-        "The button is not permanently disabled or stuck in a loading state after a failed request"
+        "HTTP POST requests to the GPIO server use `http://localhost:3000` as the base URL.",
+        "No mixed-content or HTTPS errors appear in the browser console when sending GPIO signals from a locally served page.",
+        "The DebugHttpPanel successfully fires test requests to `http://localhost:3000` when a GPIO server is running."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update the `linux_bundle_run.sh` and `package_linux_bundle.sh` scripts to include all necessary deployment artifacts (built frontend `dist/`, backend canister WASM, `dfx.json`, Apache vhost config example, and the `rpi_event_runner.sh` script) in a single timestamped `.tar.gz` bundle that a user can extract and run on a fresh Linux machine with `dfx` and Apache installed.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "make this into an app that runs on Linux"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Running `./scripts/package_linux_bundle.sh` produces a `.tar.gz` file containing the frontend `dist/`, backend canister artifacts, and all helper scripts.",
+        "The bundle includes a top-level `README.md` or `INSTALL.md` with step-by-step Linux setup instructions.",
+        "Extracting and following the included instructions on a Linux machine with `dfx` and Apache results in a working control panel accessible via browser."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Create or update a Linux installation guide (`frontend/docs/linux-local-test-bundle.md`) that covers: prerequisites (Node.js, dfx, Apache), building the bundle, deploying the local ICP replica, configuring Apache to serve the `dist/` folder, starting the GPIO server on port 3000, and verifying the full stack is operational.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "make this into an app that runs on Linux"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The document lists all prerequisites with recommended versions.",
+        "Step-by-step instructions are present for Apache vhost setup, dfx replica startup, and frontend serving.",
+        "A troubleshooting section addresses common issues (CORS, mixed content, port conflicts)."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "The GPIO endpoint target URL (localhost:3000/gpio) must remain unchanged unless the user specifies otherwise"
+    "All Motoko backend logic must remain in the single-actor `backend/main.mo` file.",
+    "Do not modify any files under `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, or `frontend/src/components/ui`.",
+    "Do not introduce external databases, cloud services, or non-ICP backend dependencies."
   ],
   "nonGoals": [
-    "Changing the GPIO endpoint URL or port",
-    "Adding a new backend canister endpoint for HTTP proxying",
-    "Modifying the Raspberry Pi bash runner scripts",
-    "Changing the control layout or UI design"
+    "Windows or macOS packaging — Linux only.",
+    "Docker or containerization support.",
+    "Remote/cloud deployment; this is strictly for local Linux execution.",
+    "Changes to the GPIO pin mapping or backend canister data model."
   ],
   "imageRequirements": {
     "required": [],

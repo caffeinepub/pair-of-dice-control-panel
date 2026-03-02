@@ -1,32 +1,56 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [
-    "Fetch requests are failing consistently (GPIO buttons and debug panel send button not posting)"
+  "summary": "Building a Linux application",
+  "architectural_notes": [
+    "Target platform: Linux"
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-gpio-http-post-fetch-calls-in-gpiohttp-ts-so-that-requests-to-localhost-3000-gpio-succeed-reliably-investigate-and-resolve-any-issues-with-the-fetch-configuration-e-g-no-cors-mode-preventing-response-inspection-incorrect-headers-request-body-serialization-or-error-handling-that-masks-the-real-failure-ensure-errors-are-surfaced-with-meaningful-messages",
-      "title": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably. Investigate and resolve any issues with the fetch configuration (e.g., no-cors mode preventing response inspection, incorrect headers, request body serialization, or error handling that masks the real failure). Ensure errors are surfaced with meaningful messages.",
+      "id": "feature-update-the-linux-bundle-run-sh-and-package-linux-bundle-sh-scripts-to-include-all-necessary-deployment-artifacts-built-frontend-dist-backend-canister-wasm-dfx-json-apache-vhost-config-example-and-the-rpi-event-runner-sh-script-in-a-single-timestamped-tar-gz-bundle-that-a-user-can-extract-and-run-on-a-fresh-linux-machine-with-dfx-and-apache-installed",
+      "title": "Update the `linux_bundle_run.sh` and `package_linux_bundle.sh` scripts to include all necessary deployment artifacts (built frontend `dist/`, backend canister WASM, `dfx.json`, Apache vhost config example, and the `rpi_event_runner.sh` script) in a single timestamped `.tar.gz` bundle that a user can extract and run on a fresh Linux machine with `dfx` and Apache installed.",
       "reqIds": [
-        "REQ-1"
+        "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-the-debughttppanel-component-so-its-manual-send-button-correctly-fires-the-http-post-request-to-localhost-3000-gpio-and-displays-the-success-or-failure-result-in-the-panel-ui",
-      "title": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request to localhost:3000/gpio and displays the success or failure result in the panel UI.",
+      "id": "feature-create-or-update-a-linux-installation-guide-frontend-docs-linux-local-test-bundle-md-that-covers-prerequisites-node-js-dfx-apache-building-the-bundle-deploying-the-local-icp-replica-configuring-apache-to-serve-the-dist-folder-starting-the-gpio-server-on-port-3000-and-verifying-the-full-stack-is-operational",
+      "title": "Create or update a Linux installation guide (`frontend/docs/linux-local-test-bundle.md`) that covers: prerequisites (Node.js, dfx, Apache), building the bundle, deploying the local ICP replica, configuring Apache to serve the `dist/` folder, starting the GPIO server on port 3000, and verifying the full stack is operational.",
       "reqIds": [
-        "REQ-2"
+        "REQ-4"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Fix failing fetch requests for GPIO HTTP POST",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Build an app that runs on Linux",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Configure the Vite build to use a relative base path (`./`) so that all asset references in the built static bundle work correctly when served from any directory on a local Linux Apache or file server.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Update the GPIO HTTP endpoint in `gpioHttp.ts` to use plain `http://localhost:3000` (not HTTPS) so that the frontend can reach the local GPIO server when deployed on Linux without TLS configuration.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "GPIO Control Panel",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -1,44 +1,79 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix failing fetch requests for GPIO HTTP POST",
+  "title": "Package GPIO Control Panel as Linux-runnable app bundle",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix the GPIO HTTP POST fetch calls in gpioHttp.ts so that requests to localhost:3000/gpio succeed reliably with proper error handling and user feedback",
+      "summary": "Configure Vite build to use relative base path for Linux deployment",
       "acceptanceCriteria": [
-        "GPIO button controls successfully POST to localhost:3000/gpio without fetch errors in the console",
-        "The DebugHttpPanel send button successfully POST to localhost:3000/gpio and shows a success result",
-        "Network errors (e.g., server unreachable) surface a clear error message in the UI rather than silently failing",
-        "Fetch failures are reported via toast notifications so the user is aware of connection issues"
+        "Running `npm run build` produces a `dist/` folder where all JS, CSS, and asset URLs are relative (start with `./`).",
+        "The built `index.html` loads correctly when opened from a local Apache server at any virtual host path.",
+        "No absolute `/assets/` paths appear in the compiled output."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/gpioHttp.ts",
+          "path": "frontend/vite.config.ts",
           "operation": "modify",
-          "description": "Replace the no-cors fetch mode with 'cors' mode to enable proper response inspection and error detection. Update the fetch configuration to include appropriate headers (Content-Type: application/json). Improve error handling to capture and return meaningful error messages including network failures, HTTP error status codes, and response parsing issues. Remove or update console logging to reflect the new error handling approach. Ensure the function returns a Promise that resolves on success and rejects with descriptive error messages on failure."
-        },
-        {
-          "path": "frontend/src/hooks/useSignalEmitter.ts",
-          "operation": "modify",
-          "description": "Update the mutation's onError handler to display toast notifications for HTTP GPIO signal failures using the Sonner toast library. Ensure that both backend actor errors and HTTP fetch errors from gpioHttp.ts trigger user-visible error toasts with clear messages (e.g., 'Failed to send GPIO signal via HTTP: <reason>'). Preserve the existing success toast notification behavior."
+          "description": "Update the Vite configuration to set `base: './'` (relative base path) in the build configuration so that all compiled asset references use relative URLs. This ensures the built static bundle works when served from any directory on a local Linux Apache server or file system without requiring absolute path configuration."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Fix the DebugHttpPanel component so its manual send button correctly fires the HTTP POST request and displays success or failure results in the panel UI",
+      "summary": "Update GPIO HTTP endpoint to use plain HTTP localhost",
       "acceptanceCriteria": [
-        "Clicking the DebugHttpPanel send button triggers a POST request to localhost:3000/gpio",
-        "The panel displays a visible success message when the request completes successfully",
-        "The panel displays a visible error message when the request fails, including the reason",
-        "The button is not permanently disabled or stuck in a loading state after a failed request"
+        "HTTP POST requests to the GPIO server use `http://localhost:3000` as the base URL.",
+        "No mixed-content or HTTPS errors appear in the browser console when sending GPIO signals from a locally served page.",
+        "The DebugHttpPanel successfully fires test requests to `http://localhost:3000` when a GPIO server is running."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/control-panel/DebugHttpPanel.tsx",
+          "path": "frontend/src/lib/gpioHttp.ts",
           "operation": "modify",
-          "description": "Fix the send button's onClick handler to properly invoke the sendGpioSignal function from gpioHttp.ts with the configured button number and state values. Wrap the async call in proper try-catch error handling. Update the component state to display success messages (including any response data) when the request succeeds, and error messages (including the caught error's message) when it fails. Ensure the loading state is correctly reset after both success and failure cases so the button remains usable. Consider adding a result display area or status text below the button to show the last request outcome."
+          "description": "Change the GPIO server base URL from HTTPS to plain HTTP (`http://localhost:3000`) to prevent mixed-content errors when the frontend is served from a local Apache server on Linux. Ensure the sendGpioSignal function uses this HTTP endpoint for all POST requests."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Update Linux bundle packaging scripts to include all deployment artifacts",
+      "acceptanceCriteria": [
+        "Running `./scripts/package_linux_bundle.sh` produces a `.tar.gz` file containing the frontend `dist/`, backend canister artifacts, and all helper scripts.",
+        "The bundle includes a top-level `README.md` or `INSTALL.md` with step-by-step Linux setup instructions.",
+        "Extracting and following the included instructions on a Linux machine with `dfx` and Apache results in a working control panel accessible via browser."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/scripts/package_linux_bundle.sh",
+          "operation": "modify",
+          "description": "Update the packaging script to include all necessary deployment artifacts in the timestamped .tar.gz bundle: built frontend `dist/` folder, backend canister WASM and declarations, `dfx.json`, Apache vhost configuration example, the `rpi_event_runner.sh` script, and a top-level `INSTALL.md` or `README.md` with comprehensive Linux setup instructions. Ensure the bundle structure allows easy extraction and deployment on a fresh Linux machine."
+        },
+        {
+          "path": "frontend/scripts/linux_bundle_run.sh",
+          "operation": "modify",
+          "description": "Update the launcher script to ensure it correctly starts a local ICP replica, deploys the control panel backend, and supports stop/clean/help subcommands. Verify the script paths reference the bundled artifacts correctly and include error handling for missing prerequisites (dfx, npm, Apache)."
+        },
+        {
+          "path": "frontend/INSTALL.md",
+          "operation": "create",
+          "description": "Create a comprehensive installation guide for the Linux bundle that includes: prerequisites checklist (Node.js, dfx, Apache), step-by-step extraction instructions, dfx replica deployment steps, Apache vhost configuration and serving of the `dist/` folder, GPIO server setup on port 3000, verification steps, and a troubleshooting section covering common issues (CORS, mixed content, port conflicts, permission errors)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Create comprehensive Linux installation guide documentation",
+      "acceptanceCriteria": [
+        "The document lists all prerequisites with recommended versions.",
+        "Step-by-step instructions are present for Apache vhost setup, dfx replica startup, and frontend serving.",
+        "A troubleshooting section addresses common issues (CORS, mixed content, port conflicts)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/docs/linux-local-test-bundle.md",
+          "operation": "modify",
+          "description": "Expand the existing Linux bundle documentation to provide comprehensive coverage of: prerequisites (Node.js, dfx, Apache) with recommended versions; detailed step-by-step instructions for building the bundle, extracting it, deploying the local ICP replica, configuring Apache to serve the `dist/` folder, starting the GPIO server on port 3000; verification steps to confirm the full stack is operational; and an expanded troubleshooting section addressing CORS issues, mixed content warnings, port conflicts, Apache configuration errors, and dfx replica problems."
         }
       ]
     }

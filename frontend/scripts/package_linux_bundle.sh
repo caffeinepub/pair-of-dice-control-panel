@@ -230,117 +230,21 @@ cp "$FRONTEND_DIR/scripts/linux_bundle_run.sh" "$TEMP_DIR/run.sh"
 chmod +x "$TEMP_DIR/run.sh"
 log_success "    Launcher script copied"
 
-# 8. Create README
+# 8. Copy INSTALL.md
+log "  → Copying INSTALL.md..."
+if [[ -f "$FRONTEND_DIR/INSTALL.md" ]]; then
+    cp "$FRONTEND_DIR/INSTALL.md" "$TEMP_DIR/INSTALL.md"
+    log_success "    INSTALL.md copied"
+else
+    log_warning "    INSTALL.md not found at $FRONTEND_DIR/INSTALL.md — skipping"
+fi
+
+# 9. Create README
 log "  → Creating bundle README..."
 cat > "$TEMP_DIR/README.md" << 'EOF'
-# Control Panel Linux Test Bundle
+# GPIO Control Panel — Linux Bundle
 
-This bundle contains everything you need to run and test the GPIO Control Panel application locally on Linux or Raspberry Pi.
+This bundle contains everything you need to run the GPIO Control Panel on Linux or Raspberry Pi.
 
 ## Quick Start
 
-1. **Extract this archive:**
-   ```bash
-   tar -xzf control-panel-linux-bundle-*.tar.gz
-   cd control-panel-linux-bundle-*
-   ```
-
-2. **Run the application:**
-   ```bash
-   ./run.sh
-   ```
-
-3. **Access the application:**
-   Open your browser to the URL displayed by the run script (typically http://localhost:4943?canisterId=...)
-
-## What's Included
-
-- `frontend/dist/` - Built frontend application
-- `backend/` - Compiled backend canister
-- `scripts/` - Raspberry Pi GPIO helper scripts
-  - `rpi_event_runner.sh` - Polls backend and executes GPIO commands
-  - `rpi_pin_test.sh` - Verifies GPIO pin wiring
-  - `systemd/` - Optional systemd service configuration for auto-start at boot
-    - `rpi_event_runner.service.example` - Systemd unit file template
-    - `rpi_event_runner.env.example` - Environment configuration template
-- `docs/` - Documentation
-  - `linux-local-test-bundle.md` - Full setup and usage guide
-  - `rpi-bash-runner.md` - Raspberry Pi GPIO documentation
-- `run.sh` - Launcher script (starts local replica and deploys app)
-
-## Prerequisites
-
-- **dfx** (DFINITY SDK) - Install from https://internetcomputer.org/docs/current/developer-docs/setup/install
-- **Node.js** (v18+) - For serving the frontend
-- **jq** - For JSON parsing (optional, for Raspberry Pi scripts)
-- **libgpiod** - For GPIO control on Raspberry Pi (optional, only if using GPIO features)
-
-## Raspberry Pi GPIO Setup
-
-For Raspberry Pi users who want to execute GPIO commands:
-
-1. **Install prerequisites:**
-   ```bash
-   sudo apt-get update
-   sudo apt-get install -y jq gpiod
-   ```
-
-2. **Test GPIO pins:**
-   ```bash
-   ./scripts/rpi_pin_test.sh
-   ```
-
-3. **Run event runner manually:**
-   ```bash
-   CANISTER_ID=your-canister-id NETWORK=local ./scripts/rpi_event_runner.sh
-   ```
-
-4. **Optional: Auto-start at boot with systemd:**
-   See `docs/rpi-bash-runner.md` for complete systemd setup instructions.
-
-## Documentation
-
-For detailed instructions, troubleshooting, and Raspberry Pi setup, see:
-- `docs/linux-local-test-bundle.md` - Complete Linux testing guide
-- `docs/rpi-bash-runner.md` - Raspberry Pi GPIO setup and usage
-
-## Support
-
-For issues or questions, refer to the documentation files included in this bundle.
-
----
-
-Built with ❤️ using caffeine.ai
-EOF
-log_success "    README created"
-
-echo ""
-log "Creating archive..."
-cd "$PROJECT_ROOT/.bundle_temp"
-ARCHIVE_NAME="${BUNDLE_NAME}.tar.gz"
-tar -czf "$ARCHIVE_NAME" "$BUNDLE_NAME"
-mv "$ARCHIVE_NAME" "$PROJECT_ROOT/"
-
-# Cleanup
-log "Cleaning up temporary files..."
-cd "$PROJECT_ROOT"
-rm -rf "$PROJECT_ROOT/.bundle_temp"
-
-# Success!
-echo ""
-echo -e "${BOLD}${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}${GREEN}║  Bundle created successfully!                              ║${NC}"
-echo -e "${BOLD}${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
-echo ""
-log_success "Archive location: ${BOLD}$PROJECT_ROOT/$ARCHIVE_NAME${NC}"
-echo ""
-log "Next steps:"
-echo "  1. Transfer the archive to your Linux test machine or Raspberry Pi"
-echo "  2. Extract: tar -xzf $ARCHIVE_NAME"
-echo "  3. Run: cd $BUNDLE_NAME && ./run.sh"
-echo ""
-log "For Raspberry Pi GPIO testing:"
-echo "  - See docs/rpi-bash-runner.md in the extracted bundle"
-echo "  - Run scripts/rpi_pin_test.sh to verify GPIO wiring"
-echo "  - Optional: Set up systemd service for auto-start (see docs)"
-echo ""

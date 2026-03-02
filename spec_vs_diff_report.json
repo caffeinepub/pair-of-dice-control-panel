@@ -1,16 +1,70 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-27T00:20:09.532Z",
-  "summary": "The diff implements fixes for both REQ-1 (gpioHttp.ts fetch configuration) and REQ-2 (DebugHttpPanel send button behavior). REQ-1 is addressed by removing no-cors mode, adding proper Content-Type headers, improving error handling with meaningful messages, and surfacing failures via toast notifications in useSignalEmitter.ts. REQ-2 is addressed by rewriting DebugHttpPanel.tsx to correctly call sendGpioSignal, display success/failure results, and properly manage loading state. All acceptance criteria appear to be covered.",
-  "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.92,
+  "generatedAt": "2026-03-02T22:14:40.122Z",
+  "summary": "The diff implements REQ-3 (packaging scripts), REQ-4 (Linux installation guide), and partially addresses documentation. However, REQ-1 (Vite relative base path configuration) and REQ-2 (GPIO HTTP endpoint change to http://localhost:3000) are not implemented in the diff. Additionally, the INSTALL.md was placed in frontend/INSTALL.md rather than as a top-level bundle README, and vite.config.ts and gpioHttp.ts files are not modified.",
+  "missing_requirements": [
+    {
+      "id": "REQ-1",
+      "requirement": "Configure the Vite build to use a relative base path (./) so that all asset references in the built static bundle work correctly when served from any directory on a local Linux Apache or file server.",
+      "reason": "No changes to vite.config.ts or any Vite configuration file appear in the diff. The base: './' setting is not present in any modified file.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Update the GPIO HTTP endpoint in gpioHttp.ts to use plain http://localhost:3000 (not HTTPS).",
+      "reason": "frontend/src/lib/gpioHttp.ts does not appear in the diff at all. No change to the GPIO HTTP base URL is evidenced.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "The bundle includes a top-level README.md or INSTALL.md with step-by-step Linux setup instructions inside the .tar.gz.",
+      "reason": "The package_linux_bundle.sh script is truncated and it is not confirmed that an INSTALL.md or README.md is copied into the bundle archive. The frontend/INSTALL.md exists but it is not verified to be included in the packaged .tar.gz output.",
+      "evidence": [
+        "frontend/scripts/package_linux_bundle.sh",
+        "frontend/INSTALL.md"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Bundle must include Apache vhost config example and rpi_event_runner.sh script.",
+      "reason": "Due to script truncation, it cannot be confirmed that the Apache vhost config example and rpi_event_runner.sh are explicitly copied into the bundle.",
+      "evidence": [
+        "frontend/scripts/package_linux_bundle.sh"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "A frontend/INSTALL.md file was created at the frontend directory level, separate from the frontend/docs/linux-local-test-bundle.md guide.",
+      "reason": "REQ-4 specifies creating or updating frontend/docs/linux-local-test-bundle.md. While that file was also modified, the additional frontend/INSTALL.md was not requested.",
+      "evidence": [
+        "frontend/INSTALL.md"
+      ]
+    },
+    {
+      "description": "A run_step diagnostic helper function and colored output logging system were added to both linux_bundle_run.sh and package_linux_bundle.sh.",
+      "reason": "The build request does not specify any particular logging or diagnostic output format for the scripts.",
+      "evidence": [
+        "frontend/scripts/linux_bundle_run.sh",
+        "frontend/scripts/package_linux_bundle.sh"
+      ]
+    },
+    {
+      "description": "The launcher script linux_bundle_run.sh includes --stop, --clean, and --help CLI flags.",
+      "reason": "The build request does not mention these additional CLI options for the launcher script.",
+      "evidence": [
+        "frontend/scripts/linux_bundle_run.sh"
+      ]
+    }
+  ],
+  "confidence": 0.72,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/components/control-panel/DebugHttpPanel.tsx",
-    "frontend/src/hooks/useSignalEmitter.ts",
-    "frontend/src/lib/gpioHttp.ts",
+    "frontend/INSTALL.md",
+    "frontend/docs/linux-local-test-bundle.md",
+    "frontend/scripts/linux_bundle_run.sh",
+    "frontend/scripts/package_linux_bundle.sh",
     "project_state.json"
   ]
 }
