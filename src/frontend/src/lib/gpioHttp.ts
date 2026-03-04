@@ -1,45 +1,28 @@
 /**
  * Sends a GPIO signal via HTTP POST with button number (1-16) and state ("on" or "off").
- * Uses standard cors mode so responses can be inspected and errors properly detected.
- * Includes Content-Type: application/json header and a JSON body of { button, value }.
+ * Uses no-cors mode to bypass CORS enforcement entirely — the request fires and forgets.
+ * Body is sent as plain text JSON since no-cors disallows custom Content-Type headers.
  */
 export async function sendGpioSignal(
   decimalCode: number,
   state: "on" | "off",
 ): Promise<void> {
   const url = "https://7426razpi3.nevadascientific.com/gpio";
-  const requestBody = { button: decimalCode, value: state };
-  const bodyStr = JSON.stringify(requestBody);
+  const bodyStr = JSON.stringify({ button: decimalCode, value: state });
 
-  let response: Response;
   try {
-    response = await fetch(url, {
+    await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      mode: "no-cors",
       body: bodyStr,
     });
   } catch (networkError) {
-    // Network-level failure (server unreachable, DNS failure, CORS preflight blocked, etc.)
     const message =
       networkError instanceof Error
         ? networkError.message
         : String(networkError);
     throw new Error(
       `Network error — is the GPIO server reachable at 7426razpi3.nevadascientific.com? (${message})`,
-    );
-  }
-
-  if (!response.ok) {
-    let body = "";
-    try {
-      body = await response.text();
-    } catch {
-      // ignore body read errors
-    }
-    throw new Error(
-      `GPIO server responded with HTTP ${response.status} ${response.statusText}${body ? `: ${body}` : ""}`,
     );
   }
 }
