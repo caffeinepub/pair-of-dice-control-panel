@@ -1,22 +1,34 @@
-import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useControlLayout } from '@/hooks/useControlLayout';
-import { validateDecimalCode, generateDecimalCodeFromSeed } from '@/lib/buttonCode';
-import { getControlDefaults, generateDualCodesForControl } from '@/lib/controlDefaults';
-import type { ControlType, RadioOption } from '@/types/controlPanel';
-import { toast } from 'sonner';
-import { Plus, Trash2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useControlLayout } from "@/hooks/useControlLayout";
+import {
+  generateDecimalCodeFromSeed,
+  validateDecimalCode,
+} from "@/lib/buttonCode";
+import {
+  generateDualCodesForControl,
+  getControlDefaults,
+} from "@/lib/controlDefaults";
+import type { ControlType, RadioOption } from "@/types/controlPanel";
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface AddControlModalProps {
   open: boolean;
@@ -26,61 +38,61 @@ interface AddControlModalProps {
 export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
   const { createControlWithConfig, validateId } = useControlLayout();
 
-  const [controlType, setControlType] = useState<ControlType>('button');
-  const [id, setId] = useState('');
-  const [label, setLabel] = useState('');
-  const [decimalCode, setDecimalCode] = useState('1');
-  
+  const [controlType, setControlType] = useState<ControlType>("button");
+  const [id, setId] = useState("");
+  const [label, setLabel] = useState("");
+  const [decimalCode, setDecimalCode] = useState("1");
+
   // Toggle dual codes
-  const [decimalCodeOn, setDecimalCodeOn] = useState('');
-  const [decimalCodeOff, setDecimalCodeOff] = useState('');
-  
+  const [decimalCodeOn, setDecimalCodeOn] = useState("");
+  const [decimalCodeOff, setDecimalCodeOff] = useState("");
+
   // Slider config and dual codes
   const [sliderMin, setSliderMin] = useState(0);
   const [sliderMax, setSliderMax] = useState(100);
   const [sliderIsVertical, setSliderIsVertical] = useState(false);
-  const [decimalCodeUp, setDecimalCodeUp] = useState('');
-  const [decimalCodeDown, setDecimalCodeDown] = useState('');
-  
+  const [decimalCodeUp, setDecimalCodeUp] = useState("");
+  const [decimalCodeDown, setDecimalCodeDown] = useState("");
+
   // Radio config
   const [radioOptions, setRadioOptions] = useState<RadioOption[]>([
-    { key: 'option_1', label: 'Option 1', decimalCode: 1 },
-    { key: 'option_2', label: 'Option 2', decimalCode: 2 },
+    { key: "option_1", label: "Option 1", decimalCode: 1 },
+    { key: "option_2", label: "Option 2", decimalCode: 2 },
   ]);
   const [radioGroupIsVertical, setRadioGroupIsVertical] = useState(true);
-  
+
   // Dial dual codes
-  const [decimalCodeLeft, setDecimalCodeLeft] = useState('');
-  const [decimalCodeRight, setDecimalCodeRight] = useState('');
+  const [decimalCodeLeft, setDecimalCodeLeft] = useState("");
+  const [decimalCodeRight, setDecimalCodeRight] = useState("");
 
   const resetForm = () => {
     const newId = `control_${Date.now()}`;
     setId(newId);
-    setLabel('New Control');
-    setDecimalCode('1');
-    setControlType('button');
-    
+    setLabel("New Control");
+    setDecimalCode("1");
+    setControlType("button");
+
     // Reset toggle codes
-    setDecimalCodeOn('');
-    setDecimalCodeOff('');
-    
+    setDecimalCodeOn("");
+    setDecimalCodeOff("");
+
     // Reset slider
     setSliderMin(0);
     setSliderMax(100);
     setSliderIsVertical(false);
-    setDecimalCodeUp('');
-    setDecimalCodeDown('');
-    
+    setDecimalCodeUp("");
+    setDecimalCodeDown("");
+
     // Reset radio
     setRadioOptions([
-      { key: 'option_1', label: 'Option 1', decimalCode: 1 },
-      { key: 'option_2', label: 'Option 2', decimalCode: 2 },
+      { key: "option_1", label: "Option 1", decimalCode: 1 },
+      { key: "option_2", label: "Option 2", decimalCode: 2 },
     ]);
     setRadioGroupIsVertical(true);
-    
+
     // Reset dial
-    setDecimalCodeLeft('');
-    setDecimalCodeRight('');
+    setDecimalCodeLeft("");
+    setDecimalCodeRight("");
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -92,24 +104,24 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
 
   const handleControlTypeChange = (newType: ControlType) => {
     setControlType(newType);
-    
+
     // Generate dual codes for the new control type
     const dualCodes = generateDualCodesForControl(id, newType);
-    
-    if (newType === 'toggle') {
+
+    if (newType === "toggle") {
       setDecimalCodeOn((dualCodes.decimalCodeOn || 1).toString());
       setDecimalCodeOff((dualCodes.decimalCodeOff || 2).toString());
-    } else if (newType === 'slider') {
+    } else if (newType === "slider") {
       setDecimalCodeUp((dualCodes.decimalCodeUp || 1).toString());
       setDecimalCodeDown((dualCodes.decimalCodeDown || 2).toString());
-    } else if (newType === 'dial') {
+    } else if (newType === "dial") {
       setDecimalCodeLeft((dualCodes.decimalCodeLeft || 1).toString());
       setDecimalCodeRight((dualCodes.decimalCodeRight || 2).toString());
-    } else if (newType === 'radio') {
+    } else if (newType === "radio") {
       // Reset radio options with sequential decimal codes
       setRadioOptions([
-        { key: 'option_1', label: 'Option 1', decimalCode: 1 },
-        { key: 'option_2', label: 'Option 2', decimalCode: 2 },
+        { key: "option_1", label: "Option 1", decimalCode: 1 },
+        { key: "option_2", label: "Option 2", decimalCode: 2 },
       ]);
     } else {
       setDecimalCode((dualCodes.decimalCode || 1).toString());
@@ -124,7 +136,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
     }
 
     // Validate decimal codes based on control type
-    if (controlType === 'button') {
+    if (controlType === "button") {
       const error = validateDecimalCode(decimalCode);
       if (error) {
         toast.error(error);
@@ -132,7 +144,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       }
     }
 
-    if (controlType === 'radio') {
+    if (controlType === "radio") {
       // Validate all radio option decimal codes
       for (const option of radioOptions) {
         const error = validateDecimalCode(option.decimalCode.toString());
@@ -143,7 +155,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       }
     }
 
-    if (controlType === 'toggle') {
+    if (controlType === "toggle") {
       const onError = validateDecimalCode(decimalCodeOn);
       if (onError) {
         toast.error(`Toggle ON code: ${onError}`);
@@ -156,7 +168,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       }
     }
 
-    if (controlType === 'slider') {
+    if (controlType === "slider") {
       const upError = validateDecimalCode(decimalCodeUp);
       if (upError) {
         toast.error(`Slider UP code: ${upError}`);
@@ -169,7 +181,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       }
     }
 
-    if (controlType === 'dial') {
+    if (controlType === "dial") {
       const leftError = validateDecimalCode(decimalCodeLeft);
       if (leftError) {
         toast.error(`Dial LEFT code: ${leftError}`);
@@ -194,31 +206,31 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
       color: defaults.color,
     };
 
-    if (controlType === 'button') {
-      config.decimalCode = parseInt(decimalCode, 10);
+    if (controlType === "button") {
+      config.decimalCode = Number.parseInt(decimalCode, 10);
     }
 
-    if (controlType === 'toggle') {
-      config.decimalCodeOn = parseInt(decimalCodeOn, 10);
-      config.decimalCodeOff = parseInt(decimalCodeOff, 10);
+    if (controlType === "toggle") {
+      config.decimalCodeOn = Number.parseInt(decimalCodeOn, 10);
+      config.decimalCodeOff = Number.parseInt(decimalCodeOff, 10);
     }
 
-    if (controlType === 'slider') {
+    if (controlType === "slider") {
       config.sliderMin = sliderMin;
       config.sliderMax = sliderMax;
       config.sliderIsVertical = sliderIsVertical;
-      config.decimalCodeUp = parseInt(decimalCodeUp, 10);
-      config.decimalCodeDown = parseInt(decimalCodeDown, 10);
+      config.decimalCodeUp = Number.parseInt(decimalCodeUp, 10);
+      config.decimalCodeDown = Number.parseInt(decimalCodeDown, 10);
     }
 
-    if (controlType === 'radio') {
+    if (controlType === "radio") {
       config.radioOptions = radioOptions;
       config.radioGroupIsVertical = radioGroupIsVertical;
     }
 
-    if (controlType === 'dial') {
-      config.decimalCodeLeft = parseInt(decimalCodeLeft, 10);
-      config.decimalCodeRight = parseInt(decimalCodeRight, 10);
+    if (controlType === "dial") {
+      config.decimalCodeLeft = Number.parseInt(decimalCodeLeft, 10);
+      config.decimalCodeRight = Number.parseInt(decimalCodeRight, 10);
     }
 
     const success = createControlWithConfig(config);
@@ -229,21 +241,29 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
 
   const handleAddRadioOption = () => {
     const newKey = `option_${Date.now()}`;
-    const nextCode = radioOptions.length > 0 
-      ? Math.min(16, Math.max(...radioOptions.map(o => o.decimalCode)) + 1)
-      : 1;
+    const nextCode =
+      radioOptions.length > 0
+        ? Math.min(16, Math.max(...radioOptions.map((o) => o.decimalCode)) + 1)
+        : 1;
     setRadioOptions([
       ...radioOptions,
       {
         key: newKey,
-        label: 'New Option',
+        label: "New Option",
         decimalCode: nextCode,
       },
     ]);
   };
 
-  const handleUpdateRadioOption = (key: string, updates: Partial<RadioOption>) => {
-    setRadioOptions(radioOptions.map((opt) => (opt.key === key ? { ...opt, ...updates } : opt)));
+  const handleUpdateRadioOption = (
+    key: string,
+    updates: Partial<RadioOption>,
+  ) => {
+    setRadioOptions(
+      radioOptions.map((opt) =>
+        opt.key === key ? { ...opt, ...updates } : opt,
+      ),
+    );
   };
 
   const handleDeleteRadioOption = (key: string) => {
@@ -251,10 +271,11 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
   };
 
   const sanitizeDecimalInput = (value: string): string => {
-    return value.replace(/[^0-9]/g, '');
+    return value.replace(/[^0-9]/g, "");
   };
 
-  const decimalCodeError = controlType === 'button' ? validateDecimalCode(decimalCode) : null;
+  const decimalCodeError =
+    controlType === "button" ? validateDecimalCode(decimalCode) : null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -266,17 +287,30 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="new-id">ID</Label>
-            <Input id="new-id" value={id} onChange={(e) => setId(e.target.value)} />
+            <Input
+              id="new-id"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="new-label">Label</Label>
-            <Input id="new-label" value={label} onChange={(e) => setLabel(e.target.value)} />
+            <Input
+              id="new-label"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="new-type">Control Type</Label>
-            <Select value={controlType} onValueChange={(value) => handleControlTypeChange(value as ControlType)}>
+            <Select
+              value={controlType}
+              onValueChange={(value) =>
+                handleControlTypeChange(value as ControlType)
+              }
+            >
               <SelectTrigger id="new-type">
                 <SelectValue />
               </SelectTrigger>
@@ -290,7 +324,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
             </Select>
           </div>
 
-          {controlType === 'button' && (
+          {controlType === "button" && (
             <div className="space-y-2">
               <Label htmlFor="new-decimalCode">Decimal Code (1–16)</Label>
               <Input
@@ -299,7 +333,9 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                 min="1"
                 max="16"
                 value={decimalCode}
-                onChange={(e) => setDecimalCode(sanitizeDecimalInput(e.target.value))}
+                onChange={(e) =>
+                  setDecimalCode(sanitizeDecimalInput(e.target.value))
+                }
                 placeholder="e.g., 1"
               />
               {decimalCodeError && (
@@ -308,7 +344,7 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
             </div>
           )}
 
-          {controlType === 'toggle' && (
+          {controlType === "toggle" && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="new-toggleOn">ON Code (1–16)</Label>
@@ -318,7 +354,9 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                   min="1"
                   max="16"
                   value={decimalCodeOn}
-                  onChange={(e) => setDecimalCodeOn(sanitizeDecimalInput(e.target.value))}
+                  onChange={(e) =>
+                    setDecimalCodeOn(sanitizeDecimalInput(e.target.value))
+                  }
                   placeholder="e.g., 1"
                 />
               </div>
@@ -330,20 +368,24 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                   min="1"
                   max="16"
                   value={decimalCodeOff}
-                  onChange={(e) => setDecimalCodeOff(sanitizeDecimalInput(e.target.value))}
+                  onChange={(e) =>
+                    setDecimalCodeOff(sanitizeDecimalInput(e.target.value))
+                  }
                   placeholder="e.g., 2"
                 />
               </div>
             </>
           )}
 
-          {controlType === 'slider' && (
+          {controlType === "slider" && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="new-sliderOrientation">Orientation</Label>
                 <Select
-                  value={sliderIsVertical ? 'vertical' : 'horizontal'}
-                  onValueChange={(value) => setSliderIsVertical(value === 'vertical')}
+                  value={sliderIsVertical ? "vertical" : "horizontal"}
+                  onValueChange={(value) =>
+                    setSliderIsVertical(value === "vertical")
+                  }
                 >
                   <SelectTrigger id="new-sliderOrientation">
                     <SelectValue />
@@ -382,7 +424,9 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                   min="1"
                   max="16"
                   value={decimalCodeUp}
-                  onChange={(e) => setDecimalCodeUp(sanitizeDecimalInput(e.target.value))}
+                  onChange={(e) =>
+                    setDecimalCodeUp(sanitizeDecimalInput(e.target.value))
+                  }
                   placeholder="e.g., 1"
                 />
               </div>
@@ -394,20 +438,24 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                   min="1"
                   max="16"
                   value={decimalCodeDown}
-                  onChange={(e) => setDecimalCodeDown(sanitizeDecimalInput(e.target.value))}
+                  onChange={(e) =>
+                    setDecimalCodeDown(sanitizeDecimalInput(e.target.value))
+                  }
                   placeholder="e.g., 2"
                 />
               </div>
             </>
           )}
 
-          {controlType === 'radio' && (
+          {controlType === "radio" && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="new-radioOrientation">Orientation</Label>
                 <Select
-                  value={radioGroupIsVertical ? 'vertical' : 'horizontal'}
-                  onValueChange={(value) => setRadioGroupIsVertical(value === 'vertical')}
+                  value={radioGroupIsVertical ? "vertical" : "horizontal"}
+                  onValueChange={(value) =>
+                    setRadioGroupIsVertical(value === "vertical")
+                  }
                 >
                   <SelectTrigger id="new-radioOrientation">
                     <SelectValue />
@@ -421,7 +469,12 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Radio Options</Label>
-                  <Button type="button" size="sm" variant="outline" onClick={handleAddRadioOption}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAddRadioOption}
+                  >
                     <Plus className="h-4 w-4 mr-1" />
                     Add Option
                   </Button>
@@ -433,7 +486,11 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                         <Input
                           placeholder="Label"
                           value={option.label}
-                          onChange={(e) => handleUpdateRadioOption(option.key, { label: e.target.value })}
+                          onChange={(e) =>
+                            handleUpdateRadioOption(option.key, {
+                              label: e.target.value,
+                            })
+                          }
                         />
                         <Button
                           type="button"
@@ -454,7 +511,10 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
                           placeholder="Decimal Code (1-16)"
                           value={option.decimalCode}
                           onChange={(e) =>
-                            handleUpdateRadioOption(option.key, { decimalCode: parseInt(e.target.value, 10) || 1 })
+                            handleUpdateRadioOption(option.key, {
+                              decimalCode:
+                                Number.parseInt(e.target.value, 10) || 1,
+                            })
                           }
                         />
                       </div>
@@ -465,29 +525,37 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
             </>
           )}
 
-          {controlType === 'dial' && (
+          {controlType === "dial" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="new-dialLeft">LEFT (Counterclockwise) Code (1–16)</Label>
+                <Label htmlFor="new-dialLeft">
+                  LEFT (Counterclockwise) Code (1–16)
+                </Label>
                 <Input
                   id="new-dialLeft"
                   type="number"
                   min="1"
                   max="16"
                   value={decimalCodeLeft}
-                  onChange={(e) => setDecimalCodeLeft(sanitizeDecimalInput(e.target.value))}
+                  onChange={(e) =>
+                    setDecimalCodeLeft(sanitizeDecimalInput(e.target.value))
+                  }
                   placeholder="e.g., 1"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-dialRight">RIGHT (Clockwise) Code (1–16)</Label>
+                <Label htmlFor="new-dialRight">
+                  RIGHT (Clockwise) Code (1–16)
+                </Label>
                 <Input
                   id="new-dialRight"
                   type="number"
                   min="1"
                   max="16"
                   value={decimalCodeRight}
-                  onChange={(e) => setDecimalCodeRight(sanitizeDecimalInput(e.target.value))}
+                  onChange={(e) =>
+                    setDecimalCodeRight(sanitizeDecimalInput(e.target.value))
+                  }
                   placeholder="e.g., 2"
                 />
               </div>
@@ -499,7 +567,10 @@ export function AddControlModal({ open, onOpenChange }: AddControlModalProps) {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreate} disabled={controlType === 'button' && !!decimalCodeError}>
+          <Button
+            onClick={handleCreate}
+            disabled={controlType === "button" && !!decimalCodeError}
+          >
             Create
           </Button>
         </DialogFooter>

@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { Maximize, Minimize } from 'lucide-react';
-import { toast } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { Maximize, Minimize } from "lucide-react";
+import { toast } from "sonner";
 
 interface FullscreenToggleButtonProps {
   isFullscreen: boolean;
@@ -8,20 +8,24 @@ interface FullscreenToggleButtonProps {
   onToggle: () => Promise<void>;
 }
 
-export function FullscreenToggleButton({ isFullscreen, isSupported, onToggle }: FullscreenToggleButtonProps) {
+export function FullscreenToggleButton({
+  isFullscreen,
+  isSupported,
+  onToggle,
+}: FullscreenToggleButtonProps) {
   const handleToggle = async () => {
     if (!isSupported) {
-      toast.error('Fullscreen is not supported in your browser');
+      toast.error("Fullscreen is not supported in your browser");
       return;
     }
 
     try {
       await onToggle();
-    } catch (error) {
+    } catch (_error) {
       toast.error(
         isFullscreen
-          ? 'Failed to exit fullscreen mode'
-          : 'Failed to enter fullscreen mode'
+          ? "Failed to exit fullscreen mode"
+          : "Failed to enter fullscreen mode",
       );
     }
   };
@@ -35,7 +39,7 @@ export function FullscreenToggleButton({ isFullscreen, isSupported, onToggle }: 
       variant="outline"
       size="default"
       onClick={handleToggle}
-      aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+      aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
       className="gap-2"
     >
       {isFullscreen ? (

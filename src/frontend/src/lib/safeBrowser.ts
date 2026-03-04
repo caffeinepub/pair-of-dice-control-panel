@@ -9,12 +9,12 @@
  * @param fallback - The fallback value if access fails
  * @returns The stored value or fallback
  */
-export function safeLocalStorageGet(key: string, fallback: string = ''): string {
+export function safeLocalStorageGet(key: string, fallback = ""): string {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       return localStorage.getItem(key) ?? fallback;
     }
-  } catch (error) {
+  } catch (_error) {
     // localStorage access blocked or unavailable
   }
   return fallback;
@@ -28,11 +28,11 @@ export function safeLocalStorageGet(key: string, fallback: string = ''): string 
  */
 export function safeLocalStorageSet(key: string, value: string): boolean {
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
+    if (typeof window !== "undefined" && window.localStorage) {
       localStorage.setItem(key, value);
       return true;
     }
-  } catch (error) {
+  } catch (_error) {
     // localStorage access blocked or unavailable
   }
   return false;
@@ -43,12 +43,12 @@ export function safeLocalStorageSet(key: string, value: string): boolean {
  * @param fallback - The fallback value if access fails
  * @returns The hostname or fallback
  */
-export function safeGetHostname(fallback: string = 'unknown-app'): string {
+export function safeGetHostname(fallback = "unknown-app"): string {
   try {
-    if (typeof window !== 'undefined' && window.location) {
+    if (typeof window !== "undefined" && window.location) {
       return window.location.hostname || fallback;
     }
-  } catch (error) {
+  } catch (_error) {
     // window.location access blocked or unavailable
   }
   return fallback;
@@ -59,7 +59,7 @@ export function safeGetHostname(fallback: string = 'unknown-app'): string {
  * @returns true if running in a browser with document/window available
  */
 export function isBrowserAvailable(): boolean {
-  return typeof window !== 'undefined' && typeof document !== 'undefined';
+  return typeof window !== "undefined" && typeof document !== "undefined";
 }
 
 /**
@@ -75,7 +75,7 @@ export function isFullscreenSupported(): boolean {
       (document as any).mozFullScreenEnabled ||
       (document as any).msFullscreenEnabled
     );
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }

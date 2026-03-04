@@ -1,20 +1,45 @@
 /**
- * Sends a GPIO signal via HTTP POST with decimal code (1-16) and state ("on" or "off").
+ * Sends a GPIO signal via HTTP POST with button number (1-16) and state ("on" or "off").
+ * Uses standard cors mode so responses can be inspected and errors properly detected.
+ * Includes Content-Type: application/json header and a JSON body of { button, value }.
  */
-export async function sendGpioSignal(decimalCode: number, state: 'on' | 'off'): Promise<void> {
-  try {
-    const response = await fetch('http://localhost:3000/gpio', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ decimalCode, value: state }),
-    });
+export async function sendGpioSignal(
+  decimalCode: number,
+  state: "on" | "off",
+): Promise<void> {
+  const url = "https://7426razpi3.nevadascientific.com/gpio";
+  const requestBody = { button: decimalCode, value: state };
+  const bodyStr = JSON.stringify(requestBody);
 
-    if (!response.ok) {
-      console.error('GPIO HTTP request failed:', response.status, response.statusText);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: bodyStr,
+    });
+  } catch (networkError) {
+    // Network-level failure (server unreachable, DNS failure, CORS preflight blocked, etc.)
+    const message =
+      networkError instanceof Error
+        ? networkError.message
+        : String(networkError);
+    throw new Error(
+      `Network error — is the GPIO server reachable at 7426razpi3.nevadascientific.com? (${message})`,
+    );
+  }
+
+  if (!response.ok) {
+    let body = "";
+    try {
+      body = await response.text();
+    } catch {
+      // ignore body read errors
     }
-  } catch (error) {
-    console.error('Failed to send GPIO signal:', error);
+    throw new Error(
+      `GPIO server responded with HTTP ${response.status} ${response.statusText}${body ? `: ${body}` : ""}`,
+    );
   }
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, RefObject } from 'react';
-import { isFullscreenSupported, isBrowserAvailable } from '@/lib/safeBrowser';
+import { isBrowserAvailable, isFullscreenSupported } from "@/lib/safeBrowser";
+import { type RefObject, useCallback, useEffect, useState } from "react";
 
 interface UseFullscreenReturn {
   isFullscreen: boolean;
@@ -9,7 +9,9 @@ interface UseFullscreenReturn {
   exitFullscreen: () => Promise<void>;
 }
 
-export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFullscreenReturn {
+export function useFullscreen(
+  elementRef: RefObject<HTMLElement | null>,
+): UseFullscreenReturn {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSupported] = useState(() => isFullscreenSupported());
 
@@ -27,7 +29,7 @@ export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFul
 
         // Check if the fullscreen element is our target element
         setIsFullscreen(fullscreenElement === elementRef.current);
-      } catch (error) {
+      } catch (_error) {
         // Fullscreen API unavailable
         setIsFullscreen(false);
       }
@@ -40,22 +42,33 @@ export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFul
       syncFullscreenState();
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange,
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange,
+      );
+      document.removeEventListener(
+        "MSFullscreenChange",
+        handleFullscreenChange,
+      );
     };
   }, [elementRef]);
 
   const enterFullscreen = useCallback(async () => {
     if (!elementRef.current || !isSupported) {
-      throw new Error('Fullscreen is not supported or element is not available');
+      throw new Error(
+        "Fullscreen is not supported or element is not available",
+      );
     }
 
     const element = elementRef.current;
@@ -70,14 +83,14 @@ export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFul
       } else if ((element as any).msRequestFullscreen) {
         await (element as any).msRequestFullscreen();
       }
-    } catch (error) {
-      throw new Error('Failed to enter fullscreen mode');
+    } catch (_error) {
+      throw new Error("Failed to enter fullscreen mode");
     }
   }, [elementRef, isSupported]);
 
   const exitFullscreen = useCallback(async () => {
     if (!isBrowserAvailable()) {
-      throw new Error('Browser APIs are not available');
+      throw new Error("Browser APIs are not available");
     }
 
     try {
@@ -90,8 +103,8 @@ export function useFullscreen(elementRef: RefObject<HTMLElement | null>): UseFul
       } else if ((document as any).msExitFullscreen) {
         await (document as any).msExitFullscreen();
       }
-    } catch (error) {
-      throw new Error('Failed to exit fullscreen mode');
+    } catch (_error) {
+      throw new Error("Failed to exit fullscreen mode");
     }
   }, []);
 

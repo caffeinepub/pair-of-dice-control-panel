@@ -1,6 +1,6 @@
-import { usePanelMode } from '@/hooks/usePanelMode';
-import { Button } from '@/components/ui/button';
-import { Edit, Play } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { usePanelMode } from "@/hooks/usePanelMode";
+import { Edit, Play } from "lucide-react";
 
 export function ModeToggle() {
   const { mode, toggleMode } = usePanelMode();
@@ -8,10 +8,10 @@ export function ModeToggle() {
   return (
     <Button
       onClick={toggleMode}
-      variant={mode === 'edit' ? 'default' : 'secondary'}
+      variant={mode === "edit" ? "default" : "secondary"}
       className="gap-2"
     >
-      {mode === 'edit' ? (
+      {mode === "edit" ? (
         <>
           <Edit className="h-4 w-4" />
           Edit Mode

@@ -13,20 +13,20 @@ export function isValidDecimalCode(code: number): boolean {
  * Validate decimal code and return error message if invalid
  */
 export function validateDecimalCode(code: number | string): string | null {
-  const numCode = typeof code === 'string' ? parseInt(code, 10) : code;
-  
-  if (isNaN(numCode)) {
-    return 'Code must be a number';
+  const numCode = typeof code === "string" ? Number.parseInt(code, 10) : code;
+
+  if (Number.isNaN(numCode)) {
+    return "Code must be a number";
   }
-  
+
   if (!Number.isInteger(numCode)) {
-    return 'Code must be a whole number';
+    return "Code must be a whole number";
   }
-  
+
   if (numCode < 1 || numCode > 16) {
-    return 'Code must be between 1 and 16';
+    return "Code must be between 1 and 16";
   }
-  
+
   return null;
 }
 
@@ -37,10 +37,10 @@ export function generateDecimalCodeFromSeed(seed: string): number {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
-  return ((Math.abs(hash) % 16) + 1);
+  return (Math.abs(hash) % 16) + 1;
 }
 
 /**
@@ -49,10 +49,10 @@ export function generateDecimalCodeFromSeed(seed: string): number {
  */
 export function decimalToBinary(decimalCode: number): string {
   if (!isValidDecimalCode(decimalCode)) {
-    throw new Error('Decimal code must be between 1 and 16');
+    throw new Error("Decimal code must be between 1 and 16");
   }
   const binaryValue = decimalCode - 1;
-  return binaryValue.toString(2).padStart(4, '0');
+  return binaryValue.toString(2).padStart(4, "0");
 }
 
 /**
@@ -60,7 +60,7 @@ export function decimalToBinary(decimalCode: number): string {
  */
 export function binaryToDecimal(binaryCode: string): number {
   if (binaryCode.length !== 4 || !/^[01]+$/.test(binaryCode)) {
-    throw new Error('Binary code must be exactly 4 bits (0s and 1s)');
+    throw new Error("Binary code must be exactly 4 bits (0s and 1s)");
   }
-  return parseInt(binaryCode, 2) + 1;
+  return Number.parseInt(binaryCode, 2) + 1;
 }

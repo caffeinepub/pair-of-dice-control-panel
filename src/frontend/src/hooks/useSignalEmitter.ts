@@ -1,6 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useActor } from './useActor';
-import { toast } from 'sonner';
+import { sendGpioSignal } from "@/lib/gpioHttp";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useActor } from "./useActor";
 
 export function useSignalEmitter() {
   const { actor } = useActor();
@@ -24,92 +25,70 @@ export function useSignalEmitter() {
       codeType: string;
       commandStr: string;
     }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      
-      const codeTypeLabel = codeType ? ` [${codeType}]` : '';
-      console.log(
-        `[Signal Emitter] Control: ${controlName || 'Unnamed'} (id: ${controlId}) - Type: ${controlType}, Value: ${value}, Code: ${decimalCode}${codeTypeLabel}, Command: ${commandStr}`
+      if (!actor) {
+        throw new Error("Actor not initialized");
+      }
+
+      // Call backend actor to log the event
+      await actor.emitButtonEvent(
+        controlId,
+        controlType,
+        controlName || null,
+        value,
+        codeType,
+        BigInt(decimalCode),
+        commandStr,
       );
-      
-      // Button controls use emitButtonEvent
-      if (controlType === 'button') {
-        console.log(`[Signal Emitter] Calling emitButtonEvent with:`, {
-          controlId,
-          controlType,
-          controlName: controlName || null,
-          value,
-          codeType,
-          decimalCode: BigInt(decimalCode),
-          commandStr
-        });
-        await actor.emitButtonEvent(
-          controlId,
-          controlType,
-          controlName || null,
-          value,
-          codeType,
-          BigInt(decimalCode),
-          commandStr
-        );
-      } else {
-        // Other control types also use emitButtonEvent (it's a generic event emitter)
-        console.log(`[Signal Emitter] Calling emitButtonEvent for ${controlType} with:`, {
-          controlId,
-          controlType,
-          controlName: controlName || null,
-          value,
-          codeType,
-          decimalCode: BigInt(decimalCode),
-          commandStr
-        });
-        await actor.emitButtonEvent(
-          controlId,
-          controlType,
-          controlName || null,
-          value,
-          codeType,
-          BigInt(decimalCode),
-          commandStr
-        );
+
+      // Send HTTP POST to GPIO server for button controls
+      if (controlType === "button") {
+        const httpState = value === "press" ? "on" : "off";
+        try {
+          await sendGpioSignal(decimalCode, httpState);
+        } catch (httpError) {
+          const reason =
+            httpError instanceof Error ? httpError.message : "Unknown error";
+          // Surface the HTTP error as a toast but don't fail the mutation —
+          // the backend event was already logged successfully.
+          toast.warning(`GPIO HTTP signal failed: ${reason}`, {
+            description:
+              "The event was logged to the backend, but the local GPIO server did not receive the signal.",
+            duration: 6000,
+          });
+          console.warn(
+            "[useSignalEmitter] HTTP POST failed (backend event was logged):",
+            reason,
+          );
+        }
       }
     },
     onSuccess: () => {
-      console.log('[Signal Emitter] Event emitted successfully, invalidating queries');
-      queryClient.invalidateQueries({ queryKey: ['recentEvents'] });
+      queryClient.invalidateQueries({ queryKey: ["recentEvents"] });
     },
     onError: (error) => {
-      console.error('[Signal Emitter] Failed to emit signal:', error);
-      toast.error(`Failed to emit signal: ${error.message}`);
+      toast.error(
+        `Failed to emit signal: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     },
   });
 
   const emit = (
-    controlId: string, 
-    controlType: string, 
-    controlName: string | null, 
+    controlId: string,
+    controlType: string,
+    controlName: string | null,
     value: string,
     decimalCode: number,
     codeType: string,
-    commandStr: string
+    commandStr: string,
   ) => {
-    console.log('[Signal Emitter] emit() called with:', {
+    emitMutation.mutate({
       controlId,
       controlType,
-      controlName,
+      controlName: controlName || undefined,
       value,
       decimalCode,
       codeType,
-      commandStr
-    });
-    
-    emitMutation.mutate({ 
-      controlId, 
-      controlType, 
-      controlName: controlName || undefined, 
-      value,
-      decimalCode,
-      codeType,
-      commandStr
+      commandStr,
     });
   };
 

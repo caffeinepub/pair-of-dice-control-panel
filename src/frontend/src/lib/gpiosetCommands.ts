@@ -4,7 +4,7 @@
  */
 function decimalToBinary(decimal: number): string {
   const binaryValue = decimal - 1;
-  return binaryValue.toString(2).padStart(4, '0');
+  return binaryValue.toString(2).padStart(4, "0");
 }
 
 /**
@@ -14,7 +14,7 @@ function decimalToBinary(decimal: number): string {
 export function generateGpiosetCommands(decimalCode: number): string[] {
   const binary = decimalToBinary(decimalCode);
   const pins = [26, 6, 22, 4];
-  
+
   return pins.map((pin, index) => {
     const state = binary[index];
     return `gpioset -c gpiochip0 ${pin}=${state}`;
@@ -26,14 +26,17 @@ export function generateGpiosetCommands(decimalCode: number): string[] {
  */
 export function generateGpiosetCommandSequence(decimalCode: number): string {
   const commands = generateGpiosetCommands(decimalCode);
-  return commands.join('\n');
+  return commands.join("\n");
 }
 
 /**
  * Generates a single gpioset command for button press/release events.
  * Format: "gpioset -c gpiochip0 <id>=<state>"
  */
-export function generateButtonGpiosetCommand(decimalCode: number, state: 0 | 1): string {
+export function generateButtonGpiosetCommand(
+  decimalCode: number,
+  state: 0 | 1,
+): string {
   return `gpioset -c gpiochip0 ${decimalCode}=${state}`;
 }
 

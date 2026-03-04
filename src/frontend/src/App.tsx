@@ -1,6 +1,6 @@
-import { ControlPanelScreen } from './screens/ControlPanelScreen';
-import { Toaster } from '@/components/ui/sonner';
-import { ThemeProvider } from 'next-themes';
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "next-themes";
+import { ControlPanelScreen } from "./screens/ControlPanelScreen";
 
 function App() {
   return (

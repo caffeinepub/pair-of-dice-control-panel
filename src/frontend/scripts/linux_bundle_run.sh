@@ -46,22 +46,22 @@ log_instruction() {
 
 print_header() {
     echo -e "${BOLD}${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${CYAN}║  GPIO Control Panel - Linux Test Launcher                 ║${NC}"
+    echo -e "${BOLD}${CYAN}║  GPIO Control Panel — Linux Launcher                      ║${NC}"
     echo -e "${BOLD}${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
 
-# Simple run_step function for launcher (doesn't need full diagnostics helper)
+# run_step: execute a command, show diagnostics on failure
 run_step() {
     local step_name="$1"
     shift
     local cmd="$*"
-    
+
     local log_file
     log_file=$(mktemp)
-    
+
     echo -e "${BLUE}[INFO]${NC} Running: $step_name"
-    
+
     if eval "$cmd" > "$log_file" 2>&1; then
         echo -e "${GREEN}[✓]${NC} $step_name completed successfully"
         rm -f "$log_file"
@@ -70,11 +70,11 @@ run_step() {
         local exit_code=$?
         echo ""
         echo -e "${RED}╔════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${RED}║  DEPLOYMENT STEP FAILED                                    ║${NC}"
+        echo -e "${RED}║  STEP FAILED                                               ║${NC}"
         echo -e "${RED}╚════════════════════════════════════════════════════════════╝${NC}"
         echo ""
-        echo -e "${BOLD}Step:${NC} $step_name"
-        echo -e "${BOLD}Command:${NC} $cmd"
+        echo -e "${BOLD}Step:${NC}      $step_name"
+        echo -e "${BOLD}Command:${NC}   $cmd"
         echo -e "${BOLD}Exit Code:${NC} $exit_code"
         echo ""
         echo -e "${BOLD}Last 100 lines of output:${NC}"
@@ -84,16 +84,16 @@ run_step() {
         echo ""
         echo -e "${YELLOW}[⚠]${NC} Check the output above for error details"
         echo ""
-        
+
         rm -f "$log_file"
         return $exit_code
     fi
 }
 
-# Detect bundle root (script is in bundle root as run.sh)
+# Detect bundle root (script lives in bundle root as run.sh)
 BUNDLE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Check if we're in the right place
+# Check we're in the right place
 if [[ ! -f "$BUNDLE_ROOT/dfx.json" ]]; then
     log_error "Could not find dfx.json in bundle root: $BUNDLE_ROOT"
     log_error "Please run this script from the extracted bundle directory"
@@ -115,27 +115,34 @@ case "$COMMAND" in
     --clean)
         log "Stopping and cleaning local state..."
         cd "$BUNDLE_ROOT"
-        dfx stop
+        dfx stop 2>/dev/null || true
         rm -rf .dfx
         log_success "Local state cleaned"
         log_instruction "Run ./run.sh again to start fresh"
         exit 0
         ;;
     --help|-h)
-        echo "GPIO Control Panel - Linux Bundle Launcher"
+        echo "GPIO Control Panel — Linux Bundle Launcher"
         echo ""
         echo "Usage: ./run.sh [OPTION]"
         echo ""
         echo "Options:"
         echo "  (no option)    Start the application (default)"
-        echo "  --stop         Stop the local replica"
-        echo "  --clean        Stop and clean all local state"
+        echo "  --stop         Stop the local ICP replica"
+        echo "  --clean        Stop replica and remove all local state"
         echo "  --help, -h     Show this help message"
         echo ""
         echo "Examples:"
         echo "  ./run.sh                # Start the app"
         echo "  ./run.sh --stop         # Stop the replica"
-        echo "  ./run.sh --clean        # Clean and reset"
+        echo "  ./run.sh --clean        # Clean and reset everything"
+        echo ""
+        echo "After starting, serve the frontend with one of:"
+        echo "  npx http-server frontend/dist -p 8080 --cors"
+        echo "  python3 -m http.server 8080  (from frontend/dist/)"
+        echo "  Apache: copy frontend/dist/* to your web root"
+        echo ""
+        echo "See INSTALL.md for full setup instructions."
         echo ""
         exit 0
         ;;
@@ -160,7 +167,7 @@ MISSING_DEPS=0
 
 if ! command -v dfx &> /dev/null; then
     log_error "dfx not found"
-    log_instruction "Install dfx from: https://internetcomputer.org/docs/current/developer-docs/setup/install"
+    log_instruction "Install dfx: sh -ci \"\$(curl -fsSL https://internetcomputer.org/install.sh)\""
     MISSING_DEPS=1
 fi
 
@@ -172,6 +179,7 @@ fi
 
 if [[ $MISSING_DEPS -eq 1 ]]; then
     log_error "Missing required dependencies. Please install them and try again."
+    log_instruction "See INSTALL.md for detailed prerequisite installation instructions."
     exit 1
 fi
 
@@ -184,7 +192,7 @@ VALIDATION_FAILED=0
 
 if [[ ! -f "$BUNDLE_ROOT/dfx.json" ]]; then
     log_error "dfx.json not found in bundle"
-    log_instruction "Remediation: Re-extract the bundle archive or repackage the bundle"
+    log_instruction "Remediation: Re-extract the bundle archive"
     VALIDATION_FAILED=1
 fi
 
@@ -208,7 +216,7 @@ if [[ ! -f "$BACKEND_WASM" ]]; then
 fi
 
 if [[ $VALIDATION_FAILED -eq 1 ]]; then
-    log_error "Bundle validation failed - cannot deploy"
+    log_error "Bundle validation failed — cannot deploy"
     log_error "Please fix the issues above and try again"
     exit 1
 fi
@@ -220,23 +228,31 @@ echo ""
 cd "$BUNDLE_ROOT"
 
 # Check if replica is already running
-if dfx ping 2>/dev/null | grep -q "replica"; then
+REPLICA_RUNNING=0
+if dfx ping 2>/dev/null | grep -q "replica_health_status"; then
+    REPLICA_RUNNING=1
     log_warning "Local replica is already running"
     log_instruction "Reusing existing replica (use './run.sh --clean' to start fresh)"
-else
+elif dfx ping 2>/dev/null; then
+    REPLICA_RUNNING=1
+    log_warning "Local replica is already running"
+    log_instruction "Reusing existing replica (use './run.sh --clean' to start fresh)"
+fi
+
+if [[ $REPLICA_RUNNING -eq 0 ]]; then
     # Start local replica
     log "Starting local Internet Computer replica..."
     log_instruction "This may take a moment on first run..."
-    
+
     if ! run_step "Start local replica" "dfx start --background --clean"; then
-        log_error "Failed to start local replica - see diagnostics above"
+        log_error "Failed to start local replica — see diagnostics above"
         log_instruction "Remediation: Try running './run.sh --clean' and then './run.sh' again"
         exit 1
     fi
-    
+
     # Wait for replica to be ready
     log "Waiting for replica to be ready..."
-    sleep 3
+    sleep 5
 fi
 
 echo ""
@@ -248,31 +264,30 @@ log "Deploying backend canister..."
 if ! dfx canister id backend 2>/dev/null; then
     log "Creating backend canister..."
     if ! run_step "Create backend canister" "dfx canister create backend"; then
-        log_error "Failed to create backend canister - see diagnostics above"
+        log_error "Failed to create backend canister — see diagnostics above"
         log_instruction "Remediation: Check that dfx is running correctly with 'dfx ping'"
         exit 1
     fi
 fi
 
 # Install the backend canister
-log "Installing backend canister..."
+log "Installing backend canister from WASM..."
 if ! run_step "Install backend canister" "dfx canister install backend --wasm '$BACKEND_WASM' --mode reinstall --yes"; then
-    log_error "Failed to install backend canister - see diagnostics above"
+    log_error "Failed to install backend canister — see diagnostics above"
     log_instruction "Remediation: Verify the WASM file exists at: $BACKEND_WASM"
     exit 1
 fi
 
 # Get canister ID
 BACKEND_CANISTER_ID=$(dfx canister id backend)
-log_success "Backend canister ID: $BACKEND_CANISTER_ID"
+log_success "Backend canister deployed — ID: ${BOLD}${BACKEND_CANISTER_ID}${NC}"
 
 echo ""
 
-# Get replica URL
+# Determine replica URL
 REPLICA_URL="http://localhost:4943"
-FRONTEND_URL="${REPLICA_URL}?canisterId=${BACKEND_CANISTER_ID}"
 
-# Success!
+# Success banner
 echo ""
 echo -e "${BOLD}${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BOLD}${GREEN}║  Application deployed successfully!                        ║${NC}"
@@ -280,38 +295,55 @@ echo -e "${BOLD}${GREEN}╚═════════════════�
 echo ""
 
 log_success "Backend Canister ID: ${BOLD}${BACKEND_CANISTER_ID}${NC}"
+log_success "Replica URL:         ${BOLD}${REPLICA_URL}${NC}"
 echo ""
 
-# Print access instructions
-echo -e "${BOLD}${CYAN}Access the application:${NC}"
+# ── Serve the frontend ──────────────────────────────────────────────────────
+echo -e "${BOLD}${CYAN}┌─ Serve the Frontend ──────────────────────────────────────┐${NC}"
 echo ""
-echo -e "${BOLD}1. Serve the frontend:${NC}"
-echo -e "   ${CYAN}cd $BUNDLE_ROOT/frontend/dist && npx http-server -p 3000${NC}"
+echo -e "  ${BOLD}Option A — Node.js (quick, no install needed):${NC}"
+echo -e "  ${CYAN}npx http-server $BUNDLE_ROOT/frontend/dist -p 8080 --cors${NC}"
+echo -e "  Then open: ${CYAN}http://localhost:8080${NC}"
 echo ""
-echo -e "${BOLD}2. Open in browser:${NC}"
-echo -e "   ${CYAN}${FRONTEND_URL}${NC}"
+echo -e "  ${BOLD}Option B — Python (no extra installs):${NC}"
+echo -e "  ${CYAN}cd $BUNDLE_ROOT/frontend/dist && python3 -m http.server 8080${NC}"
+echo -e "  Then open: ${CYAN}http://localhost:8080${NC}"
 echo ""
-
-# Print Raspberry Pi instructions
-echo -e "${BOLD}${CYAN}Raspberry Pi GPIO Setup (optional):${NC}"
+echo -e "  ${BOLD}Option C — Apache (production-like):${NC}"
+echo -e "  ${CYAN}sudo cp -r $BUNDLE_ROOT/frontend/dist/* /var/www/html/${NC}"
+echo -e "  ${CYAN}sudo systemctl reload apache2${NC}"
+echo -e "  Then open: ${CYAN}http://localhost/${NC}"
 echo ""
-echo -e "${BOLD}1. Install prerequisites:${NC}"
-echo -e "   ${CYAN}sudo apt-get update && sudo apt-get install -y jq gpiod${NC}"
-echo ""
-echo -e "${BOLD}2. Test GPIO pins:${NC}"
-echo -e "   ${CYAN}./scripts/rpi_pin_test.sh${NC}"
-echo ""
-echo -e "${BOLD}3. Run event runner (manual):${NC}"
-echo -e "   ${CYAN}CANISTER_ID=${BACKEND_CANISTER_ID} NETWORK=local ./scripts/rpi_event_runner.sh${NC}"
-echo ""
-echo -e "${BOLD}4. Optional: Set up auto-start at boot${NC}"
-echo -e "   See ${CYAN}docs/rpi-bash-runner.md${NC} for systemd setup instructions"
+echo -e "${BOLD}${CYAN}└───────────────────────────────────────────────────────────┘${NC}"
 echo ""
 
-# Print control commands
-echo -e "${BOLD}${CYAN}Control commands:${NC}"
+# ── GPIO server ─────────────────────────────────────────────────────────────
+echo -e "${BOLD}${CYAN}┌─ GPIO Server (required for hardware control) ──────────────┐${NC}"
+echo ""
+echo -e "  The app sends GPIO signals to ${CYAN}http://localhost:3000/gpio${NC}"
+echo -e "  Start your GPIO server before using the control panel."
+echo ""
+echo -e "  ${BOLD}Raspberry Pi event runner:${NC}"
+echo -e "  ${CYAN}CANISTER_ID=${BACKEND_CANISTER_ID} NETWORK=local \\"
+echo -e "    $BUNDLE_ROOT/scripts/rpi_event_runner.sh${NC}"
+echo ""
+echo -e "  ${BOLD}Test GPIO pins:${NC}"
+echo -e "  ${CYAN}$BUNDLE_ROOT/scripts/rpi_pin_test.sh${NC}"
+echo ""
+echo -e "  ${BOLD}Optional — auto-start at boot (systemd):${NC}"
+echo -e "  See ${CYAN}$BUNDLE_ROOT/docs/rpi-bash-runner.md${NC}"
+echo ""
+echo -e "${BOLD}${CYAN}└───────────────────────────────────────────────────────────┘${NC}"
+echo ""
+
+# ── Control commands ─────────────────────────────────────────────────────────
+echo -e "${BOLD}${CYAN}┌─ Control Commands ────────────────────────────────────────┐${NC}"
 echo ""
 echo -e "  ${BOLD}Stop replica:${NC}      ${CYAN}./run.sh --stop${NC}"
 echo -e "  ${BOLD}Clean and reset:${NC}   ${CYAN}./run.sh --clean${NC}"
 echo -e "  ${BOLD}Show help:${NC}         ${CYAN}./run.sh --help${NC}"
+echo ""
+echo -e "  ${BOLD}Full setup guide:${NC}  ${CYAN}$BUNDLE_ROOT/INSTALL.md${NC}"
+echo ""
+echo -e "${BOLD}${CYAN}└───────────────────────────────────────────────────────────┘${NC}"
 echo ""

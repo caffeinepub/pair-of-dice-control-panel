@@ -1,31 +1,31 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Plus, Loader2 } from 'lucide-react';
-import { AddControlModal } from './AddControlModal';
-import { useControlLayout } from '@/hooks/useControlLayout';
-import { usePanelMode } from '@/hooks/usePanelMode';
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
+import { useControlLayout } from "@/hooks/useControlLayout";
+import { usePanelMode } from "@/hooks/usePanelMode";
+import { Loader2, Plus } from "lucide-react";
+import { useState } from "react";
+import { AddControlModal } from "./AddControlModal";
 
 export function CreateControlButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isInitialized, isLoading } = useControlLayout();
   const { mode } = usePanelMode();
 
-  const isDisabled = !isInitialized || isLoading || mode !== 'edit';
+  const isDisabled = !isInitialized || isLoading || mode !== "edit";
 
   const getTooltipMessage = () => {
     if (!isInitialized || isLoading) {
-      return 'Loading...';
+      return "Loading...";
     }
-    if (mode !== 'edit') {
-      return 'Switch to Edit mode to add controls';
+    if (mode !== "edit") {
+      return "Switch to Edit mode to add controls";
     }
-    return 'Add a new control';
+    return "Add a new control";
   };
 
   const LoadingIcon = isLoading ? Loader2 : Plus;
@@ -37,7 +37,9 @@ export function CreateControlButton() {
       onClick={() => setIsModalOpen(true)}
       disabled={isDisabled}
     >
-      <LoadingIcon className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+      <LoadingIcon
+        className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+      />
       Add Control
     </Button>
   );
@@ -47,9 +49,7 @@ export function CreateControlButton() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span tabIndex={0} aria-disabled="true">
-              {button}
-            </span>
+            <span aria-disabled="true">{button}</span>
           </TooltipTrigger>
           <TooltipContent>
             <p>{getTooltipMessage()}</p>

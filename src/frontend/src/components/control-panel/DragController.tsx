@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react';
-import { useControlLayout } from '@/hooks/useControlLayout';
-import type { ControlConfig } from '@/types/controlPanel';
-import { cn } from '@/lib/utils';
+import { useControlLayout } from "@/hooks/useControlLayout";
+import { cn } from "@/lib/utils";
+import type { ControlConfig } from "@/types/controlPanel";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 interface DragControllerProps {
   control: ControlConfig;
@@ -11,7 +11,13 @@ interface DragControllerProps {
   children: ReactNode;
 }
 
-export function DragController({ control, isSelected, onSelect, isDraggable, children }: DragControllerProps) {
+export function DragController({
+  control,
+  isSelected,
+  onSelect,
+  isDraggable,
+  children,
+}: DragControllerProps) {
   const { updateControl } = useControlLayout();
   const [isDragging, setIsDragging] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0, controlX: 0, controlY: 0 });
@@ -19,7 +25,7 @@ export function DragController({ control, isSelected, onSelect, isDraggable, chi
   const handleMouseDown = (e: React.MouseEvent) => {
     // Block selection and dragging in interact mode
     if (!isDraggable) return;
-    
+
     e.stopPropagation();
     onSelect();
 
@@ -51,28 +57,29 @@ export function DragController({ control, isSelected, onSelect, isDraggable, chi
       setIsDragging(false);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging, isDraggable, control.id, updateControl]);
 
   return (
     <div
       className={cn(
-        'absolute transition-all',
-        isDraggable ? 'cursor-move' : 'cursor-default'
+        "absolute transition-all",
+        isDraggable ? "cursor-move" : "cursor-default",
       )}
       style={{
         left: control.x,
         top: control.y,
         width: control.width,
         height: control.height,
-        outline: isSelected && isDraggable ? '2px solid hsl(var(--primary))' : 'none',
-        outlineOffset: '2px',
+        outline:
+          isSelected && isDraggable ? "2px solid hsl(var(--primary))" : "none",
+        outlineOffset: "2px",
       }}
       onMouseDown={handleMouseDown}
     >

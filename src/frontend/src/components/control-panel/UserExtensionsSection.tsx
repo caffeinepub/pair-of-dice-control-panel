@@ -1,5 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Code2 } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Code2 } from "lucide-react";
 
 export function UserExtensionsSection() {
   return (
@@ -9,9 +15,7 @@ export function UserExtensionsSection() {
           <Code2 className="h-5 w-5" />
           Custom Extensions
         </CardTitle>
-        <CardDescription>
-          Add your custom functionality below
-        </CardDescription>
+        <CardDescription>Add your custom functionality below</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* ===================== BEGIN USER CODE ===================== */}
@@ -32,13 +36,13 @@ export function UserExtensionsSection() {
             </Button>
           </div>
         */}
-        
+
         <div className="rounded-lg border border-dashed border-muted-foreground/25 p-6 text-center">
           <p className="text-sm text-muted-foreground">
             Your custom code goes here
           </p>
         </div>
-        
+
         {/* ====================== END USER CODE ====================== */}
       </CardContent>
     </Card>

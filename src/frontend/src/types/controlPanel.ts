@@ -1,4 +1,4 @@
-export type ControlType = 'button' | 'toggle' | 'slider' | 'radio' | 'dial';
+export type ControlType = "button" | "toggle" | "slider" | "radio" | "dial";
 
 export interface RadioOption {
   key: string;
@@ -19,7 +19,7 @@ export interface ControlConfig {
   width: number;
   height: number;
   color: string;
-  
+
   // Decimal codes (1-16) - used internally, converted to/from backend
   decimalCode?: number;
   decimalCodeOn?: number;
@@ -28,16 +28,16 @@ export interface ControlConfig {
   decimalCodeRight?: number;
   decimalCodeUp?: number;
   decimalCodeDown?: number;
-  
+
   // Type-specific config
   toggleState?: boolean;
-  
+
   // Slider config
   sliderValue?: number;
   sliderMin?: number;
   sliderMax?: number;
   sliderIsVertical?: boolean;
-  
+
   // Radio config
   radioOptions?: RadioOption[];
   radioSelected?: string;

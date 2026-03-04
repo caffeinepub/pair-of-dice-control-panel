@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useRecentSignals } from '@/hooks/useRecentSignals';
-import { RefreshCw, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRecentSignals } from "@/hooks/useRecentSignals";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 export function RecentSignalsPanel() {
   const { events, isLoading, error, refetch } = useRecentSignals();
@@ -18,8 +18,15 @@ export function RecentSignalsPanel() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Recent Signals</CardTitle>
-          <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => refetch()}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
           </Button>
         </div>
       </CardHeader>
@@ -34,7 +41,9 @@ export function RecentSignalsPanel() {
         )}
         <ScrollArea className="h-[300px]">
           {events.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No signals emitted yet</p>
+            <p className="text-sm text-muted-foreground">
+              No signals emitted yet
+            </p>
           ) : (
             <div className="space-y-2">
               {events.map((event, index) => (
@@ -45,7 +54,7 @@ export function RecentSignalsPanel() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="font-medium">
-                        {event.controlName || 'Unnamed Control'}
+                        {event.controlName || "Unnamed Control"}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
                         Type: {event.controlType} • Value: {event.value}

@@ -1,5 +1,5 @@
-import { createContext, useContext } from 'react';
-import type { ControlConfig, LayoutConfig } from '@/types/controlPanel';
+import type { ControlConfig, LayoutConfig } from "@/types/controlPanel";
+import { createContext, useContext } from "react";
 
 export interface ControlLayoutContextValue {
   controls: ControlConfig[];
@@ -7,7 +7,9 @@ export interface ControlLayoutContextValue {
   selectedControl: ControlConfig | undefined;
   setSelectedControlId: (id: string | null) => void;
   createControl: () => void;
-  createControlWithConfig: (config: Partial<ControlConfig> & { id: string; controlType: string }) => boolean;
+  createControlWithConfig: (
+    config: Partial<ControlConfig> & { id: string; controlType: string },
+  ) => boolean;
   updateControl: (id: string, updates: Partial<ControlConfig>) => void;
   deleteControl: (id: string) => void;
   validateId: (id: string, currentId?: string) => string | null;
@@ -18,12 +20,15 @@ export interface ControlLayoutContextValue {
   isInitialized: boolean;
 }
 
-export const ControlLayoutContext = createContext<ControlLayoutContextValue | null>(null);
+export const ControlLayoutContext =
+  createContext<ControlLayoutContextValue | null>(null);
 
 export function useControlLayout() {
   const context = useContext(ControlLayoutContext);
   if (!context) {
-    throw new Error('useControlLayout must be used within ControlLayoutProvider');
+    throw new Error(
+      "useControlLayout must be used within ControlLayoutProvider",
+    );
   }
   return context;
 }
