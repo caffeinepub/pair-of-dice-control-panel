@@ -524,18 +524,25 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
           style={{ backgroundColor: control.color, borderColor: control.color }}
         >
           <span className="text-sm text-white">{control.label}</span>
-          <input
-            type="range"
-            min={min}
-            max={max}
-            value={value}
-            onChange={handleSliderChange}
-            disabled={isEditMode}
-            className="slider-vertical accent-white"
-            style={{
-              background: `linear-gradient(to top, white ${percentage}%, rgba(255,255,255,0.3) ${percentage}%)`,
-            }}
-          />
+          <div className="flex-1 flex items-center justify-center w-full min-h-0">
+            <input
+              type="range"
+              min={min}
+              max={max}
+              value={value}
+              onChange={handleSliderChange}
+              disabled={isEditMode}
+              style={{
+                writingMode:
+                  "vertical-lr" as React.CSSProperties["writingMode"],
+                direction: "rtl",
+                width: "32px",
+                height: "100%",
+                cursor: "pointer",
+                accentColor: "white",
+              }}
+            />
+          </div>
           <span className="text-lg font-bold text-white">{value}</span>
         </div>
       );

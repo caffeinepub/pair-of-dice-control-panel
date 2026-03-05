@@ -64,7 +64,7 @@ export function ControlPanelScreen() {
           {/* Center - Workspace */}
           <section
             ref={workspaceRef}
-            className="flex-1 overflow-auto bg-background p-6 control-workspace-region"
+            className="flex-1 overflow-hidden bg-background p-4 control-workspace-region"
             aria-label="Control Panel Workspace"
           >
             <Workspace />
