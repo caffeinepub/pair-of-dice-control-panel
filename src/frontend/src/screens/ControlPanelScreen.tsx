@@ -7,11 +7,13 @@ import { ModeToggle } from "@/components/control-panel/ModeToggle";
 import { RecentSignalsPanel } from "@/components/control-panel/RecentSignalsPanel";
 import { UserExtensionsSection } from "@/components/control-panel/UserExtensionsSection";
 import { Workspace } from "@/components/control-panel/Workspace";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { usePanelMode } from "@/hooks/usePanelMode";
 import { safeGetHostname } from "@/lib/safeBrowser";
-import { useRef } from "react";
+import { Bug } from "lucide-react";
+import { useRef, useState } from "react";
 import { SiX } from "react-icons/si";
 
 export function ControlPanelScreen() {
@@ -19,6 +21,7 @@ export function ControlPanelScreen() {
   const workspaceRef = useRef<HTMLElement>(null);
   const { isFullscreen, isSupported, toggleFullscreen } =
     useFullscreen(workspaceRef);
+  const [debugOpen, setDebugOpen] = useState(false);
 
   return (
     <ControlLayoutProvider>
@@ -43,13 +46,23 @@ export function ControlPanelScreen() {
                   onToggle={toggleFullscreen}
                 />
               )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDebugOpen((v) => !v)}
+                data-ocid="debug.toggle"
+                title="Toggle HTTP POST Debug Panel"
+                className={debugOpen ? "bg-accent text-accent-foreground" : ""}
+              >
+                <Bug className="h-5 w-5" />
+              </Button>
               <ModeToggle />
             </div>
           </div>
         </header>
 
         {/* Main Content */}
-        <main className="flex flex-1 overflow-hidden">
+        <main className="relative flex flex-1 overflow-hidden">
           {/* Left Sidebar - Inspector with Import/Export and User Extensions (Edit mode only) */}
           {mode === "edit" && (
             <aside className="w-80 border-r border-border bg-card overflow-y-auto">
@@ -70,15 +83,20 @@ export function ControlPanelScreen() {
             <Workspace />
           </section>
 
-          {/* Right Sidebar - Signals and Debug Panel (Interact mode only) */}
+          {/* Right Sidebar - Signals (Interact mode only) */}
           {mode === "interact" && (
-            <aside className="w-96 border-l border-border bg-card overflow-y-auto">
+            <aside className="w-80 border-l border-border bg-card overflow-y-auto">
               <div className="flex flex-col gap-4 p-4">
-                <DebugHttpPanel />
-                <Separator />
                 <RecentSignalsPanel />
               </div>
             </aside>
+          )}
+
+          {/* Debug Panel Floating Overlay */}
+          {debugOpen && (
+            <div className="absolute top-2 right-4 z-50 w-96 shadow-xl">
+              <DebugHttpPanel />
+            </div>
           )}
         </main>
 

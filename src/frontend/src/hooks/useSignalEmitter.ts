@@ -3,6 +3,30 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useActor } from "./useActor";
 
+/**
+ * Maps a control interaction to the correct GPIO HTTP state ("on" or "off").
+ * - button:  "press" -> "on", anything else -> "off"
+ * - toggle:  codeType "on" -> "on", "off" -> "off"
+ * - slider:  both "up" and "down" represent movement, send "on"
+ * - radio:   selection -> "on"
+ * - dial:    both directions are active steps, send "on"
+ */
+function resolveHttpState(
+  controlType: string,
+  value: string,
+  codeType: string,
+): "on" | "off" {
+  switch (controlType) {
+    case "button":
+      return value === "press" ? "on" : "off";
+    case "toggle":
+      return codeType === "on" ? "on" : "off";
+    default:
+      // slider (up/down), radio (selection), dial (left/right) all send "on"
+      return "on";
+  }
+}
+
 export function useSignalEmitter() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -29,7 +53,7 @@ export function useSignalEmitter() {
         throw new Error("Actor not initialized");
       }
 
-      // Call backend actor to log the event
+      // Log the event to the backend
       await actor.emitButtonEvent(
         controlId,
         controlType,
@@ -40,26 +64,24 @@ export function useSignalEmitter() {
         commandStr,
       );
 
-      // Send HTTP POST to GPIO server for button controls
-      if (controlType === "button") {
-        const httpState = value === "press" ? "on" : "off";
-        try {
-          await sendGpioSignal(decimalCode, httpState);
-        } catch (httpError) {
-          const reason =
-            httpError instanceof Error ? httpError.message : "Unknown error";
-          // Surface the HTTP error as a toast but don't fail the mutation —
-          // the backend event was already logged successfully.
-          toast.warning(`GPIO HTTP signal failed: ${reason}`, {
-            description:
-              "The event was logged to the backend, but the local GPIO server did not receive the signal.",
-            duration: 6000,
-          });
-          console.warn(
-            "[useSignalEmitter] HTTP POST failed (backend event was logged):",
-            reason,
-          );
-        }
+      // Send HTTP POST to GPIO server for ALL control types.
+      // Content-Type is forced to application/json via Blob body.
+      // mode: no-cors fires the request without requiring CORS headers from the server.
+      const httpState = resolveHttpState(controlType, value, codeType);
+      try {
+        await sendGpioSignal(decimalCode, httpState);
+      } catch (httpError) {
+        const reason =
+          httpError instanceof Error ? httpError.message : "Unknown error";
+        toast.warning(`GPIO HTTP signal failed: ${reason}`, {
+          description:
+            "The event was logged to the backend, but the GPIO server at 7426razpi3.nevadascientific.com did not receive the signal.",
+          duration: 6000,
+        });
+        console.warn(
+          "[useSignalEmitter] HTTP POST failed (backend event was logged):",
+          reason,
+        );
       }
     },
     onSuccess: () => {
@@ -67,7 +89,9 @@ export function useSignalEmitter() {
     },
     onError: (error) => {
       toast.error(
-        `Failed to emit signal: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to emit signal: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
       );
     },
   });

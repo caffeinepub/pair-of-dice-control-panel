@@ -1,5 +1,4 @@
 import { useSignalEmitter } from "@/hooks/useSignalEmitter";
-import { sendGpioSignal } from "@/lib/gpioHttp";
 import {
   generateButtonGpiosetCommand,
   generateGpiosetCommandSequence,
@@ -7,7 +6,6 @@ import {
 import { cn } from "@/lib/utils";
 import type { ControlConfig } from "@/types/controlPanel";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 
 interface ControlRendererProps {
   control: ControlConfig;
@@ -27,95 +25,22 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     control.radioSelected ?? "",
   );
 
-  // Track previous values for detecting direction changes
-  const prevToggleStateRef = useRef(control.toggleState ?? false);
   const prevSliderValueRef = useRef(control.sliderValue ?? 50);
-  const prevRadioSelectedRef = useRef(control.radioSelected ?? "");
-
   const keyPressedRef = useRef(false);
   const buttonResetSentRef = useRef(false);
 
-  // Sync previous toggle state with control prop
-  useEffect(() => {
-    prevToggleStateRef.current = control.toggleState ?? false;
-  }, [control.toggleState]);
-
-  // Sync previous slider value with control prop
   useEffect(() => {
     prevSliderValueRef.current = control.sliderValue ?? 50;
   }, [control.sliderValue]);
 
-  // Sync previous radio selection with control prop
-  useEffect(() => {
-    prevRadioSelectedRef.current = control.radioSelected ?? "";
-  }, [control.radioSelected]);
-
-  /**
-   * Helper: send GPIO HTTP signal and surface any error as a toast warning.
-   * Does NOT throw — failures are non-blocking so the backend event still logs.
-   */
-  const sendGpioWithFeedback = (decimalCode: number, state: "on" | "off") => {
-    sendGpioSignal(decimalCode, state).catch((error) => {
-      const reason = error instanceof Error ? error.message : String(error);
-      console.warn("[ControlRenderer] GPIO HTTP signal failed:", reason);
-      toast.warning(`GPIO HTTP signal failed: ${reason}`, {
-        description:
-          "The event was logged to the backend, but the GPIO server at 7426razpi3.nevadascientific.com did not receive the signal.",
-        duration: 6000,
-      });
-    });
-  };
+  // ── Button ──────────────────────────────────────────────────────────────────
 
   const handleButtonPress = () => {
-    console.log("[ControlRenderer] ========== BUTTON PRESS EVENT ==========");
-    console.log("[ControlRenderer] handleButtonPress called:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      controlLabel: control.label,
-      isEditMode,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (isEditMode) {
-      console.log("[ControlRenderer] Ignoring press - in edit mode");
-      return;
-    }
-
+    if (isEditMode) return;
     const decimalCode = control.decimalCode || 1;
-
-    console.log("[ControlRenderer] Button press parameters:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      decimalCode,
-      state: "on",
-    });
-
     setIsPressed(true);
     buttonResetSentRef.current = false;
-
-    // Send HTTP POST with decimal code and "on" state — shows toast on failure
-    console.log("[ControlRenderer] About to call sendGpioSignal with:", {
-      decimalCode,
-      state: "on",
-    });
-    sendGpioWithFeedback(decimalCode, "on");
-
-    // Generate single gpioset command for button press (state=1)
     const gpiosetCommand = generateButtonGpiosetCommand(decimalCode, 1);
-
-    console.log("[ControlRenderer] Generated gpioset command:", gpiosetCommand);
-
-    // Emit button press event to backend with command string
-    console.log("[ControlRenderer] About to call emit() with:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      label: control.label || null,
-      value: "press",
-      decimalCode,
-      codeType: "button",
-      commandStr: gpiosetCommand,
-    });
-
     emit(
       control.id,
       control.controlType,
@@ -125,82 +50,24 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
       "button",
       gpiosetCommand,
     );
-
-    console.log("[ControlRenderer] ✓ emit() called for button press");
   };
 
   const handleButtonRelease = () => {
-    console.log("[ControlRenderer] ========== BUTTON RELEASE EVENT ==========");
-    console.log("[ControlRenderer] handleButtonRelease called:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      controlLabel: control.label,
-      isEditMode,
-      alreadySent: buttonResetSentRef.current,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (isEditMode) {
-      console.log("[ControlRenderer] Ignoring release - in edit mode");
-      return;
-    }
-
+    if (isEditMode) return;
     setIsPressed(false);
-
+    if (buttonResetSentRef.current) return;
+    buttonResetSentRef.current = true;
     const decimalCode = control.decimalCode || 1;
-
-    console.log("[ControlRenderer] Button release parameters:", {
-      controlId: control.id,
-      controlType: control.controlType,
+    const gpiosetCommand = generateButtonGpiosetCommand(decimalCode, 0);
+    emit(
+      control.id,
+      control.controlType,
+      control.label || null,
+      "release",
       decimalCode,
-      state: "off",
-      alreadySent: buttonResetSentRef.current,
-    });
-
-    // Send HTTP POST with decimal code and "off" state (only once per press)
-    if (!buttonResetSentRef.current) {
-      buttonResetSentRef.current = true;
-
-      // Send HTTP POST — shows toast on failure
-      console.log("[ControlRenderer] About to call sendGpioSignal with:", {
-        decimalCode,
-        state: "off",
-      });
-      sendGpioWithFeedback(decimalCode, "off");
-
-      // Generate single gpioset command for button release (state=0)
-      const gpiosetCommand = generateButtonGpiosetCommand(decimalCode, 0);
-
-      console.log(
-        "[ControlRenderer] Generated gpioset command:",
-        gpiosetCommand,
-      );
-
-      // Emit button release event to backend with command string
-      console.log("[ControlRenderer] About to call emit() with:", {
-        controlId: control.id,
-        controlType: control.controlType,
-        label: control.label || null,
-        value: "release",
-        decimalCode,
-        codeType: "button",
-        commandStr: gpiosetCommand,
-      });
-
-      emit(
-        control.id,
-        control.controlType,
-        control.label || null,
-        "release",
-        decimalCode,
-        "button",
-        gpiosetCommand,
-      );
-
-      console.log("[ControlRenderer] ✓ emit() called for button release");
-    } else {
-      console.log("[ControlRenderer] Skipping release - already sent");
-    }
+      "button",
+      gpiosetCommand,
+    );
   };
 
   const handleButtonKeyDown = (e: React.KeyboardEvent) => {
@@ -209,7 +76,6 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
       e.preventDefault();
       if (!keyPressedRef.current) {
         keyPressedRef.current = true;
-        console.log("[ControlRenderer] Keyboard press detected:", e.key);
         handleButtonPress();
       }
     }
@@ -220,7 +86,6 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       keyPressedRef.current = false;
-      console.log("[ControlRenderer] Keyboard release detected:", e.key);
       handleButtonRelease();
     }
   };
@@ -228,47 +93,22 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
   const handleButtonBlur = () => {
     if (keyPressedRef.current) {
       keyPressedRef.current = false;
-      console.log("[ControlRenderer] Button blur - triggering release");
       handleButtonRelease();
     }
   };
 
+  // ── Toggle ──────────────────────────────────────────────────────────────────
+
   const handleToggle = () => {
-    console.log("[ControlRenderer] ========== TOGGLE EVENT ==========");
-    console.log("[ControlRenderer] handleToggle called:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      isEditMode,
-      currentState: localToggleState,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (isEditMode) {
-      console.log("[ControlRenderer] Ignoring toggle - in edit mode");
-      return;
-    }
-
+    if (isEditMode) return;
     const newState = !localToggleState;
     const codeType = newState ? "on" : "off";
     const decimalCode = newState
       ? control.decimalCodeOn || 1
       : control.decimalCodeOff || 2;
-
     setLocalToggleState(newState);
-    prevToggleStateRef.current = newState;
-
     const stateLabel = newState ? "ON" : "OFF";
     const gpiosetCommand = `gpioset -c gpiochip0 ${control.id}=${newState ? 1 : 0}`;
-
-    console.log("[ControlRenderer] Toggle parameters:", {
-      newState,
-      codeType,
-      decimalCode,
-      stateLabel,
-      gpiosetCommand,
-    });
-
-    console.log("[ControlRenderer] About to call emit() for toggle");
     emit(
       control.id,
       control.controlType,
@@ -278,55 +118,26 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
       codeType,
       gpiosetCommand,
     );
-    console.log("[ControlRenderer] ✓ emit() called for toggle");
   };
 
+  // ── Slider ───────────────────────────────────────────────────────────────────
+
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("[ControlRenderer] ========== SLIDER CHANGE EVENT ==========");
-    console.log("[ControlRenderer] handleSliderChange called:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      isEditMode,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (isEditMode) {
-      console.log("[ControlRenderer] Ignoring slider change - in edit mode");
-      return;
-    }
-
+    if (isEditMode) return;
     const value = Number(e.target.value);
     const previousValue = prevSliderValueRef.current;
-
-    console.log("[ControlRenderer] Slider values:", { value, previousValue });
-
-    if (value === previousValue) {
-      console.log("[ControlRenderer] Ignoring slider change - value unchanged");
-      return;
-    }
-
+    if (value === previousValue) return;
     const codeType = value > previousValue ? "up" : "down";
     const decimalCode =
       value > previousValue
         ? control.decimalCodeUp || 1
         : control.decimalCodeDown || 2;
-
     setLocalSliderValue(value);
     prevSliderValueRef.current = value;
-
     const min = control.sliderMin ?? 0;
     const max = control.sliderMax ?? 100;
     const normalizedValue = value >= (min + max) / 2 ? 1 : 0;
     const gpiosetCommand = `gpioset -c gpiochip0 ${control.id}=${normalizedValue}`;
-
-    console.log("[ControlRenderer] Slider parameters:", {
-      codeType,
-      decimalCode,
-      normalizedValue,
-      gpiosetCommand,
-    });
-
-    console.log("[ControlRenderer] About to call emit() for slider");
     emit(
       control.id,
       control.controlType,
@@ -336,44 +147,17 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
       codeType,
       gpiosetCommand,
     );
-    console.log("[ControlRenderer] ✓ emit() called for slider");
   };
 
+  // ── Radio ────────────────────────────────────────────────────────────────────
+
   const handleRadioSelect = (optionKey: string) => {
-    console.log("[ControlRenderer] ========== RADIO SELECT EVENT ==========");
-    console.log("[ControlRenderer] handleRadioSelect called:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      optionKey,
-      isEditMode,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (isEditMode) {
-      console.log("[ControlRenderer] Ignoring radio select - in edit mode");
-      return;
-    }
-
+    if (isEditMode) return;
     const option = control.radioOptions?.find((opt) => opt.key === optionKey);
-    if (!option) {
-      console.warn("[ControlRenderer] Option not found:", optionKey);
-      return;
-    }
-
+    if (!option) return;
     setLocalRadioSelected(optionKey);
-    prevRadioSelectedRef.current = optionKey;
-
-    // Emit the decimal code from the selected option
     const decimalCode = option.decimalCode;
     const gpiosetSequence = generateGpiosetCommandSequence(decimalCode);
-
-    console.log("[ControlRenderer] Radio parameters:", {
-      optionKey,
-      decimalCode,
-      gpiosetSequence,
-    });
-
-    console.log("[ControlRenderer] About to call emit() for radio");
     emit(
       control.id,
       "radio",
@@ -383,67 +167,38 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
       "radio",
       gpiosetSequence,
     );
-    console.log("[ControlRenderer] ✓ emit() called for radio");
   };
 
+  // ── Dial ─────────────────────────────────────────────────────────────────────
+
   const handleDialStep = (direction: "left" | "right") => {
-    console.log("[ControlRenderer] ========== DIAL STEP EVENT ==========");
-    console.log("[ControlRenderer] handleDialStep called:", {
-      controlId: control.id,
-      controlType: control.controlType,
-      direction,
-      isEditMode,
-      timestamp: new Date().toISOString(),
-    });
-
-    if (isEditMode) {
-      console.log("[ControlRenderer] Ignoring dial step - in edit mode");
-      return;
-    }
-
-    const codeType = direction;
+    if (isEditMode) return;
     const decimalCode =
       direction === "left"
         ? control.decimalCodeLeft || 1
         : control.decimalCodeRight || 2;
-
     const directionLabel =
       direction === "left" ? "counterclockwise" : "clockwise";
     const gpiosetCommand = `gpioset -c gpiochip0 ${control.id}=1`;
-
-    console.log("[ControlRenderer] Dial parameters:", {
-      direction,
-      codeType,
-      decimalCode,
-      directionLabel,
-      gpiosetCommand,
-    });
-
-    console.log("[ControlRenderer] About to call emit() for dial");
     emit(
       control.id,
       control.controlType,
       control.label || null,
       directionLabel,
       decimalCode,
-      codeType,
+      direction,
       gpiosetCommand,
     );
-    console.log("[ControlRenderer] ✓ emit() called for dial");
   };
 
   const handleDialWheel = (e: React.WheelEvent) => {
     if (isEditMode) return;
     e.preventDefault();
-
-    console.log("[ControlRenderer] Dial wheel event:", { deltaY: e.deltaY });
-
-    if (e.deltaY < 0) {
-      handleDialStep("right");
-    } else if (e.deltaY > 0) {
-      handleDialStep("left");
-    }
+    if (e.deltaY < 0) handleDialStep("right");
+    else if (e.deltaY > 0) handleDialStep("left");
   };
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   const baseClasses = cn(
     "h-full w-full rounded-xl border-2 transition-all duration-150",
@@ -645,7 +400,6 @@ export function ControlRenderer({ control, isEditMode }: ControlRendererProps) {
     );
   }
 
-  // Fallback for unknown control types
   return (
     <div
       className={cn(baseClasses, "bg-card border-border text-muted-foreground")}
