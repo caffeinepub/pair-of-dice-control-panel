@@ -12,8 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { usePanelMode } from "@/hooks/usePanelMode";
 import { safeGetHostname } from "@/lib/safeBrowser";
-import { Bug } from "lucide-react";
-import { useRef, useState } from "react";
+import { Bug, GripHorizontal } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SiX } from "react-icons/si";
 
 export function ControlPanelScreen() {
@@ -22,6 +22,57 @@ export function ControlPanelScreen() {
   const { isFullscreen, isSupported, toggleFullscreen } =
     useFullscreen(workspaceRef);
   const [debugOpen, setDebugOpen] = useState(false);
+
+  // Draggable debug panel state
+  const [debugPos, setDebugPos] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef<{
+    mouseX: number;
+    mouseY: number;
+    posX: number;
+    posY: number;
+  } | null>(null);
+  const debugRef = useRef<HTMLDivElement>(null);
+
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      dragStart.current = {
+        mouseX: e.clientX,
+        mouseY: e.clientY,
+        posX: debugPos.x,
+        posY: debugPos.y,
+      };
+      setDragging(true);
+    },
+    [debugPos],
+  );
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragStart.current) return;
+      const dx = e.clientX - dragStart.current.mouseX;
+      const dy = e.clientY - dragStart.current.mouseY;
+      setDebugPos({
+        x: dragStart.current.posX + dx,
+        y: dragStart.current.posY + dy,
+      });
+    };
+    const onMouseUp = () => setDragging(false);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [dragging]);
+
+  // Reset position when panel is opened
+  const handleToggleDebug = () => {
+    if (!debugOpen) setDebugPos({ x: 0, y: 0 });
+    setDebugOpen((v) => !v);
+  };
 
   return (
     <ControlLayoutProvider>
@@ -49,7 +100,7 @@ export function ControlPanelScreen() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setDebugOpen((v) => !v)}
+                onClick={handleToggleDebug}
                 data-ocid="debug.toggle"
                 title="Toggle HTTP POST Debug Panel"
                 className={debugOpen ? "bg-accent text-accent-foreground" : ""}
@@ -92,9 +143,26 @@ export function ControlPanelScreen() {
             </aside>
           )}
 
-          {/* Debug Panel Floating Overlay */}
+          {/* Debug Panel Floating Overlay (Draggable) */}
           {debugOpen && (
-            <div className="absolute top-2 right-4 z-50 w-96 shadow-xl">
+            <div
+              ref={debugRef}
+              className="absolute z-50 w-96 shadow-xl"
+              style={{
+                top: `calc(0.5rem + ${debugPos.y}px)`,
+                right: `calc(1rem - ${debugPos.x}px)`,
+                cursor: dragging ? "grabbing" : "default",
+                userSelect: dragging ? "none" : undefined,
+              }}
+            >
+              {/* Drag handle */}
+              <div
+                className="flex items-center justify-center h-6 rounded-t-lg bg-muted border border-b-0 border-border cursor-grab active:cursor-grabbing"
+                onMouseDown={onMouseDown}
+                title="Drag to move"
+              >
+                <GripHorizontal className="h-4 w-4 text-muted-foreground" />
+              </div>
               <DebugHttpPanel />
             </div>
           )}
